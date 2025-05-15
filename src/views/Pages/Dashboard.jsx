@@ -11,6 +11,7 @@ import TabList from "@mui/joy/TabList";
 import Tab, { tabClasses } from "@mui/joy/Tab";
 
 import Pagination from "@mui/material/Pagination";
+import PaginationItem from "@mui/material/PaginationItem";
 
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
@@ -700,6 +701,19 @@ const Dashboard = () => {
                             count={mentionPage.total_pages}
                             page={mentionPage.page}
                             onChange={handleChangeMentionPage}
+                            renderItem={(item) => (
+                              <PaginationItem
+                                components={{
+                                  previous: () => (
+                                    <img src="/chevron-left.svg" alt="Previous" className="pagination-arrow" />
+                                  ),
+                                  next: () => (
+                                    <img src="/chevron-right.svg" alt="Next" className="pagination-arrow" />
+                                  ),
+                                }}
+                                {...item}
+                              />
+                            )}
                           />
                         </div>
                       </>
