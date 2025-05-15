@@ -1,18 +1,9 @@
 import {
-  ArrowOutward,
-  AutorenewOutlined,
-  ExpandMore,
-  Favorite,
-  MoreVert,
-  Repeat,
-  Visibility,
-  VisibilityOutlined,
+  ArrowOutward
 } from "@mui/icons-material";
 import CustomText from "../../../components/CustomText";
-import Checkbox from "@mui/joy/Checkbox";
 import "./styles/MentionComponent.css";
 import { formatDateAMPM, formatNumber } from "../../../helpers/utils";
-import { Share } from "@mui/icons-material";
 import { useState } from "react";
 const MentionComponent = (props) => {
   const data = props.data;
@@ -65,35 +56,60 @@ const MentionComponent = (props) => {
           <img
             className="mentions-small-icon"
             src={window.location.origin + "/message-circle-02.svg"}
+            alt="comments"
           />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.comments)}
           </CustomText>
           <div className="mention-component-bullet"></div>
+      
           <img
             className="mentions-small-icon"
             src={window.location.origin + "/thumbs-up.svg"}
+            alt="likes"
           />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.likes)}
           </CustomText>
-          <div className="mention-component-bullet"></div>
+      
+          {data.views !== undefined && data.views !== null && data.views !== 0  && (
+            <>
+              <div className="mention-component-bullet"></div>
+              <img
+                className="mentions-small-icon"
+                src={window.location.origin + "/views.svg"}
+                alt="views"
+              />
+              <CustomText size="2xls" color="b500" inline>
+                {formatNumber(data.views)}
+              </CustomText>
+            </>
+          )}
         </>
       );
     } else if (data.channel === "twitter") {
       return (
         <>
-          <VisibilityOutlined sx={{ width: "16px", color: "#717680" }} />
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/views.svg"}
+          />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.views)}
           </CustomText>
           <div className="mention-component-bullet"></div>
-          <Repeat sx={{ width: "16px", color: "#717680" }} />
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/retweets.svg"}
+          />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.retweets)}
           </CustomText>
           <div className="mention-component-bullet"></div>
-          <Share sx={{ width: "16px", color: "#717680" }} />
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/message-circle-02.svg"}
+          />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.replies)}
           </CustomText>
@@ -119,7 +135,10 @@ const MentionComponent = (props) => {
             {formatNumber(data.likes)}
           </CustomText>
           <div className="mention-component-bullet"></div>
-          <Share sx={{ width: "16px", color: "#717680" }} />
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/retweets.svg"}
+          />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.reposts)}
           </CustomText>
@@ -145,16 +164,35 @@ const MentionComponent = (props) => {
             {formatNumber(data.likes)}
           </CustomText>
           <div className="mention-component-bullet"></div>
-          <Share sx={{ width: "16px", color: "#717680" }} />
-          <CustomText siz e="2xls" color="b500" inline>
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/share-07.svg"}
+          />
+          <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.shares)}
           </CustomText>
           <div className="mention-component-bullet"></div>
-          <Favorite sx={{ width: "16px", color: "#717680" }} />
-          <CustomText siz e="2xls" color="b500" inline>
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/favorite.svg"}
+          />
+          <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.favorites)}
           </CustomText>
           <div className="mention-component-bullet"></div>
+          {data.views !== undefined && data.views !== null && data.views !== 0  && (
+            <>
+              <div className="mention-component-bullet"></div>
+              <img
+                className="mentions-small-icon"
+                src={window.location.origin + "/views.svg"}
+                alt="views"
+              />
+              <CustomText size="2xls" color="b500" inline>
+                {formatNumber(data.views)}
+              </CustomText>
+            </>
+          )}
         </>
       );
     } else if (data.channel === "reddit") {
@@ -170,7 +208,7 @@ const MentionComponent = (props) => {
           <div className="mention-component-bullet"></div>
           <img
             className="mentions-small-icon"
-            src={window.location.origin + "/thumbs-up.svg"}
+            src={window.location.origin + "/votes.svg"}
           />
           <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.votes)}
@@ -197,8 +235,11 @@ const MentionComponent = (props) => {
             {formatNumber(data.likes)}
           </CustomText>
           <div className="mention-component-bullet"></div>
-          <VisibilityOutlined sx={{ width: "16px", color: "#717680" }} />
-          <CustomText siz e="2xls" color="b500" inline>
+          <img
+            className="mentions-small-icon"
+            src={window.location.origin + "/views.svg"}
+          />
+          <CustomText size="2xls" color="b500" inline>
             {formatNumber(data.views)}
           </CustomText>
           <div className="mention-component-bullet"></div>

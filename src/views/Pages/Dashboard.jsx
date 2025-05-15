@@ -1,29 +1,17 @@
-
-import Input from "@mui/joy/Input";
-import { Autocomplete, TextField, Chip } from "@mui/material";
-import InputAdornment from "@mui/material/InputAdornment";
-import AccountCircle from "@mui/icons-material/AccountCircle";
 import IconButton from "@mui/material/IconButton";
-import MenuIcon from "@mui/icons-material/Menu";
 import SearchIcon from "@mui/icons-material/Search";
 import Paper from "@mui/material/Paper";
 import React, { useState, useEffect } from "react";
 import InputBase from "@mui/material/InputBase";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Checkbox from "@mui/joy/Checkbox";
-import Button from "@mui/joy/Button";
-import PropTypes from "prop-types";
 import Tabs from "@mui/joy/Tabs";
 import TabList from "@mui/joy/TabList";
-import Modal from "@mui/joy/Modal";
-import ModalClose from "@mui/joy/ModalClose";
 import Tab, { tabClasses } from "@mui/joy/Tab";
-import Sheet from "@mui/joy/Sheet";
 
 import Pagination from "@mui/material/Pagination";
-import Box from "@mui/material/Box";
+
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
 
@@ -702,7 +690,7 @@ const Dashboard = () => {
                         ))}
                         <div className="dashboard-pagination">
                           <Pagination
-                            count={mentionPage.total_pages}
+                            count={20}
                             page={mentionPage.page}
                             onChange={handleChangeMentionPage}
                           />
