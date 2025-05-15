@@ -29,7 +29,7 @@ import {
   getTopicToWatch,
   getTextSentimentData,
 } from "../../../services/topicService";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import NoDataUI from "./NoDataUI";
 import { useDidUpdateEffect } from "../../../helpers/loadState";
 import LoadingUI from "./LoadingUI";
@@ -355,7 +355,7 @@ const TopicsDetail = () => {
         : 0,
       influence_score_max: dataAdvanceFilter?.influence_score_max
         ? dataAdvanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(dataAdvanceFilter?.region?.length > 0 && {
         region: dataAdvanceFilter?.region,
       }),

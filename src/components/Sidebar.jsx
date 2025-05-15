@@ -6,7 +6,7 @@ import AccordionSummary from "@mui/joy/AccordionSummary";
 import { AddCircle, NavigateNext, ChevronLeft, ChevronRight } from "@mui/icons-material";
 import CustomText from "./CustomText";
 import { DescriptionOutlined } from "@mui/icons-material";
-import { useNavigate, useLocation } from "react-router";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 
 import "./styles/Sidebar.css";

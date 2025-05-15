@@ -5,11 +5,13 @@ import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import { ArrowBackIos } from "@mui/icons-material";
 import { useEffect, useState } from "react";
+import Pagination from '@mui/material/Pagination';
+import Stack from '@mui/material/Stack';
 import TopicsDetail from "./components/TopicsDetail";
 import DialogDateFilter from "./components/DialogDateFilter";
 import DialogFilter from "./components/DialogFilter";
 import { useSelector } from "react-redux";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 import "./styles/Topic.css";
@@ -30,6 +32,8 @@ const Topics = () => {
   const [isLoadingFirst, setIsLoadingFirst] = useState(true);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingTopic, setIsLoadingTopic] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
   const userData = useSelector((state) => state.user);
@@ -51,6 +55,7 @@ const Topics = () => {
   useDidUpdateEffect(() => {
     setIsLoadingFirst(true);
     setIsLoading(true);
+    setCurrentPage(1); // Reset to first page on keyword change
     getTopicData();
   }, [keyword]);
 
@@ -63,6 +68,7 @@ const Topics = () => {
 
   useDidUpdateEffect(() => {
     setIsLoading(true);
+    setCurrentPage(1); // Reset to first page on filter change
     getTopicData();
   }, [dataAdvanceFilter, dataDateFilter]);
 
@@ -117,7 +123,7 @@ const Topics = () => {
         : 0,
       influence_score_max: dataAdvanceFilter?.influence_score_max
         ? dataAdvanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(dataAdvanceFilter?.region?.length > 0 && {
         region: dataAdvanceFilter?.region,
       }),
@@ -169,6 +175,11 @@ const Topics = () => {
   const handleChangeDateFilter = (reqBody) => {
     setDataDateFilter(reqBody);
   };
+
+  const handleChangePage = (event, value) => {
+    setCurrentPage(value);
+  };
+
   const isNoDataUIShow = () => {
     if (!isLoading) {
       return topicsData.length === 0;
@@ -176,6 +187,13 @@ const Topics = () => {
       return false;
     }
   };
+
+  // Pagination logic
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentTopics = topicsData.slice(indexOfFirstItem, indexOfLastItem);
+  const totalPages = Math.ceil(topicsData.length / itemsPerPage);
+
   return (
     <>
       <div className="topics-search-bar-container">
@@ -224,10 +242,22 @@ const Topics = () => {
             <NoDataUI text="No ongoing topics yet. Data will be displayed here once topics are compiled." />
           </>
         ) : (
-          <TopicsTable
-            data={topicsData}
-            handleDetailClick={handleDetailClick}
-          />
+          <>
+            <TopicsTable
+              data={currentTopics}
+              handleDetailClick={handleDetailClick}
+            />
+            {totalPages > 1 && (
+              <Stack spacing={2} sx={{ marginTop: 2, alignItems: 'center' }}>
+                <Pagination
+                  count={totalPages}
+                  page={currentPage}
+                  onChange={handleChangePage}
+                  color="primary"
+                />
+              </Stack>
+            )}
+          </>
         )}
       </div>
 

@@ -394,7 +394,7 @@ const CompareTopics = (props) => {
         : 0,
       influence_score_max: advanceFilter?.influence_score_max
         ? advanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(advanceFilter?.region?.length > 0 && {
         region: advanceFilter?.region,
       }),

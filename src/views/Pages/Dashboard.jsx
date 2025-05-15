@@ -1,7 +1,7 @@
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
 import Paper from "@mui/material/Paper";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import InputBase from "@mui/material/InputBase";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
@@ -40,7 +40,7 @@ import DialogFilter from "./components/DialogFilter";
 import { HelpOutline } from "@mui/icons-material";
 import Tooltip from "@mui/joy/Tooltip";
 import DialogDateFilter from "./components/DialogDateFilter";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import LoadingUI from "./components/LoadingUI";
 import NoDataUI from "./components/NoDataUI";
 import { enqueueSnackbar } from "notistack";
@@ -109,7 +109,6 @@ const Dashboard = () => {
   const userData = useSelector((state) => state.user);
 
   const [dataReqBody, setDataReqBody] = useState({
-    // keywords: activeKeywords.keywords,
     owner_id: `${activeKeywords.owner_id}`,
     project_name: activeKeywords.name,
     channels: [],
@@ -117,65 +116,69 @@ const Dashboard = () => {
 
   const [dataAdvanceFilter, setDataAdvanceFilter] = useState({});
   const [dataDateFilter, setDataDateFilter] = useState({});
+  
+  // Ref to track if initial data has been loaded
+  const initialLoadRef = useRef(false);
 
   useEffect(() => {
     console.log("active key", activeKeywords);
     console.log("userdata", userData);
   }, []);
 
+  const fetchAllData = async () => {
+    setIsLoading(true);
+    try {
+      await Promise.all([
+        getTopicsToWatchData(),
+        getKolToWatchData(),
+        getKeywordTrendsData(),
+        getContextOfDiscussion(),
+        getMentionsData()
+      ]);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+    setIsLoading(false);
+  };
+
+  // Initial data load
   useEffect(() => {
-    if (!hasFetched) {
-      getTopicsToWatchData();
-      getKolToWatchData();
-      getKeywordTrendsData();
-      getContextOfDiscussion();
+    // This effect runs once on component mount.
+    fetchAllData();
+    initialLoadRef.current = true; // Mark that initial load has completed.
+  }, []);
+
+  // Handle filter changes
+  useDidUpdateEffect(() => {
+    // This effect runs when keyword, dataAdvanceFilter, or dataDateFilter changes,
+    // but not on the initial component mount.
+    const debounceTimer = setTimeout(() => {
+      fetchAllData();
+    }, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [keyword, dataAdvanceFilter, dataDateFilter]);
+
+  // Handle mentions pagination and tab changes
+  useDidUpdateEffect(() => {
+    // This effect runs when activeTabMentions or mentionPage.page changes,
+    // but not on the initial component mount.
+    const debounceTimer = setTimeout(() => {
       getMentionsData();
-      setHasFetched(true);
-    }
-  }, [hasFetched]);
-
-  useDidUpdateEffect(() => {
-    setIsLoading(true);
-    getTopicsToWatchData();
-    getKolToWatchData();
-    getKeywordTrendsData();
-    getContextOfDiscussion();
-    getMentionsData();
-  }, [keyword]);
-
-  useDidUpdateEffect(() => {
-    setIsLoading(true);
-    getTopicsToWatchData();
-    getKolToWatchData();
-    getKeywordTrendsData();
-    getContextOfDiscussion();
-    getMentionsData();
-  }, [dataAdvanceFilter, dataDateFilter]);
+    }, 300);
+    return () => clearTimeout(debounceTimer);
+  }, [activeTabMentions, mentionPage.page]);
 
   useEffect(() => {
-    if (isLoadingDone()) {
-      setIsLoading(false);
-      setIsLoadingFirst(false);
-    }
-  }, [topicsData, kolData, keywordData, mentionData, contextData]);
+    const loadingCheckTimer = setInterval(() => {
+      if (isLoadingDone()) {
+        setIsLoading(false);
+        setIsLoadingFirst(false);
+        clearInterval(loadingCheckTimer);
+      }
+    }, 500);
 
-  useEffect(() => {
-    if (activeFilterTab === "All Platform") {
-      setDataReqBody({
-        ...dataReqBody,
-        channels: [],
-      });
-    } else {
-      setDataReqBody({
-        ...dataReqBody,
-        channels: [activeFilterTab.toLowerCase()],
-      });
-    }
-  }, [activeFilterTab]);
-
-  useEffect(() => {
-    getMentionsData();
-  }, [activeTabMentions, mentionPage]);
+    return () => clearInterval(loadingCheckTimer);
+  }, [isLoadingTopic, isLoadingKol, isLoadingKeyword, isLoadingContext, isLoadingMentions]);
 
   const isLoadingDone = () => {
     return (
@@ -237,7 +240,7 @@ const Dashboard = () => {
         : 0,
       influence_score_max: dataAdvanceFilter?.influence_score_max
         ? dataAdvanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(dataAdvanceFilter?.region?.length > 0 && {
         region: dataAdvanceFilter?.region,
       }),
@@ -396,11 +399,16 @@ const Dashboard = () => {
       page: value,
     });
   };
+
   const handleFilterTabChange = (event, newValue) => {
     setActiveFilterTab(newValue);
-    setDataAdvanceFilter({
-      channels: newValue === "all platform" ? [] : [newValue],
-    });
+    // Debounce the filter update
+    setTimeout(() => {
+      setDataAdvanceFilter(prev => ({
+        ...prev,
+        channels: newValue === "all platform" ? [] : [newValue],
+      }));
+    }, 300);
   };
 
   const handleMentionChange = (event, newValue) => {

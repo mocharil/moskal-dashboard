@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import CustomText from "../../components/CustomText";
-import { ChevronLeft, KeyboardArrowDown } from "@mui/icons-material";
+import { ChevronLeft } from "@mui/icons-material";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
 import Input from "@mui/joy/Input";
@@ -12,14 +12,13 @@ import CustomButton from "../../components/CustomButton";
 import { useSelector } from "react-redux";
 import { useDispatch } from "react-redux";
 import { logout } from "../../helpers/redux/slice/loginSlice";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { deleteKeywords } from "../../helpers/redux/slice/keywordSlice";
 import { deleteTopics } from "../../helpers/redux/slice/topicSlice";
 import authService from "../../services/authService";
 import { enqueueSnackbar } from "notistack";
-import { Dialog, MenuItem, Radio } from "@mui/material";
-import Select from "@mui/joy/Select";
-import Option from "@mui/joy/Option";
+import { Dialog, Radio } from "@mui/material";
+
 import { Button } from "@mui/joy";
 
 const AccountSettings = () => {

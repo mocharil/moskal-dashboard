@@ -1,23 +1,22 @@
 import { useState } from "react";
+import { useSnackbar } from "notistack";
 import FormControl from "@mui/joy/FormControl";
 import FormLabel from "@mui/joy/FormLabel";
 import Checkbox from "@mui/joy/Checkbox";
 
 import FormHelperText from "@mui/joy/FormHelperText";
 import Input from "@mui/joy/Input";
-import Button from "@mui/joy/Button";
 
 import CustomText from "../../components/CustomText";
 
 import "./styles/Login.css";
 import CustomButton from "../../components/CustomButton";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 
 import { login } from "../../helpers/redux/slice/loginSlice";
 import authService from "../../services/authService";
 
-import { SnackbarProvider, useSnackbar } from "notistack";
 import {
   addKeywords,
   setActiveKeyword,
@@ -36,9 +35,6 @@ const Login = () => {
 
   const [isLoginError, setIsLoginError] = useState(false);
   const [isButtonLoginLoading, setIsButtonLoginLoading] = useState(false);
-
-  // const [isEmailLoginError, setIsEmailLoginError] = useState(false);
-  // const [isPasswordLoginError, setIsPasswordLoginError] = useState(false);
 
   const [nameRegister, setNameRegister] = useState("");
   const [emailRegister, setEmailRegister] = useState("");
@@ -74,8 +70,25 @@ const Login = () => {
     try {
       setIsButtonLoginLoading(true);
       const data = await authService.login(emailLogin, passwordLogin);
-      console.log(data);
+      console.log("Login API response:", data);
+      
+      // Check if user object exists
+      if (!data.user) {
+        console.error("User object is missing in the API response:", data);
+      enqueueSnackbar("Login failed: Invalid API response format", { variant: "error" });
+        setIsButtonLoginLoading(false);
+        return;
+      }
+      
       const { access_token, refresh_token, token_type, user } = data;
+      
+      // Verify user object has required properties
+      if (!user.name || !user.email || !user.id) {
+        console.error("User object is missing required properties:", user);
+      enqueueSnackbar("Login failed: Missing user information", { variant: "error" });
+        setIsButtonLoginLoading(false);
+        return;
+      }
 
       // Example: store in Redux (or local state)
       dispatch(
@@ -89,9 +102,7 @@ const Login = () => {
           expiresInDays: isRememberChecked ? 30 : 1,
         })
       );
-      enqueueSnackbar("Login Success", {
-        variant: "success",
-      });
+      enqueueSnackbar("Login Success", { variant: "success" });
       setIsButtonLoginLoading(false);
       checkProject();
     } catch (error) {
@@ -100,18 +111,12 @@ const Login = () => {
       console.log("error detail", errorDetail);
 
       if (errorDetail === "Incorrect email or password") {
-        enqueueSnackbar("Email or password is incorrect.", {
-          variant: "error",
-        });
+        enqueueSnackbar("Email or password is incorrect.", { variant: "error" });
         setIsLoginError(true);
       } else if (errorDetail === "Please verify your email first") {
-        enqueueSnackbar("Please verify your email before logging in.", {
-          variant: "error",
-        });
+        enqueueSnackbar("Please verify your email before logging in.", { variant: "error" });
       } else {
-        enqueueSnackbar("Something went wrong. Please try again.", {
-          variant: "error",
-        });
+        enqueueSnackbar("Something went wrong. Please try again.", { variant: "error" });
         console.error("Login failed:", error);
       }
       setIsButtonLoginLoading(false);
@@ -170,9 +175,7 @@ const Login = () => {
         passwordRegister
       );
       console.log("Register success:", data);
-      enqueueSnackbar("Login Success", {
-        variant: "success",
-      });
+      enqueueSnackbar("Login Success", { variant: "success" });
       setIsButtonRegisterLoading(false);
       handleChangeToLogin();
     } catch (error) {
@@ -185,13 +188,9 @@ const Login = () => {
         const firstError = res.data.detail[0];
         const message = firstError?.msg || "Validation failed.";
 
-        enqueueSnackbar(message, {
-          variant: "error",
-        });
+        enqueueSnackbar(message, { variant: "error" });
       } else {
-        enqueueSnackbar("Something went wrong. Please try again.", {
-          variant: "error",
-        });
+        enqueueSnackbar("Something went wrong. Please try again.", { variant: "error" });
         console.error("Register error:", error);
       }
       setIsButtonRegisterLoading(false);

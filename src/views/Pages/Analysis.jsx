@@ -2,11 +2,11 @@ import Paper from "@mui/material/Paper";
 import React, { useState, useEffect } from "react";
 import IconButton from "@mui/material/IconButton";
 import SearchIcon from "@mui/icons-material/Search";
-import { Autocomplete, TextField, Chip, Tooltip } from "@mui/material";
+import { Tooltip } from "@mui/material";
 import InputBase from "@mui/material/InputBase";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
-import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
 import FilterAltIcon from "@mui/icons-material/FilterAlt";
 import Checkbox from "@mui/joy/Checkbox";
@@ -18,7 +18,6 @@ import OverviewComponent from "./components/OverviewComponent";
 import KeywordComponent from "./components/KeywordComponent";
 import ContextComponent from "./components/ContextComponent";
 import MentionsByCategoryComponent from "./components/MentionsByCategoryComponent";
-import SentimentComponent from "./components/SentimentComponent";
 import SentimentByCategory from "./components/SentimentByCategoryComponent";
 import PopularEmojis from "./components/PopularEmojis";
 import MostShareOfVoiceComponent from "./components/MostShareOfVoiceComponent";
@@ -49,7 +48,7 @@ import { useSelector } from "react-redux";
 import LoadingUI from "./components/LoadingUI";
 import NoDataUI from "./components/NoDataUI";
 import { enqueueSnackbar } from "notistack";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDidUpdateEffect } from "../../helpers/loadState";
 
 const Analysis = () => {
@@ -274,7 +273,7 @@ const Analysis = () => {
         : 0,
       influence_score_max: dataAdvanceFilter?.influence_score_max
         ? dataAdvanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(dataAdvanceFilter?.region?.length > 0 && {
         region: dataAdvanceFilter?.region,
       }),

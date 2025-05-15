@@ -1,6 +1,6 @@
 import { Autocomplete, TextField, Chip, Box, Fade } from "@mui/material";
 import React, { useState, useEffect } from "react";
-import Button from "@mui/joy/Button";
+
 import MenuItem from "@mui/material/MenuItem";
 import FormControl from "@mui/material/FormControl";
 import Select from "@mui/material/Select";
@@ -8,14 +8,14 @@ import Select from "@mui/material/Select";
 import "./styles/Onboard.css";
 import CustomText from "../../components/CustomText";
 import CustomButton from "../../components/CustomButton";
-import { useNavigate } from "react-router";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import {
   addKeywords,
   setActiveKeyword,
 } from "../../helpers/redux/slice/keywordSlice";
 import { getProjects, postOnboarding, getKeywordSuggestions } from "../../services/projectService";
-import { SnackbarProvider, useSnackbar } from "notistack";
+import { useSnackbar } from "notistack";
 
 const Onboard = () => {
   const dispatch = useDispatch();

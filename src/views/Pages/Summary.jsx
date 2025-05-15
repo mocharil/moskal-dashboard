@@ -2,12 +2,10 @@ import React, { useState, useEffect } from "react";
 import CustomText from "../../components/CustomText";
 import { HelpOutline } from "@mui/icons-material";
 import Tooltip from "@mui/joy/Tooltip";
-import Tabs from "@mui/joy/Tabs";
-import TabList from "@mui/joy/TabList";
-import Tab, { tabClasses } from "@mui/joy/Tab";
+
 import CustomButton from "../../components/CustomButton";
 import CalendarTodayIcon from "@mui/icons-material/CalendarToday";
-import ContextComponent from "./components/ContextComponent";
+
 import KolComponent from "./components/KolComponent";
 import MentionComponent from "./components/MentionComponent";
 import CustomContentBox from "../../components/CustomContentBox";
@@ -28,7 +26,7 @@ import { getAnalysisOverview } from "../../services/analysisService";
 import LoadingUI from "./components/LoadingUI";
 import NoDataUI from "./components/NoDataUI";
 import { enqueueSnackbar } from "notistack";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 import { useDidUpdateEffect } from "../../helpers/loadState";
 
 const Summary = () => {
@@ -145,7 +143,7 @@ const Summary = () => {
         : 0,
       influence_score_max: dataAdvanceFilter?.influence_score_max
         ? dataAdvanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(dataAdvanceFilter?.region?.length > 0 && {
         region: dataAdvanceFilter?.region,
       }),
@@ -425,7 +423,7 @@ const Summary = () => {
             <div className="summary-content-flex-two">
               <div className="summary-content-flex-vertical">
                 <CustomContentBox
-                  title="Top mentions"
+                  title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Top mentions</span>}
                   seeAll="See All Mentions"
                   activeTab={activeTabMentions}
                   tabList={tabListMention}

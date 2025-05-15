@@ -15,13 +15,12 @@ import { getKolOverview } from "../../services/kolService";
 import { formatNumber } from "../../helpers/utils";
 import DialogDateFilter from "./components/DialogDateFilter";
 import DialogFilter from "./components/DialogFilter";
-import EmptyState from "./components/EmptyState";
-import LoadingState from "./components/LoadingState";
+
 import { useSelector } from "react-redux";
 import LoadingUI from "./components/LoadingUI";
 import { enqueueSnackbar } from "notistack";
 import NoDataUI from "./components/NoDataUI";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import { Pagination } from "@mui/material";
 import { useDidUpdateEffect } from "../../helpers/loadState";
 
@@ -112,7 +111,7 @@ const Kol = () => {
         : 0,
       influence_score_max: dataAdvanceFilter?.influence_score_max
         ? dataAdvanceFilter?.influence_score_max
-        : 10,
+        : 1000,
       ...(dataAdvanceFilter?.region?.length > 0 && {
         region: dataAdvanceFilter?.region,
       }),

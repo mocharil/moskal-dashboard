@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import CustomText from "../../../components/CustomText";
 import { ArrowOutward } from "@mui/icons-material";
-import { useNavigate, useParams } from "react-router";
+import { useNavigate, useParams } from "react-router-dom";
 
 import "./styles/TopicsComponent.css";
 import { formatNumber } from "../../../helpers/utils";

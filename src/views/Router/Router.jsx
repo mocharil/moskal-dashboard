@@ -1,5 +1,5 @@
 import React from "react";
-import { createBrowserRouter, RouterProvider, Navigate } from "react-router";
+import { createBrowserRouter, RouterProvider, Navigate } from "react-router-dom";
 
 // Importing page components
 import Login from "../Pages/Login";

@@ -52,7 +52,7 @@ const SentimentCheckbox = ({ label, value, selected, onChange, color }) => (
 );
 
 const DialogFilter = (props) => {
-  const [influenceScore, setInfluenceScore] = useState([0, 10]);
+  const [influenceScore, setInfluenceScore] = useState([0, 100]);
   const handleChangeInfluenceScore = (event, newValue) => {
     setInfluenceScore(newValue);
   };

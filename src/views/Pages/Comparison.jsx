@@ -21,7 +21,7 @@ import SentimentByCategory from "./components/SentimentByCategoryComponent";
 import CompareProjects from "./components/CompareProjects";
 import ComparePeriods from "./components/ComparePeriods";
 import CompareTopics from "./components/CompareTopics";
-import { useParams } from "react-router";
+import { useParams } from "react-router-dom";
 import { useDidUpdateEffect } from "../../helpers/loadState";
 
 const Comparison = () => {
