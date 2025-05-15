@@ -7,8 +7,8 @@ WORKDIR /app
 # Copy package.json and package-lock.json
 COPY package.json package-lock.json ./
 
-# Install dependencies
-RUN npm ci
+# Install dependencies with legacy-peer-deps flag as mentioned by user
+RUN npm install --legacy-peer-deps
 
 # Copy the rest of the code
 COPY . .
@@ -26,10 +26,10 @@ WORKDIR /app
 RUN npm install -g serve
 
 # Copy built files from the build stage
-COPY --from=build /app/dist /app
+COPY --from=build /app/dist /app/dist
 
 # Expose the port
 EXPOSE 3000
 
 # Command to run the application
-CMD ["serve", "-s", ".", "-l", "3000"]
+CMD ["serve", "-s", "dist", "-l", "3000"]
