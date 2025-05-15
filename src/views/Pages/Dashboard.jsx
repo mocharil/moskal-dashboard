@@ -678,47 +678,45 @@ const Dashboard = () => {
                       />
                     </CustomContentBox>
                   </div>
-                  <div className="dashboard-content-flex-two">
-                    <CustomContentBox
-                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions</span>}
-                      seeAll
-                      tabList={tabListMentions}
-                      activeTab={activeTabMentions}
-                      handleChange={handleMentionChange}
-                      tooltip="Monitor mentions across platforms to see how your topic is being discussed. Sort by popularity or recency, and track sentiment to capture the public's perception."
-                    >
-                      <>
-                        {mentionData?.map((value, index) => (
-                          <MentionComponent
-                            key={`mention-${index}`}
-                            data={value}
-                            borderBottom
-                            isShowAction
-                          />
-                        ))}
-                        <div className="dashboard-pagination">
-                          <Pagination
-                            count={mentionPage.total_pages}
-                            page={mentionPage.page}
-                            onChange={handleChangeMentionPage}
-                            renderItem={(item) => (
-                              <PaginationItem
-                                components={{
-                                  previous: () => (
-                                    <img src="/chevron-left.svg" alt="Previous" className="pagination-arrow" />
-                                  ),
-                                  next: () => (
-                                    <img src="/chevron-right.svg" alt="Next" className="pagination-arrow" />
-                                  ),
-                                }}
-                                {...item}
-                              />
-                            )}
-                          />
-                        </div>
-                      </>
-                    </CustomContentBox>
-                  </div>
+                  <CustomContentBox
+                    title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions</span>}
+                    seeAll
+                    tabList={tabListMentions}
+                    activeTab={activeTabMentions}
+                    handleChange={handleMentionChange}
+                    tooltip="Monitor mentions across platforms to see how your topic is being discussed. Sort by popularity or recency, and track sentiment to capture the public's perception."
+                  >
+                    <>
+                      {mentionData?.map((value, index) => (
+                        <MentionComponent
+                          key={`mention-${index}`}
+                          data={value}
+                          borderBottom
+                          isShowAction
+                        />
+                      ))}
+                      <div className="dashboard-pagination">
+                        <Pagination
+                          count={mentionPage.total_pages}
+                          page={mentionPage.page}
+                          onChange={handleChangeMentionPage}
+                          renderItem={(item) => (
+                            <PaginationItem
+                              components={{
+                                previous: () => (
+                                  <img src="/chevron-left.svg" alt="Previous" className="pagination-arrow" />
+                                ),
+                                next: () => (
+                                  <img src="/chevron-right.svg" alt="Next" className="pagination-arrow" />
+                                ),
+                              }}
+                              {...item}
+                            />
+                          )}
+                        />
+                      </div>
+                    </>
+                  </CustomContentBox>
                 </div>
               </>
             )}

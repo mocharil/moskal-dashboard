@@ -278,14 +278,28 @@ const MentionComponent = (props) => {
             <div className="mention-component-bullet"></div>
             {data.channel !== "news" ? (
               <>
-                <CustomText size="2xls" color="b500" inline>
-                  {formatNumber(data.user_followers)} followers
-                </CustomText>
-                <div className="mention-component-bullet"></div>
-                <CustomText size="2xls" color="b500" inline>
-                  {formatNumber(data.views)} views
-                </CustomText>
-                <div className="mention-component-bullet"></div>
+                {data.user_followers ? (
+                  <>
+                    <CustomText size="2xls" color="b500" inline>
+                      {formatNumber(data.user_followers)} followers
+                    </CustomText>
+                    <div className="mention-component-bullet"></div>
+                  </>
+                ) : data.user_connections ? (
+                  <>
+                    <CustomText size="2xls" color="b500" inline>
+                      {formatNumber(data.user_connections)} connections
+                    </CustomText>
+                    <div className="mention-component-bullet"></div>
+                  </>
+                ) : data.subscriber ? (
+                  <>
+                    <CustomText size="2xls" color="b500" inline>
+                      {formatNumber(data.subscriber)} subscribers
+                    </CustomText>
+                    <div className="mention-component-bullet"></div>
+                  </>
+                ) : null}
               </>
             ) : (
               <></>
