@@ -1,3 +1,4 @@
+
 import Input from "@mui/joy/Input";
 import { Autocomplete, TextField, Chip } from "@mui/material";
 import InputAdornment from "@mui/material/InputAdornment";
@@ -515,11 +516,11 @@ const Dashboard = () => {
                     onChange={(e) => setSearchBoxValue(e.target.value)}
                   />
                   <IconButton sx={{ p: "10px" }} aria-label="menu">
-                    <Tooltip title="Tooltip" placement="top">
-                      <HelpOutline
-                        sx={{ color: "#A4A7AE", width: "15px" }}
-                      ></HelpOutline>
-                    </Tooltip>
+                  <Tooltip title="Tooltip" placement="top">
+                    <HelpOutline
+                      sx={{ color: "#A4A7AE", width: "15px" }}
+                    ></HelpOutline>
+                  </Tooltip>
                   </IconButton>
                 </Paper>
                 <CustomButton
@@ -617,9 +618,10 @@ const Dashboard = () => {
             ) : (
               <>
                 <div className="dashboard-data-container">
+                  
                   <div className="dashboard-content-flex-two">
                     <CustomContentBox
-                      title="Topics to watch 🔥"
+                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Topics to watch 🔥</span>}
                       seeAll="See all Topics"
                       handleSeeAll={handleRedirectTopics}
                       tabList={tabListTopic}
@@ -627,6 +629,7 @@ const Dashboard = () => {
                       activeTab={activeListTopic}
                       tooltip="Explore trending topics and sentiment shifts over time. Use the date filter to adjust he analysis range and uncover insights into public conversations."
                     >
+                      
                       {filterTopicsData?.map((value, index) => (
                         <TopicsComponent
                           key={`topics-${index}`}
@@ -636,7 +639,7 @@ const Dashboard = () => {
                       ))}
                     </CustomContentBox>
                     <CustomContentBox
-                      title="KOL to Watch"
+                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>KOL to Watch</span>}
                       seeAll="See all KOL"
                       handleSeeAll={handleRedirectKOL}
                       tabList={tabListKol}
@@ -655,7 +658,7 @@ const Dashboard = () => {
                   </div>
                   <div className="dashboard-content-flex-two">
                     <CustomContentBox
-                      title="Keywords Trends"
+                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Keywords Trends</span>}
                       tabList={tabListKeyword}
                       handleChange={handleChangeKeywords}
                       activeTab={activeTabKeyword}
@@ -667,7 +670,7 @@ const Dashboard = () => {
                       />
                     </CustomContentBox>
                     <CustomContentBox
-                      title="Context of discussion"
+                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Context of discussion</span>}
                       tabList={tabListContext}
                       activeTab={activeTabContext}
                       handleChange={handleChangeContext}
@@ -681,7 +684,7 @@ const Dashboard = () => {
                   </div>
                   <div className="dashboard-content-flex-two">
                     <CustomContentBox
-                      title="Mentions"
+                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions</span>}
                       seeAll
                       tabList={tabListMentions}
                       activeTab={activeTabMentions}

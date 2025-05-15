@@ -2,3 +2,13 @@
   width: 100%;
   text-align: center;
 }
+
+.keyword-chart-container {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+
+.keyword-chart-container > div {
+  width: 100% !important;
+}

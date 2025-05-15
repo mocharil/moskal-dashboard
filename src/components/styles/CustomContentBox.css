@@ -19,16 +19,12 @@
   align-items: center;
 }
 
-.dashboard-content-flex-two {
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-}
-
 .custom-content-header-text {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 16px;
+  width: 15px; /* Changed from 15px to auto to allow text to flow horizontally */
+  flex-direction: row; /* Explicitly set to row to ensure horizontal layout */
 }
 
 .custom-content-children {

@@ -23,6 +23,43 @@
   flex-direction: column;
   gap: 24px;
 }
+
+.dashboard-content-flex-two {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+/* Make sure both components in a row maintain equal width */
+.dashboard-content-flex-two > * {
+  flex: 1;
+  min-width: 0; /* Prevent flex items from overflowing */
+  width: 50%; /* Ensure equal width */
+  max-width: 50%; /* Prevent expanding beyond 50% */
+}
+
+/* Ensure the content inside each box respects the container width */
+.dashboard-content-flex-two .custom-content-children {
+  width: 100%;
+  overflow: hidden;
+}
+
+/* Make sure SVG elements in charts are responsive */
+.dashboard-content-flex-two svg {
+  width: 100%;
+  height: auto;
+}
+
+@media (max-width: 768px) {
+  .dashboard-content-flex-two {
+    flex-direction: column;
+  }
+  
+  .dashboard-content-flex-two > * {
+    width: 100%;
+    max-width: 100%;
+  }
+}
 .dashboard-pagination {
   display: flex;
   justify-content: flex-end;
@@ -64,5 +101,8 @@
   gap: 24px;
 }
 .dashboard-loading-icon {
-  width: 112px;
+  width: 80px !important;
+  height: 80px !important;
+  max-width: 80px !important;
+  max-height: 80px !important;
 }

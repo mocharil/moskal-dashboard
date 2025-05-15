@@ -110,8 +110,8 @@ const Sidebar = () => {
     try {
       const project = await getProjects();
       const projectData = [
-        ...project.accessible_projects,
         ...project.owned_projects,
+        ...project.accessible_projects
       ];
       if (
         project.accessible_projects.length > 0 ||

@@ -1,0 +1,19 @@
+.context-component-container {
+  width: 100%;
+  height: 400px;
+  text-align: center;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.context-svg {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 400px;
+}
+
+/* Make sure the word cloud container maintains its size */
+.context-component-container > div {
+  width: 100% !important;
+}

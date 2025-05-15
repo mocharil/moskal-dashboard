@@ -15,7 +15,7 @@ function CustomContentBox(props) {
   const [selectedDays, setSelectedDays] = useState("Last 30 days");
 
   return (
-    <div className="custom-content-box-container">
+    <div className="custom-content-box-container" style={{ minWidth: 0 }}>
       <div className="custom-content-header-container">
         <CustomText
           size="lgs"
@@ -32,7 +32,7 @@ function CustomContentBox(props) {
               sx={{ maxWidth: "300px" }}
             >
               <HelpOutline
-                sx={{ color: "#A4A7AE", width: "15px" }}
+                sx={{ color: "#A4A7AE", width: "15px", height: "15px" }}
               ></HelpOutline>
             </Tooltip>
           )}

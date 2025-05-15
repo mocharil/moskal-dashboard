@@ -27,7 +27,7 @@ const ContextComponent = (props) => {
     const maxMentions = Math.max(
       ...filteredData.map((item) => item.total_mentions)
     );
-    const maxSize = 50;
+    const maxSize = 40; // Reduced from 50 to make words smaller
 
     const mapped = filteredData.map((item) => ({
       text: item.hashtag,
@@ -103,7 +103,7 @@ const ContextComponent = (props) => {
     return (
       <div
         ref={containerRef}
-        style={{ width: "100%", height: "400px", textAlign: "center" }}
+        className="context-component-container"
       ></div>
     );
   }
@@ -111,9 +111,9 @@ const ContextComponent = (props) => {
   return (
     <div
       ref={containerRef}
-      style={{ width: "100%", height: "400px", textAlign: "center" }}
+      className="context-component-container"
     >
-      <svg ref={svgRef}></svg>
+      <svg ref={svgRef} className="context-svg"></svg>
       <style>
         {`
           .d3-tip {

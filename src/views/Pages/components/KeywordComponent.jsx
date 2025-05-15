@@ -102,7 +102,7 @@ const KeywordComponent = (props) => {
             Hover on the cart to see detail
           </CustomText>
         </div>
-        <div>
+        <div className="keyword-chart-container">
           <ReactApexChart
             options={options}
             series={
@@ -110,6 +110,7 @@ const KeywordComponent = (props) => {
             }
             type="line"
             height={350}
+            width="100%"
           />
         </div>
       </div>

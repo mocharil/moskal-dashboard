@@ -12,10 +12,11 @@
   flex: 1;
 }
 .mention-component-icon {
-  width: 48px;
-  height: 48px;
+  width: 36px;
+  height: 36px;
   background-color: black;
   border-radius: 50%;
+  object-fit: cover;
 }
 .mention-component-header {
   display: flex;

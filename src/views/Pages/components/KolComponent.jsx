@@ -62,7 +62,7 @@ const KolComponent = (props) => {
             )}
             <div className="kol-component-chip-normal">
               {data.user_category}
-              <ExpandMore sx={{ width: 12, height: 12, color: "#717680" }} />
+              {/* <ExpandMore sx={{ width: 1, height: 1, color: "#717680" }} /> */}
             </div>
           </div>
           <div className="kol-component-detail">

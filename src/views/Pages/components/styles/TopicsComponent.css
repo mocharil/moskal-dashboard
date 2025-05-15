@@ -70,7 +70,8 @@
   );
 }
 .topics-component-bubble {
-  width: 12px;
+  width: 14px;
+  height: 14px;
   filter: invert(36%) sepia(1%) saturate(4159%) hue-rotate(194deg)
     brightness(91%) contrast(92%);
 }

@@ -25,21 +25,21 @@ const MentionComponent = (props) => {
       return (
         <div className="mention-component-chip-negative">
           Negative
-          <ExpandMore sx={{ width: 12, height: 12, color: "#F04438" }} />
+          {/* <ExpandMore sx={{ width: 12, height: 12, color: "#F04438" }} /> */}
         </div>
       );
     } else if (data.sentiment === "positive") {
       return (
         <div className="mention-component-chip-positive">
           Positive
-          <ExpandMore sx={{ width: 12, height: 12, color: "#17B26A" }} />
+          {/* <ExpandMore sx={{ width: 12, height: 12, color: "#17B26A" }} /> */}
         </div>
       );
     } else {
       return (
         <div className="mention-component-chip-neutral">
           Neutral
-          <ExpandMore sx={{ width: 12, height: 12, color: "#717680" }} />
+          {/* <ExpandMore sx={{ width: 1, height: 1, color: "#717680" }} /> */}
         </div>
       );
     }
