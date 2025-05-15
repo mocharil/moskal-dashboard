@@ -1,0 +1,42 @@
+.trending-hashtag-component-table {
+  width: 100%;
+}
+.trending-hashtag-component-table-header th {
+  border-bottom: 1px solid #e9eaeb;
+  padding: 24px 0px;
+}
+.trending-hashtag-component-icon {
+  width: 32px;
+  height: 32px;
+  background-color: black;
+  border-radius: 50%;
+}
+.trending-hashtag-component-profile-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.trending-hashtag-component-row td {
+  padding: 24px 0px;
+  border-bottom: 1px solid #e9eaeb;
+  text-align: left;
+}
+.trending-hashtag-component-profile-name-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left !important;
+}
+.trending-hashtag-component-mentions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 4px;
+}
+.trending-hashtag-component-table-header-text {
+  text-align: right;
+}
+.trending-hashtag-component-influence-score-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}

@@ -1,0 +1,101 @@
+.dialog-filter-container {
+  display: flex;
+  flex-direction: column;
+  width: 728px;
+  padding: 24px;
+  gap: 32px;
+}
+.dialog-filter-channels-container {
+  display: flex;
+}
+
+.dialog-filter-channels-inner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.dialog-filter-chip-black {
+  color: #414651;
+  border: 1px solid #e9eaeb;
+  background-color: #fafafa;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-chip-purple {
+  color: #5925dc;
+  border: 1px solid #d9d6fe;
+  background-color: #f4f3ff;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-chip-red {
+  color: #c11574;
+  border: 1px solid #fcceee;
+  background-color: #fdf2fa;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-chip-blue {
+  color: #175cd3;
+  border: 1px solid #b2ddff;
+  background-color: #eff8ff;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-chip-green {
+  color: #067647;
+  border: 1px solid #abefc6;
+  background-color: #ecfdf3;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-chip-orange {
+  color: #b93815;
+  border: 1px solid #f9dbaf;
+  background-color: #fef6ee;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-chip-navy {
+  color: #363f72;
+  border: 1px solid #d5d9eb;
+  background-color: #f8f9fc;
+  font-weight: 500;
+  font-size: 14px;
+  padding: 2px 10px;
+  border-radius: 999px;
+}
+
+.dialog-filter-sentiment-checkbox-container {
+  display: flex;
+  justify-content: space-between;
+}
+
+.dialog-filer-split {
+  display: flex;
+  justify-content: space-between;
+}
+.dialog-filter-button-container {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}

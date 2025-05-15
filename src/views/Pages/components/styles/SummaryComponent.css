@@ -1,0 +1,12 @@
+.summary-component-text-container {
+  display: flex;
+  justify-content: space-between;
+  padding: 32px 0px;
+}
+
+.summary-component-text-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}

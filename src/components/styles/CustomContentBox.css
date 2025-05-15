@@ -1,0 +1,36 @@
+.custom-content-box-container {
+  border: 1px solid #e9eaeb;
+  border-radius: 8px;
+  padding: 24px;
+  width: 100%;
+  height: fit-content;
+  flex: 1;
+}
+
+.custom-content-header-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.custom-content-selection-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.dashboard-content-flex-two {
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.custom-content-header-text {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.custom-content-children {
+  width: 100%;
+}

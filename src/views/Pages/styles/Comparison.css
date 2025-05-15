@@ -1,0 +1,197 @@
+.compare-filter-main {
+  padding: 16px 32px 0px;
+}
+.comparison-compare-projects-filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 32px 16px;
+  border-bottom: 1px solid #e9eaeb;
+}
+.comparison-compare-project-left-filter {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.comparison-compare-projects-content-container {
+  padding: 16px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+.comparison-compare-projects-header {
+  width: 100%;
+  border: 1px solid #e9eaeb;
+  padding: 16px 24px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-radius: 8px;
+}
+.comparison-compare-projects-filter-icon {
+  width: 20px;
+}
+.comparison-compare-projects-header-right {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.comparison-compare-projects-header-title {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+.comparison-compare-projects-header-title-dot {
+  width: 12px;
+  height: 12px;
+  background-color: #2e90fa;
+  border-radius: 50%;
+}
+
+.comparison-compare-projects-header-title-empty {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+.comparison-compare-projects-box {
+  width: 100%;
+  border: 1px solid #e9eaeb;
+  padding: 24px;
+  border-radius: 8px;
+}
+.comparison-compare-projects-box-kol {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 24px;
+}
+.comparison-compare-projects-box-create-new {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.comparison-compare-projects-create-new-content {
+  display: flex;
+  gap: 24px;
+}
+.comparison-compare-projects-create-new-icon {
+  width: 112px;
+}
+
+.comparison-compare-projects-create-new-text {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.comparison-compare-projects-overview-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: 16px;
+}
+.comparison-compare-projects-overview-export {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.comparison-compare-projects-overview-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: none;
+  text-align: left;
+}
+.comparison-compare-projects-overview-table thead tr th {
+  padding: 12px 8px;
+}
+.comparison-compare-projects-overview-table tbody tr td {
+  padding: 12px 8px;
+}
+.comparison-compare-projects-overview-table tbody tr:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+.comparison-compare-projects-box-issues {
+  display: flex;
+  width: 100%;
+  justify-content: space-between;
+  gap: 24px;
+}
+.comparison-compare-topics-header {
+  width: 100%;
+  border: 1px solid #e9eaeb;
+  padding: 16px 24px;
+  border-radius: 8px;
+}
+.comparison-compare-topics-header-title-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.comparison-compare-project-overview-table-head {
+  position: relative;
+}
+.comparison-compare-project-overview-table-head::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 95%;
+  background-color: var(--after-bg, #1e90ff);
+  border-radius: 2px;
+}
+.comparison-compare-project-header-text-compare {
+  position: relative;
+  padding-bottom: 8px;
+}
+
+.comparison-compare-project-header-text-compare::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 4px;
+  width: 95%;
+  background-color: var(--after-bg, #1e90ff);
+  border-radius: 2px;
+}
+.compare-filter-loader {
+  width: 100%;
+  height: 40px;
+}
+.compare-filter-loader-main {
+  width: 100%;
+  height: 40px;
+  margin-bottom: 16px;
+}
+.compare-first-loader {
+  width: 100%;
+  height: 76px;
+  margin-bottom: 24px;
+}
+
+.compare-second-loader {
+  width: 100%;
+  height: 76px;
+  margin-bottom: 24px;
+}
+
+.compare-third-loader {
+  width: 100%;
+  height: 636px;
+  margin-bottom: 24px;
+}
+.compare-topic-list-topic-item {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+.comparison-compare-region-box {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* Two columns */
+  gap: 1rem;
+}

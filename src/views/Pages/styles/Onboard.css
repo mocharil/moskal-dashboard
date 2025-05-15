@@ -1,0 +1,54 @@
+.onboard-container {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+}
+
+.onboard-left-container {
+  width: 40%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 32px;
+  height: 100vh;
+}
+.onboard-moskal-icon {
+  width: 127px;
+}
+
+.onboard-form-container {
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+  padding: 32px;
+}
+
+.onboard-form-inner-container {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.onboard-loading-icon {
+  width: 112px;
+}
+
+.onboard-loading-container {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  padding: 32px;
+  align-items: center;
+  text-align: center;
+}
+
+.onboard-right-container {
+  width: 60%;
+  background-color: #eff4ff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.onboard-image {
+  width: 384px;
+}

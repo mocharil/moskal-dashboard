@@ -1,0 +1,165 @@
+.kol-header-container {
+  padding: 16px 32px;
+  border-bottom: 1px solid #e9eaeb;
+}
+.kol-header-filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.kol-header-right {
+  display: flex;
+  gap: 16px;
+}
+.kol-main {
+  padding: 16px 32px;
+  width: 100%;
+}
+.kol-container {
+  border: 1px solid #e9eaeb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.kol-table-container {
+  border-collapse: collapse;
+  border: none;
+  width: 100%;
+}
+.kol-table-header-container {
+  background-color: #fafafa;
+  text-align: center;
+}
+
+.kol-table-header-container tr th {
+  font-weight: 400;
+  padding: 13px 24px;
+  border-bottom: 1px solid #e9eaeb !important;
+  text-wrap: nowrap;
+}
+.kol-body-container tr td {
+  padding: 34px 24px;
+  border-bottom: 1px solid #e9eaeb !important;
+  text-align: center;
+}
+.kol-table-header-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  justify-content: center;
+}
+.kol-table-header-sentiment {
+  text-align: left;
+}
+.kol-body-container tr td span {
+  text-wrap: wrap;
+}
+.kol-topic {
+  width: 20%;
+  text-wrap: wrap;
+}
+.kol-description {
+  width: 25%;
+  text-wrap: wrap;
+}
+
+.topics-table-component-right-flex-align {
+  display: flex;
+  align-items: center;
+}
+
+.topics-table-component-right-icon {
+  width: 20px !important;
+  color: "#0047AB !important";
+}
+
+.kol-share-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.kol-share-chart-container {
+  width: 70%;
+  height: 8px;
+  background-color: #e9eaeb;
+  border-radius: 99999px;
+}
+
+.kol-share-chart {
+  background-color: #6941c6;
+  border-radius: 99999px;
+  height: 8px;
+  min-width: 1%;
+}
+
+.kol-profile-name-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+.kol-profile-name-icon {
+  width: 32px;
+  height: 32px;
+  background-color: black;
+  border-radius: 50%;
+}
+.kol-profile-name-multi-chip {
+  display: flex;
+  gap: 8px;
+}
+.kol-flex-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.kol-trash-icon {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+  filter: invert(71%) sepia(8%) saturate(204%) hue-rotate(184deg)
+    brightness(93%) contrast(93%);
+}
+.kol-sentiment {
+  width: 150px;
+}
+
+.kol-sentiment-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+.kol-sentiment-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+}
+.kol-sentiment-dot-green {
+  background-color: #079455;
+}
+
+.kol-sentiment-dot-red {
+  background-color: #d92d20;
+}
+
+.kol-sentiment-dot-grey {
+  background-color: #e9eaeb;
+}
+.kol-loader-top {
+  width: 100%;
+  height: 40px;
+  margin-top: 8px;
+  border-radius: 8px;
+}
+
+.kol-loader-content {
+  width: 100%;
+  height: 1888px;
+  margin-top: 8px;
+  border-radius: 8px;
+}
+.kol-empty-loading-container {
+  width: 100%;
+  height: 692px;
+}

@@ -1,0 +1,24 @@
+.overview-component-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(250px, 1fr)
+  ); /* Responsive grid */
+  gap: 16px;
+  padding: 24px 16px;
+}
+
+.overview-component-card {
+  background: white;
+  border-radius: 8px;
+  padding: 16px;
+  border: 1px solid #e9eaeb;
+  display: flex;
+  flex-direction: column;
+}
+.overview-component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}

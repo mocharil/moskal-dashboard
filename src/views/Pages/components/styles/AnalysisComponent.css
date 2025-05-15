@@ -1,0 +1,25 @@
+.analysis-component-container {
+  display: flex;
+  flex-direction: column;
+}
+.analysis-component-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 32px 0px;
+}
+.analysis-component-item-left {
+  display: flex;
+  gap: 16px;
+}
+.analysis-component-item-text {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.analysis-component-icon {
+  filter: invert(54%) sepia(12%) saturate(317%) hue-rotate(182deg)
+    brightness(82%) contrast(83%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

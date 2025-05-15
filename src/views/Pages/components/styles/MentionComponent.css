@@ -1,0 +1,111 @@
+.mention-component-container {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  padding: 24px 0px;
+}
+
+.mention-component-border-bottom {
+  border-bottom: 1px solid #d5d7da;
+}
+.mention-component-right-container {
+  flex: 1;
+}
+.mention-component-icon {
+  width: 48px;
+  height: 48px;
+  background-color: black;
+  border-radius: 50%;
+}
+.mention-component-header {
+  display: flex;
+  justify-content: space-between;
+}
+
+.mention-component-chip-negative {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  border: 1px solid #fecdca;
+  background-color: #fef3f2;
+  color: #b42318;
+}
+
+.mention-component-chip-positive {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  border: 1px solid #abefc6;
+  background-color: #ecfdf3;
+  color: #067647;
+}
+
+.mention-component-chip-neutral {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-weight: 500;
+  font-size: 14px;
+  display: flex;
+  gap: 4px;
+  align-items: center;
+  border: 1px solid #e9eaeb;
+  background-color: #fafafa;
+  color: #414651;
+}
+
+.mention-component-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0px;
+}
+.mention-component-desc {
+  margin: 16px 0px;
+}
+
+.mention-component-bullet {
+  width: 2px;
+  height: 2px;
+  background-color: #d5d7da;
+}
+
+.mention-component-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.mention-component-footer-right {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+}
+.mention-component-right-flex-align {
+  display: flex;
+  align-items: center;
+}
+.mention-component-right-icon-blue {
+  width: 20px !important;
+  color: "#0047AB !important";
+}
+.mention-component-right-icon-black {
+  width: 20px !important;
+  color: "#717680 !important";
+}
+.mentions-small-icon {
+  width: 16px;
+  filter: invert(49%) sepia(12%) saturate(297%) hue-rotate(182deg)
+    brightness(91%) contrast(88%);
+}
+
+.mention-text-container {
+  overflow-wrap: break-word;
+  word-break: break-word;
+}

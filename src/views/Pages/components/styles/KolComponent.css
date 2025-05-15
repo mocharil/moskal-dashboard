@@ -1,0 +1,77 @@
+.kol-component-container {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  padding: 16px 0px 24px;
+}
+
+.kol-component-border-bottom {
+  border-bottom: 1px solid #d5d7da;
+}
+.kol-component-icon {
+  width: 48px;
+  height: 48px;
+  /* background-color: black; */
+  border-radius: 50%;
+}
+.kol-component-right-container {
+  flex: 1;
+}
+
+.kol-component-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+.kol-component-right-icon {
+  width: 20px !important;
+  color: "#0047AB !important";
+}
+.kol-component-right-flex-align {
+  display: flex;
+  align-items: center;
+}
+.kol-component-chip-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.kol-component-chip-negative-driver {
+  border: 1px solid #fecdca;
+  border-radius: 6px;
+  padding: 2px 6px;
+  color: #b42318;
+  background-color: #fef3f2;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.kol-component-chip-normal {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 2px 8px;
+  border: 1px solid #e9eaeb;
+  background-color: #fafafa;
+  border-radius: 99999px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.kol-component-detail {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 8px 0px;
+}
+.kol-component-bullet {
+  width: 2px;
+  height: 2px;
+  background-color: #d5d7da;
+}
+.kol-component-hyperlink {
+  margin: 4px 0px;
+}

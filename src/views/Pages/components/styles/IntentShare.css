@@ -1,0 +1,25 @@
+.intent-share-container {
+  width: 100%;
+  height: 380px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.intent-share-label-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.intent-share-label-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.intent-share-label-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}

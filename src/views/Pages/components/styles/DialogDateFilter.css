@@ -1,0 +1,11 @@
+.dialog-date-filter-container {
+  width: 728px;
+  padding: 24px 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.dialog-date-filter-button-container {
+  display: flex;
+  justify-content: space-between;
+}

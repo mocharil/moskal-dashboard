@@ -1,0 +1,21 @@
+.topic-detail-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.topic-detail-header-container {
+  margin-bottom: 24px;
+}
+.topic-detail-flex-2 {
+  display: flex;
+  justify-content: space-between;
+  gap: 24px;
+  margin-bottom: 24px;
+}
+.topic-detail-flex-vertical {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  flex: 1;
+}

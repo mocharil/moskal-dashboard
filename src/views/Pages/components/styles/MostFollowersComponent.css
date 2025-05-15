@@ -1,0 +1,60 @@
+.most-followers-component-table {
+  width: 100%;
+}
+.most-followers-component-table-header th {
+  border-bottom: 1px solid #e9eaeb;
+  padding: 24px 0px;
+}
+.most-followers-component-icon {
+  width: 32px;
+  height: 32px;
+  background-color: black;
+  border-radius: 50%;
+}
+.most-followers-component-profile-name {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.most-followers-component-row td {
+  padding: 24px 0px;
+  border-bottom: 1px solid #e9eaeb;
+  text-align: center;
+}
+.most-followers-component-profile-name-text {
+  display: flex;
+  flex-direction: column;
+  text-align: left;
+}
+.most-followers-component-mentions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.most-followers-component-table-header-text {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+}
+.most-followers-component-influence-score-container {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.most-followers-component-influence-score-outer-bar {
+  width: 77px;
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #e9eaeb;
+}
+.most-followers-component-influence-score-inner-bar {
+  height: 8px;
+  border-radius: 9999px;
+  background-color: #42307d;
+}
+.most-followers-center-influence {
+  display: flex;
+  justify-content: center;
+}

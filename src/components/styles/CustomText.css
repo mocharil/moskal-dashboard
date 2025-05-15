@@ -1,0 +1,272 @@
+.font-2xl {
+  font-size: 72px;
+  line-height: 90px;
+  letter-spacing: -2%;
+}
+
+.font-xl {
+  font-size: 60px;
+  line-height: 72px;
+  letter-spacing: -2%;
+}
+
+.font-lg {
+  font-size: 48px;
+  line-height: 60px;
+  letter-spacing: -2%;
+}
+
+.font-md {
+  font-size: 36px;
+  line-height: 44px;
+  letter-spacing: -2%;
+}
+
+.font-sm {
+  font-size: 30px;
+  line-height: 38px;
+}
+
+.font-s {
+  font-size: 24px;
+  line-height: 32px;
+}
+
+.font-mds {
+  font-size: 20px;
+  line-height: 30px;
+}
+
+.font-lgs {
+  font-size: 18px;
+  line-height: 28px;
+}
+
+.font-xls {
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.font-2xls {
+  font-size: 14px;
+  line-height: 20px;
+}
+
+.font-sss {
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.font-xsss {
+  font-size: 10px;
+  line-height: 12px;
+}
+
+.font-xlsss {
+  font-size: 8px;
+  line-height: 12px;
+}
+
+.font-bold {
+  font-weight: 700;
+}
+
+.font-semibold {
+  font-weight: 600;
+}
+
+.font-medium {
+  font-weight: 500;
+}
+.font-normal {
+  font-weight: 400;
+}
+
+.font-b25 {
+  color: #fdfdfd;
+}
+.font-b50 {
+  color: #fafafa;
+}
+.font-b100 {
+  color: #f5f5f5;
+}
+.font-b200 {
+  color: #e9eaeb;
+}
+.font-b300 {
+  color: #d5d7da;
+}
+.font-b400 {
+  color: #a4a7ae;
+}
+.font-b500 {
+  color: #717680;
+}
+.font-b600 {
+  color: #535862;
+}
+.font-b700 {
+  color: #414651;
+}
+.font-b800 {
+  color: #252b37;
+}
+.font-b900 {
+  color: #181d27;
+}
+.font-b950 {
+  color: #0a0d12;
+}
+
+.font-brand {
+  color: #0047ab;
+}
+
+.font-r25 {
+  color: #fffbfa;
+}
+
+.font-r50 {
+  color: #fef3f2;
+}
+
+.font-r100 {
+  color: #fee4e2;
+}
+
+.font-r200 {
+  color: #fecdca;
+}
+
+.font-r300 {
+  color: #fda29b;
+}
+
+.font-r400 {
+  color: #f97066;
+}
+
+.font-r500 {
+  color: #f04438;
+}
+
+.font-r600 {
+  color: #d92d20;
+}
+
+.font-r700 {
+  color: #b42318;
+}
+
+.font-r800 {
+  color: #912018;
+}
+
+.font-r900 {
+  color: #7a271a;
+}
+
+.font-r950 {
+  color: #55160c;
+}
+
+.font-y25 {
+  color: #fffcf5;
+}
+
+.font-y50 {
+  color: #fffaeb;
+}
+
+.font-y100 {
+  color: #fef0c7;
+}
+
+.font-y200 {
+  color: #fedf89;
+}
+
+.font-y300 {
+  color: #fec84b;
+}
+
+.font-y400 {
+  color: #fdb022;
+}
+
+.font-y500 {
+  color: #f79009;
+}
+
+.font-y600 {
+  color: #dc6803;
+}
+
+.font-y700 {
+  color: #b54708;
+}
+
+.font-y800 {
+  color: #93370d;
+}
+
+.font-y900 {
+  color: #7a2e0e;
+}
+
+.font-y950 {
+  color: #4e1d09;
+}
+
+.font-g25 {
+  color: #f6fef9;
+}
+
+.font-g50 {
+  color: #ecfdf3;
+}
+
+.font-g100 {
+  color: #dcfae6;
+}
+
+.font-g200 {
+  color: #abefc6;
+}
+
+.font-g300 {
+  color: #75e0a7;
+}
+
+.font-g400 {
+  color: #47cd89;
+}
+
+.font-g500 {
+  color: #17b26a;
+}
+
+.font-g600 {
+  color: #079455;
+}
+
+.font-g700 {
+  color: #067647;
+}
+
+.font-g800 {
+  color: #085d3a;
+}
+
+.font-g900 {
+  color: #074d31;
+}
+
+.font-g950 {
+  color: #053321;
+}
+
+.font-pointer {
+  cursor: pointer;
+}

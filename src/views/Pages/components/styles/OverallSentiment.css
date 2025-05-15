@@ -1,0 +1,70 @@
+.overall-sentiment-upper-container {
+  display: flex;
+  margin: 16px 0px 32px;
+}
+.overall-sentiment-label-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  width: 151px;
+}
+.overall-sentiment-label-bullet {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.overall-sentiment-label-item {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.overall-sentiment-box-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 16px;
+}
+.overall-sentiment-box-smile {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background-color: #ecfdf3;
+  padding: 15px 12px;
+  border-radius: 8px;
+}
+
+.overall-sentiment-box-frown {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  background-color: #fef3f2;
+  padding: 15px 12px;
+  border-radius: 8px;
+}
+.overall-sentiment-frown-icon {
+  width: 17px;
+  filter: invert(29%) sepia(82%) saturate(1636%) hue-rotate(346deg)
+    brightness(90%) contrast(96%);
+}
+.overall-sentiment-top-regions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.overall-sentiment-region-container {
+  display: flex;
+  gap: 16px;
+  margin-top: 16px;
+}
+.overall-sentiment-region {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  border: 1px solid #e9eaeb;
+  border-radius: 8px;
+  padding: 12px;
+  /* min-width: 165px; */
+}

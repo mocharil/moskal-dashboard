@@ -1,0 +1,38 @@
+.login-page {
+  background-color: #fafafa;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin: 0;
+}
+
+.login-container {
+  background-color: #ffffff;
+  padding: 32px 40px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 25px;
+  width: 440px;
+}
+
+.login-moskal-icon {
+  margin-bottom: 7px;
+}
+.login-remember {
+  display: flex;
+  justify-content: space-between;
+}
+
+.login-remember-checkbox-container {
+  display: flex;
+  gap: 8px;
+}
+
+.login-bottom-text-container {
+  display: flex;
+  justify-content: center;
+  gap: 4px;
+}
