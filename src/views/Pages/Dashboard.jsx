@@ -331,6 +331,13 @@ const Dashboard = () => {
       setIsLoadingMentions(false);
       if (resp.data) {
         setMentionData(resp.data);
+        if (resp.pagination) {
+          setMentionPage(prevState => ({
+            ...prevState,
+            total_pages: resp.pagination.total_pages,
+            total_posts: resp.pagination.total_posts
+          }));
+        }
       }
     } catch (error) {
       enqueueSnackbar("Network Error", {
@@ -690,7 +697,7 @@ const Dashboard = () => {
                         ))}
                         <div className="dashboard-pagination">
                           <Pagination
-                            count={20}
+                            count={mentionPage.total_pages}
                             page={mentionPage.page}
                             onChange={handleChangeMentionPage}
                           />

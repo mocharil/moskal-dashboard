@@ -101,7 +101,7 @@ const PresenceScoreComponent = ({ data }) => {
           </svg>
         </div>
         <CustomText color="b500" bold="medium" size="sss">
-          Your Presence Score is higher than 71% of other topics
+          Your Presence Score
         </CustomText>
       </div>
       <div className="presence-score-component-right">

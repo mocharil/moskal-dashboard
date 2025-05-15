@@ -735,13 +735,13 @@ const Analysis = () => {
             </CustomContentBox>
             <div className="analysis-content-split">
               <CustomContentBox
-                title="Keyword Trends"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Keyword Trends</span>}
                 tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
               >
                 <KeywordComponent data={keywordData} type="Mentions & Reach" />
               </CustomContentBox>
               <CustomContentBox
-                title="Mentions by categories"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions by categories</span>}
                 tooltip="See where conversations happen. Understand which platforms drive the most discussions and focus efforts where they matter most."
               >
                 <MentionsByCategoryComponent data={mentionByCategoryData} />
@@ -755,14 +755,14 @@ const Analysis = () => {
                 <KeywordComponent data={keywordData} />
               </CustomContentBox>
               <CustomContentBox
-                title="Sentiment by categories"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Sentiment by categories</span>}
                 tooltip="Break down sentiment by platform. See whether conversations lean positive, neutral, or negative, and how sentiment varies across channels."
               >
                 <SentimentByCategory data={sentimentByCategoryData} />
               </CustomContentBox>
             </div>
             <div className="analysis-content-split">
-              <CustomContentBox title="Most share of voice">
+              <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Most share of voice</span>}>
                 <>
                   <MostShareOfVoiceComponent data={mostShareVoiceData} />
                   <div className="dashboard-pagination">
@@ -774,7 +774,7 @@ const Analysis = () => {
                   </div>
                 </>
               </CustomContentBox>
-              <CustomContentBox title="Most followers">
+              <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Most followers</span>}>
                 <>
                   <MostFollowersComponent data={mostFollowersData} />
                   <div className="dashboard-pagination">
@@ -789,20 +789,20 @@ const Analysis = () => {
             </div>
             <div className="analysis-content-split">
               <CustomContentBox
-                title="Presence score"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Presence score</span>}
                 tooltip="Track your visibility across platforms with a presence score. This score reflects how much public attention a topic or figure is generating."
               >
                 <PresenceScoreComponent data={presenceScoreData} />
               </CustomContentBox>
               <CustomContentBox
-                title="Sentiment breakdown"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Sentiment breakdown</span>}
                 tooltip="Understand sentiment distribution at a glance. See the proportion of positive, negative, and neutral mentions to assess overall public sentiment."
               >
                 <SentimentBreakdownComponent data={sentimentBreakdownData} />
               </CustomContentBox>
             </div>
             <div className="analysis-content-split">
-              <CustomContentBox title="Trending hashtags">
+              <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Trending hashtags</span>}>
                 <>
                   <TrendingHashtagComponent data={hashTagData} />
                   <div className="dashboard-pagination">
@@ -814,7 +814,7 @@ const Analysis = () => {
                   </div>
                 </>
               </CustomContentBox>
-              <CustomContentBox title="Trending links">
+              <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Trending links</span>}>
                 <>
                   <TrendingLinkComponent data={linkData} />
                   <div className="dashboard-pagination">
@@ -829,13 +829,13 @@ const Analysis = () => {
             </div>
             <div className="analysis-content-split">
               <CustomContentBox
-                title="Context of discussion"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Context of discussion</span>}
                 tooltip="Explore the context of discussions with a word cloud. See the most mentioned keywords, their frequency, and the sentiment behind each term to understand public narratives."
               >
                 <ContextComponent data={contextOfDiscussionData} />
               </CustomContentBox>
               <CustomContentBox
-                title="Most popular emojis"
+                title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Most popular emojis</span>}
                 tooltip="Decode emotional responses with emoji insights. See the most-used emojis to understand how audiences express themselves around your topic."
               >
                 <PopularEmojis data={mostPopularEmojisData} />
