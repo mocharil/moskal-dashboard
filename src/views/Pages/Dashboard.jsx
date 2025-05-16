@@ -207,10 +207,13 @@ const Dashboard = () => {
 
   const generateReqBody = () => {
     const data = {
-      keywords:
-        dataAdvanceFilter?.keywords?.length > 0
-          ? dataAdvanceFilter?.keywords
-          : activeKeywords.keywords,
+      // Keep existing keywords from activeKeywords
+      keywords: activeKeywords.keywords, 
+      // Add search_keyword from the search bar input
+      search_keyword: 
+        dataAdvanceFilter.keywords !== undefined && dataAdvanceFilter.keywords.length > 0
+          ? dataAdvanceFilter.keywords
+          : [], // Default to empty array if no search input
       search_exact_phrases: dataAdvanceFilter?.search_exact_phrases
         ? dataAdvanceFilter?.search_exact_phrases
         : false,
@@ -463,9 +466,13 @@ const Dashboard = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    const processedKeywords = (searchBoxValue || "") // Ensure searchBoxValue is not null/undefined
+      .split(",")
+      .map((k) => k.trim())
+      .filter((k) => k); // Filter out empty strings after trimming
     setDataAdvanceFilter({
       ...dataAdvanceFilter,
-      keywords: searchBoxValue.split(","),
+      keywords: processedKeywords, // This now correctly stores the search bar input
       search_exact_phrases: isSearchExactPhraseChecked,
     });
   };

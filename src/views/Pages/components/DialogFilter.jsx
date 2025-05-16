@@ -160,7 +160,10 @@ const DialogFilter = (props) => {
 
   const getTransformData = () => {
     const filterData = {
-      ...(phrase.trim() !== "" && { keywords: phrase.split(",") }),
+      // The 'keywords' parameter will be added by the parent component or service
+      // that has access to the keywords from the /projects API.
+      // This component is only responsible for 'search_keyword' and 'search_exact_phrases'.
+      ...(phrase.trim() !== "" && { search_keyword: phrase.split(',').map(k => k.trim()).filter(k => k !== "") }),
       ...((domain.trim() !== "" || author.trim() !== "") && {
         domain: [
           ...(domain.trim() !== "" ? domain.split(",") : []),
