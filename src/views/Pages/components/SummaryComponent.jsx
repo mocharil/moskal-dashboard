@@ -5,7 +5,7 @@ const SummaryComponent = (props) => {
   const data = props?.data;
   const getFormattedDisplay = (value) => {
     if (value > 0) {
-      return `+${formatNumber(value)}`;
+      return `${formatNumber(value)}`;
     } else {
       return `${formatNumber(value)}`;
     }
