@@ -384,3 +384,15 @@
 .sidebar-collapsed .collapsed-submenu {
   overflow: visible !important;
 }
+
+/* Hide scrollbars for MUI List components within the sidebar, often used in Accordions/Menus */
+/* This assumes the MuiList-root is the element that scrolls. */
+/* If another element scrolls, its selector should be used instead/additionally. */
+.sidebar-container .MuiList-root {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
+}
+
+.sidebar-container .MuiList-root::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
+}

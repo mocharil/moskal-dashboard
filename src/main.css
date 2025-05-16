@@ -36,11 +36,14 @@ body::-webkit-scrollbar {
   flex: 1;
   overflow-y: scroll;
   min-width: 1248px;
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
-.router-main-container {
-  /* padding: 16px 32px; */
+.router-main-container::-webkit-scrollbar {
+  display: none; /* Chrome, Safari, Opera */
 }
+
 
 .skeleton-loader {
   animation: skeleton-loading 1s linear infinite alternate;

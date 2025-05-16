@@ -5,6 +5,7 @@
   width: 100%;
   height: fit-content;
   flex: 1;
+  overflow-y: hidden; /* Added to prevent vertical scrollbar */
 }
 
 .custom-content-header-container {

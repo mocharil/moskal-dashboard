@@ -30,7 +30,7 @@ const Kol = () => {
   const [activeTab, setActiveTab] = useState("All");
   const [imageErrors, setImageErrors] = useState({});
 
-  const [kolData, setKolData] = useState([]);
+  const [allKolData, setAllKolData] = useState([]); // Renamed from kolData
   const [filterData, setFilterData] = useState([]);
 
   const [firstLoading, setFirstLoading] = useState(true);
@@ -42,11 +42,12 @@ const Kol = () => {
   const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
   const userData = useSelector((state) => state.user);
 
-  const [dataReqBody, setDataReqBody] = useState({
-    owner_id: `${activeKeywords.owner_id}`,
-    project_name: activeKeywords.name,
-    channels: [],
-  });
+  // dataReqBody seems unused, can be reviewed for removal later if confirmed
+  // const [dataReqBody, setDataReqBody] = useState({
+  //   owner_id: `${activeKeywords.owner_id}`,
+  //   project_name: activeKeywords.name,
+  //   channels: [],
+  // });
 
   const [dataAdvanceFilter, setDataAdvanceFilter] = useState({});
   const [dataDateFilter, setDataDateFilter] = useState({});
@@ -54,8 +55,8 @@ const Kol = () => {
   const [kolPage, setKolPage] = useState({
     page: 1,
     page_size: 10,
-    total_pages: 1000,
-    total_posts: 10000,
+    total_pages: 1, // Initial value, will be updated
+    total_posts: 0, // Initial value, will be updated
   });
 
   useEffect(() => {
@@ -65,16 +66,76 @@ const Kol = () => {
   useDidUpdateEffect(() => {
     setFirstLoading(true);
     setIsLoading(true);
+    setKolPage((prev) => ({ ...prev, page: 1 })); // Reset page on keyword change
     getKolData();
   }, [keyword]);
 
+  // Effect to fetch data when filters change
   useDidUpdateEffect(() => {
     setIsLoading(true);
+    setKolPage((prev) => ({ ...prev, page: 1 })); // Reset page on filter change
     getKolData();
-  }, [dataAdvanceFilter, dataDateFilter, kolPage]);
+  }, [dataAdvanceFilter, dataDateFilter]);
+
+  // Effect to update displayed data when allKolData, page, or activeTab changes
+  useEffect(() => {
+    if (allKolData.length === 0 && !firstLoading) {
+      setFilterData([]);
+      setKolPage((prev) => ({
+        ...prev,
+        total_pages: 1,
+        total_posts: 0,
+      }));
+      return;
+    }
+
+    let currentTabFullData = [];
+    if (activeTab === "All") {
+      currentTabFullData = [...allKolData];
+    } else if (activeTab === "Individual") {
+      currentTabFullData = [...allKolData].filter(
+        (value) =>
+          value.user_category !== "News Account" &&
+          value.user_category !== "Influencer"
+      );
+    } else {
+      // Brand/Media
+      currentTabFullData = [...allKolData].filter(
+        (value) =>
+          value.user_category === "News Account" ||
+          value.user_category === "Influencer"
+      );
+    }
+
+    const newTotalPosts = currentTabFullData.length;
+    const newTotalPages = Math.max(
+      1,
+      Math.ceil(newTotalPosts / kolPage.page_size)
+    );
+
+    // Ensure current page is not out of bounds
+    const currentPage = Math.min(kolPage.page, newTotalPages);
+
+    setKolPage((prev) => ({
+      ...prev,
+      page: currentPage, // Adjust page if it's out of new bounds
+      total_pages: newTotalPages,
+      total_posts: newTotalPosts,
+    }));
+
+    const startIndex = (currentPage - 1) * kolPage.page_size;
+    const endIndex = startIndex + kolPage.page_size;
+    setFilterData(currentTabFullData.slice(startIndex, endIndex));
+    setIsLoading(false); // Moved here to ensure loading state is managed after data processing
+  }, [allKolData, kolPage.page, activeTab, kolPage.page_size, firstLoading]);
+
 
   const handleResetFilter = () => {
-    handleOnChangeTab(() => {}, "All");
+    // Reset filters to default if necessary, then:
+    setDataAdvanceFilter({});
+    setDataDateFilter({});
+    setActiveTab("All"); // This will trigger the useEffect above to reset page and re-filter
+    // getKolData will be called by the effect for dataAdvanceFilter/dataDateFilter
   };
   const generateReqBody = () => {
     const data = {
@@ -123,46 +184,42 @@ const Kol = () => {
       }),
       owner_id: `${activeKeywords.owner_id}`,
       project_name: activeKeywords.name,
+      // Removed page and page_size for frontend pagination
     };
     return data;
   };
+
   const getKolData = async () => {
+    setIsLoading(true); // Set loading true at the beginning of fetch
     try {
-      const resp = await getKolOverview({
-        ...generateReqBody(),
-        page: kolPage.page,
-        page_size: 10,
-      });
-      setKolData(resp);
-      setFilterData(resp);
+      const resp = await getKolOverview(generateReqBody());
+      // Assuming resp is an array of all KOLs
+      setAllKolData(resp || []); // Store all data
+      // setIsLoading(false); // Moved to the useEffect that processes allKolData
       setFirstLoading(false);
-      setIsLoading(false);
     } catch (error) {
       enqueueSnackbar("Network Error", {
         variant: "error",
       });
       console.log(error);
+      setAllKolData([]); // Set to empty array on error
       setFirstLoading(false);
-      setIsLoading(false);
+      setIsLoading(false); // Ensure loading is false on error
     }
   };
 
   const handleChangeKolPage = (event, value) => {
-    setKolPage({
-      ...kolPage,
+    setKolPage((prev) => ({
+      ...prev,
       page: value,
-    });
+    }));
+    // The useEffect listening to kolPage.page will handle data slicing
   };
 
   const handleOnChangeTab = (event, newValue) => {
     setActiveTab(newValue);
-    if (newValue === "All") {
-      sortByAll();
-    } else if (newValue === "Individual") {
-      sortByIndividual();
-    } else {
-      sortByBrandMedia();
-    }
+    setKolPage((prev) => ({ ...prev, page: 1 })); // Reset to page 1
+    // The useEffect listening to activeTab will handle re-filtering and slicing
   };
 
   const handleOpenDayDialog = () => {
@@ -180,41 +237,16 @@ const Kol = () => {
     setIsDialogFilterOpen(false);
   };
 
-  const sortByIndividual = () => {
-    const newData = [...kolData].filter(
-      (value) =>
-        value.user_category !== "News Account" &&
-        value.user_category !== "Influencer"
-    );
-    setFilterData(newData);
-  };
-
-  const sortByBrandMedia = () => {
-    const newData = [...kolData].filter(
-      (value) =>
-        value.user_category === "News Account" ||
-        value.user_category === "Influencer"
-    );
-    setFilterData(newData);
-  };
-
-  const sortByAll = () => {
-    setFilterData(kolData);
-  };
+  // sortByIndividual, sortByBrandMedia, sortByAll are no longer needed
+  // as their logic is in the useEffect hook.
 
   const handleChangeAdvanceFilter = (reqBody) => {
-    setKolPage({
-      ...kolPage,
-      page: 1,
-    });
+    // Page reset is handled by the useDidUpdateEffect for [dataAdvanceFilter, dataDateFilter]
     setDataAdvanceFilter(reqBody);
   };
 
   const handleChangeDateFilter = (reqBody) => {
-    setKolPage({
-      ...kolPage,
-      page: 1,
-    });
+    // Page reset is handled by the useDidUpdateEffect for [dataAdvanceFilter, dataDateFilter]
     setDataDateFilter(reqBody);
   };
 
