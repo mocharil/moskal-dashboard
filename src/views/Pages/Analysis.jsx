@@ -240,51 +240,55 @@ const Analysis = () => {
 
   const generateReqBody = () => {
     const data = {
-      keywords:
+      keywords: activeKeywords.keywords, // Base project keywords from Redux
+
+      // Keywords from Analysis page's search bar or its DialogFilter
+      search_keyword:
         dataAdvanceFilter?.keywords?.length > 0
-          ? dataAdvanceFilter?.keywords
-          : activeKeywords.keywords,
+          ? dataAdvanceFilter.keywords
+          : [], // Default to empty array if no specific search on Analysis page
+
       search_exact_phrases: dataAdvanceFilter?.search_exact_phrases
-        ? dataAdvanceFilter?.search_exact_phrases
+        ? dataAdvanceFilter.search_exact_phrases // From Analysis page's checkbox or its DialogFilter
         : false,
-      case_sensitive: false,
+      case_sensitive: false, // Standard default
       sentiment:
         dataAdvanceFilter?.sentiment?.length > 0
-          ? dataAdvanceFilter?.sentiment
-          : ["positive", "negative", "neutral"],
+          ? dataAdvanceFilter.sentiment
+          : ["positive", "negative", "neutral"], // Default sentiments
       ...(dataDateFilter?.date_filter && {
-        date_filter: dataDateFilter?.date_filter,
+        date_filter: dataDateFilter.date_filter,
       }),
       ...(dataDateFilter?.custom_start_date && {
-        custom_start_date: dataDateFilter?.custom_start_date,
+        custom_start_date: dataDateFilter.custom_start_date,
       }),
       ...(dataDateFilter?.custom_end_date && {
-        custom_end_date: dataDateFilter?.custom_end_date,
+        custom_end_date: dataDateFilter.custom_end_date,
       }),
       channels:
         dataAdvanceFilter?.channels?.length > 0
-          ? dataAdvanceFilter?.channels
-          : [],
+          ? dataAdvanceFilter.channels
+          : [], // Default to all channels if not specified
       importance: dataAdvanceFilter?.importance
-        ? dataAdvanceFilter?.importance
-        : "all mentions",
+        ? dataAdvanceFilter.importance
+        : "all mentions", // Default importance
       influence_score_min: dataAdvanceFilter?.influence_score_min
-        ? dataAdvanceFilter?.influence_score_min
-        : 0,
+        ? dataAdvanceFilter.influence_score_min
+        : 0, // Default min influence score
       influence_score_max: dataAdvanceFilter?.influence_score_max
-        ? dataAdvanceFilter?.influence_score_max
-        : 1000,
+        ? dataAdvanceFilter.influence_score_max
+        : 1000, // Default max influence score
       ...(dataAdvanceFilter?.region?.length > 0 && {
-        region: dataAdvanceFilter?.region,
+        region: dataAdvanceFilter.region,
       }),
       ...(dataAdvanceFilter?.language?.length > 0 && {
-        language: dataAdvanceFilter?.language,
+        language: dataAdvanceFilter.language,
       }),
       ...(dataAdvanceFilter?.domain?.length > 0 && {
-        domain: dataAdvanceFilter?.domain,
+        domain: dataAdvanceFilter.domain,
       }),
-      owner_id: `${activeKeywords.owner_id}`,
-      project_name: activeKeywords.name,
+      owner_id: `${activeKeywords.owner_id}`, // Owner ID from Redux
+      project_name: activeKeywords.name, // Project name from Redux
     };
     return data;
   };

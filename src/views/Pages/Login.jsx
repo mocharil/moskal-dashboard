@@ -125,44 +125,66 @@ const Login = () => {
 
   const checkProject = async () => {
     try {
-      const project = await getProjects();
-      console.log(project.owned_projects);
-      console.log(project.accessible_projects);
-      if (
-        project.accessible_projects.length > 0 ||
-        project.owned_projects.length > 0
-      ) {
+      const projectData = await getProjects();
+
+      // Validate the structure of projectData
+      if (!projectData || !Array.isArray(projectData.owned_projects) || !Array.isArray(projectData.accessible_projects)) {
+        console.error("Invalid project data structure from getProjects:", projectData);
+        navigate("/onboard"); // Navigate to onboard or an error page
+        return;
+      }
+
+      // Filter out null, undefined, or non-object entries from project lists
+      const ownedProjects = projectData.owned_projects.filter(p => p && typeof p === 'object');
+      const accessibleProjects = projectData.accessible_projects.filter(p => p && typeof p === 'object');
+
+      if (ownedProjects.length > 0 || accessibleProjects.length > 0) {
+        // Dispatch all valid projects for keyword list
         dispatch(
           addKeywords({
-            keywords: [
-              ...project.accessible_projects,
-              ...project.owned_projects,
-            ],
+            keywords: [...ownedProjects, ...accessibleProjects], // Use filtered and validated projects
             days: 30,
           })
         );
 
-        dispatch(
-          setActiveKeyword({
-            activeKeyword: project.owned_projects[0]
-              ? project.owned_projects[0]
-              : project.accessible_projects[0],
-            days: 30,
-          })
-        );
-        navigate(
-          `/${
-            project.owned_projects[0]
-              ? project.owned_projects[0].name
-              : project.accessible_projects[0].name
-          }/dashboard`,
-          { replace: true }
-        );
+        let projectToUse = null;
+
+        // Prefer first owned project if it's valid and has a name
+        if (ownedProjects.length > 0 && ownedProjects[0].name) {
+          projectToUse = ownedProjects[0];
+        } 
+        // Else, prefer first accessible project if it's valid and has a name
+        else if (accessibleProjects.length > 0 && accessibleProjects[0].name) {
+          projectToUse = accessibleProjects[0];
+        } 
+        // Fallback: find the first project (owned preferred) that has a name
+        else {
+          projectToUse = [...ownedProjects, ...accessibleProjects].find(p => p && p.name);
+        }
+        
+        if (projectToUse && projectToUse.name) {
+          dispatch(
+            setActiveKeyword({
+              activeKeyword: projectToUse,
+              days: 30,
+            })
+          );
+          navigate(
+            `/${projectToUse.name}/dashboard`,
+            { replace: true }
+          );
+        } else {
+          // No project with a name was found after filtering and checking
+          console.warn("No valid project with a name found for navigation/activation. Navigating to onboard.");
+          navigate("/onboard");
+        }
       } else {
+        // Both project lists are empty after filtering
         navigate("/onboard");
       }
     } catch (error) {
-      console.log(error);
+      console.error("Error in checkProject:", error);
+      navigate("/onboard"); // Fallback navigation on any error
     }
   };
 

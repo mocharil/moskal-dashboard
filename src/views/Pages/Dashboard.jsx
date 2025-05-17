@@ -310,17 +310,38 @@ const Dashboard = () => {
     }
   };
 
-  const getContextOfDiscussion = async () => {
+  const getContextOfDiscussion = async (currentTab) => {
     setIsLoadingContext(true);
     try {
-      const resp = await getContext(generateReqBody());
-      setIsLoadingContext(false);
+      const baseReqBody = generateReqBody();
+      let sentimentForContext;
+
+      // Use the passed currentTab if available (from direct tab click), 
+      // otherwise use the activeTabContext from state (for initial load or global filter changes)
+      const tabToProcess = currentTab || activeTabContext;
+
+      if (tabToProcess === "Positive") {
+        sentimentForContext = ["positive"];
+      } else if (tabToProcess === "Negative") {
+        sentimentForContext = ["negative"];
+      } else { // "All" or any other case
+        // For "All", use the sentiment from advanced filters or default to all three
+        sentimentForContext = baseReqBody.sentiment; 
+      }
+
+      const reqBodyForContext = {
+        ...baseReqBody,
+        sentiment: sentimentForContext,
+      };
+      
+      const resp = await getContext(reqBodyForContext);
       setContextData(resp.data);
     } catch (error) {
       enqueueSnackbar("Network Error", {
         variant: "error",
       });
       console.log(error);
+    } finally {
       setIsLoadingContext(false);
     }
   };
@@ -432,6 +453,8 @@ const Dashboard = () => {
 
   const handleChangeContext = (event, newValue) => {
     setActiveTabContext(newValue);
+    // Fetch context data with the new sentiment filter
+    getContextOfDiscussion(newValue);
   };
 
   const handleOpenDayDialog = () => {
