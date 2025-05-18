@@ -13,6 +13,7 @@ import AccountSettings from "../Pages/AccountSettings";
 import OnBoard from "../Pages/Onboard";
 import Sidebar from "../../components/Sidebar";
 import TopicsDetail from "../Pages/components/TopicsDetail";
+import MoskalAI from "../Pages/MoskalAI"; // Import the new page
 import { useSelector } from "react-redux";
 
 // Auth guard
@@ -89,6 +90,10 @@ const router = createBrowserRouter([
   {
     path: "/:keyword/kol",
     element: <ProtectedRouteSidebar element={<KOL />} />,
+  },
+  {
+    path: "/:keyword/moskal-ai", // Add route for MoskalAI
+    element: <ProtectedRouteSidebar element={<MoskalAI />} />,
   },
   {
     path: "/account-settings",

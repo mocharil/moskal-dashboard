@@ -1,0 +1,524 @@
+.moskal-ai-page-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px); /* Adjust based on your header height if any */
+  background-color: #fff;
+  overflow: hidden; /* To contain chat and input area */
+  position: relative;
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+}
+
+.moskal-ai-content {
+  flex-grow: 1;
+  overflow-y: auto; /* Allows chat to scroll */
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center header when no messages */
+  justify-content: center; /* Center vertically when no interaction */
+  transition: all 0.5s cubic-bezier(0.23, 1, 0.32, 1);
+  scrollbar-width: thin;
+  scrollbar-color: rgba(74, 108, 247, 0.5) rgba(255, 255, 255, 0.1);
+}
+
+.moskal-ai-content::-webkit-scrollbar {
+  width: 6px;
+}
+
+.moskal-ai-content::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+}
+
+.moskal-ai-content::-webkit-scrollbar-thumb {
+  background-color: rgba(74, 108, 247, 0.5);
+  border-radius: 10px;
+}
+
+/* When user has interacted, move content to top */
+.moskal-ai-content.has-interacted {
+  justify-content: flex-start;
+  padding-top: 30px;
+}
+
+.moskal-ai-header {
+  text-align: center;
+  margin-bottom: 30px; /* Add some space before chat starts or input */
+  animation: fadeInDown 0.8s ease-out;
+  max-width: 600px;
+  padding: 30px;
+  transition: all 0.3s ease;
+}
+
+.moskal-ai-header h1 {
+  font-size: 42px;
+  font-weight: bold;
+  color: #4A6CF7;
+  margin-bottom: 15px;
+  animation: fadeInDown 0.8s ease-out;
+}
+
+.moskal-ai-header .sparkle {
+  display: inline-block;
+  animation: sparkleAnimation 1.5s infinite;
+  color: #4A6CF7;
+  font-size: 36px;
+}
+
+.moskal-ai-header p {
+  font-size: 18px;
+  color: #555;
+  margin-bottom: 20px;
+  animation: fadeInUp 0.8s ease-out 0.2s;
+  animation-fill-mode: backwards;
+  line-height: 1.6;
+}
+
+/* Template Questions Styles */
+.template-questions-container {
+  max-width: 800px;
+  width: 100%;
+  margin: 0 auto 40px;
+  animation: fadeInUp 0.8s ease-out 0.4s;
+  animation-fill-mode: backwards;
+}
+
+.template-questions-container h2 {
+  text-align: center;
+  font-size: 24px;
+  color: #333;
+  margin-bottom: 20px;
+  font-weight: 500;
+}
+
+.template-questions-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+  width: 100%;
+}
+
+.template-question-button {
+  background-color: #fff;
+  border: 1px solid #E1E5F2;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: left;
+  font-size: 16px;
+  color: #333;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  position: relative;
+  overflow: hidden;
+  line-height: 1.5;
+}
+
+.template-question-button:hover {
+  border-color: #4A6CF7;
+  box-shadow: 0 4px 15px rgba(74, 108, 247, 0.15);
+  transform: translateY(-2px);
+}
+
+.template-question-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 8px rgba(74, 108, 247, 0.1);
+}
+
+.template-question-button:before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, rgba(74, 108, 247, 0.1) 0%, rgba(255, 255, 255, 0) 100%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.template-question-button:hover:before {
+  opacity: 1;
+}
+
+.moskal-ai-chat-area {
+  width: 100%;
+  max-width: 800px; /* Wider chat area */
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Space between bubbles */
+  padding-bottom: 20px; /* Space for the last bubble before input */
+}
+
+.chat-bubble {
+  padding: 15px 20px;
+  border-radius: 12px;
+  max-width: 75%;
+  word-wrap: break-word;
+  display: flex; /* For icon alignment */
+  align-items: flex-start; /* Align icon with top of text */
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s ease;
+}
+
+.chat-bubble:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.chat-bubble p {
+  margin: 0;
+  line-height: 1.6;
+}
+
+.user-query-bubble {
+  background-color: #4A6CF7;
+  color: white;
+  align-self: flex-end;
+  border-radius: 12px 12px 0 12px;
+  animation: slideInRight 0.4s ease-out;
+}
+
+.ai-response-bubble {
+  background-color: #F5F7FF;
+  color: #333;
+  align-self: flex-start;
+  border-radius: 12px 12px 12px 0;
+  animation: slideInLeft 0.4s ease-out;
+}
+
+.ai-response-bubble .sparkle-icon {
+  font-size: 20px;
+  margin-right: 10px;
+  color: #4A6CF7;
+  animation: sparkleAnimation 1.5s infinite 0.5s;
+  flex-shrink: 0; /* Prevent icon from shrinking */
+}
+
+.chat-bubble-content {
+  flex-grow: 1;
+}
+
+.ai-response-bubble ol {
+  margin-left: 5px;
+  padding-left: 20px;
+}
+
+.ai-response-bubble li {
+  margin-bottom: 10px;
+}
+
+.ai-response-bubble li strong {
+  display: block;
+  margin-bottom: 5px;
+  color: #111;
+  font-size: 1.05em;
+}
+
+.ai-response-bubble .follow-up-question {
+  margin-top: 15px;
+  font-style: italic;
+  color: #555;
+  font-size: 0.9em;
+  padding-top: 10px;
+  border-top: 1px solid #eee;
+}
+
+.chart-container {
+  margin-top: 15px;
+  background-color: #fff;
+  padding: 15px;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+}
+
+.chart-container:hover {
+  box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+}
+
+/* Sentiment list styles */
+.sentiment-list {
+  list-style: none;
+  padding: 0;
+  margin: 15px 0 0 0;
+}
+
+.sentiment-list li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.sentiment-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+/* Typing indicator styles */
+.typing-indicator-bubble {
+  padding: 15px 20px;
+  max-width: 100px;
+}
+
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+}
+
+.typing-indicator span {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: #4A6CF7;
+  border-radius: 50%;
+  opacity: 0.6;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation: typingAnimation 1s infinite 0s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation: typingAnimation 1s infinite 0.2s;
+}
+
+.typing-indicator span:nth-child(3) {
+  animation: typingAnimation 1s infinite 0.4s;
+}
+
+.moskal-ai-input-container {
+  padding: 20px;
+  background-color: #fff;
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+  width: 100%;
+  box-sizing: border-box;
+  z-index: 10;
+  transition: all 0.3s ease;
+}
+
+.moskal-ai-input-area {
+  display: flex;
+  width: 100%;
+  max-width: 800px; /* Match chat area width */
+  margin: 0 auto; /* Center input area */
+  border-radius: 12px;
+  border: 1px solid #E1E5F2;
+  background-color: #fff;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+.moskal-ai-input-area:focus-within {
+  box-shadow: 0 4px 15px rgba(74, 108, 247, 0.15);
+  border-color: #4A6CF7;
+}
+
+.moskal-ai-input-area textarea {
+  flex-grow: 1;
+  border: none;
+  padding: 16px 20px;
+  font-size: 16px;
+  resize: none;
+  min-height: 24px; /* Adjusted height */
+  max-height: 150px; /* Allow some expansion */
+  outline: none;
+  font-family: inherit;
+  background-color: #fff;
+  transition: all 0.2s ease;
+  line-height: 1.5;
+}
+
+.moskal-ai-input-area .send-button {
+  background-color: #4A6CF7;
+  border: none;
+  color: white;
+  padding: 0 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  flex-shrink: 0; /* Prevent button from shrinking */
+}
+
+.moskal-ai-input-area .send-button:hover:not(:disabled) {
+  background-color: #3a5ad6;
+}
+
+.moskal-ai-input-area .send-button.active:hover:not(:disabled) {
+  transform: scale(1.05);
+}
+
+.moskal-ai-input-area .send-button .send-icon {
+  transition: transform 0.3s ease;
+}
+
+.moskal-ai-input-area .send-button.active:hover:not(:disabled) .send-icon {
+  transform: translateX(3px);
+}
+
+.moskal-ai-input-area .send-button.active:active:not(:disabled) .send-icon {
+  transform: translateX(5px) scale(0.95);
+}
+
+.moskal-ai-input-area .send-button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.loader {
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  border-top: 3px solid #fff;
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  animation: spin 1s linear infinite;
+}
+
+.disclaimer {
+  margin-top: 12px; /* Reduced margin */
+  text-align: center; /* Center disclaimer */
+  font-size: 12px;
+  color: #777;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
+  transition: opacity 0.3s ease;
+}
+
+/* Keyframe animations */
+@keyframes fadeInDown {
+  from {
+    opacity: 0;
+    transform: translateY(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes zoomIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes sparkleAnimation {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.7;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-50px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes typingAnimation {
+  0%, 100% {
+    transform: translateY(0);
+    opacity: 0.6;
+  }
+  50% {
+    transform: translateY(-5px);
+    opacity: 1;
+  }
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Media queries for responsiveness */
+@media (max-width: 768px) {
+  .moskal-ai-header {
+    padding: 20px;
+  }
+  
+  .moskal-ai-header h1 {
+    font-size: 32px;
+  }
+  
+  .moskal-ai-header p {
+    font-size: 16px;
+  }
+  
+  .chat-bubble {
+    max-width: 85%;
+  }
+  
+  .template-questions-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .moskal-ai-content {
+    padding: 15px;
+  }
+  
+  .moskal-ai-header {
+    padding: 15px;
+  }
+  
+  .moskal-ai-header h1 {
+    font-size: 28px;
+  }
+  
+  .chat-bubble {
+    max-width: 90%;
+    padding: 12px 15px;
+  }
+  
+  .template-question-button {
+    padding: 12px 15px;
+    font-size: 14px;
+  }
+}

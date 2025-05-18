@@ -314,6 +314,16 @@ const Sidebar = () => {
                     />
                     <span className="tooltiptext">KOL</span>
                   </div>
+                  <div
+                    className={`collapsed-submenu-item tooltip ${isMenuActive(value.name, "moskal-ai") ? 'active' : ''}`}
+                    onClick={() => handleOnSelectAccordion(value.name, "moskal-ai")}
+                  >
+                    <img
+                      className="sidebar-icon-accordion"
+                      src={window.location.origin + "/monitor-04.svg"} /* Placeholder AI icon */
+                    />
+                    <span className="tooltiptext">Moskal AI</span>
+                  </div>
                 </div>
               )}
             </React.Fragment>
@@ -432,6 +442,23 @@ const Sidebar = () => {
                   />
                   <CustomText color="b900" bold="medium" size="sss">
                     KOL
+                  </CustomText>
+                </div>
+                <div
+                  className={`sidebar-accordion-inner-container ${
+                    isMenuActive(value.name, "moskal-ai") &&
+                    "sidebar-accordion-active"
+                  }`}
+                  onClick={() =>
+                    handleOnSelectAccordion(value.name, "moskal-ai")
+                  }
+                >
+                  <img
+                    className="sidebar-icon-accordion"
+                    src={window.location.origin + "/monitor-04.svg"} /* Placeholder AI icon */
+                  />
+                  <CustomText color="b900" bold="medium" size="sss">
+                    Moskal AI
                   </CustomText>
                 </div>
               </AccordionDetails>
