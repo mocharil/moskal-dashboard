@@ -23,7 +23,7 @@ const SummaryComponent = (props) => {
             color={data.total_mentions?.growth_value > 0 ? "g500" : "r500"}
             inline
           >
-            {getFormattedDisplay(data.total_mentions?.growth_display)} (
+            {getFormattedDisplay(data.total_mentions?.growth_value)} (
             {data.total_mentions?.growth_percentage_display})
           </CustomText>
           <CustomText bold="medium" size="sss" color="b500" inline>
@@ -40,7 +40,7 @@ const SummaryComponent = (props) => {
             color={data.total_reach?.growth_value > 0 ? "g500" : "r500"}
             inline
           >
-            {getFormattedDisplay(data.total_reach?.growth_display)} (
+            {getFormattedDisplay(data.total_reach?.growth_value)} (
             {data.total_reach?.growth_percentage_display})
           </CustomText>
           <CustomText bold="medium" size="sss" color="b500" inline>
@@ -62,7 +62,7 @@ const SummaryComponent = (props) => {
             inline
           >
             {getFormattedDisplay(
-              data.total_social_media_interactions?.growth_display
+              data.total_social_media_interactions?.growth_value
             )}{" "}
             ({data.total_social_media_interactions?.growth_percentage_display})
           </CustomText>
