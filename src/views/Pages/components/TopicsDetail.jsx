@@ -90,7 +90,7 @@ const TopicsDetail = () => {
     getOccurrencesData();
     getChannelShareData();
     getIntentEmotionRegionData();
-    getTopicsShareData();
+    getTopicsShareData(); // Restored
     getTextSentiment();
   }, []);
 
@@ -106,7 +106,7 @@ const TopicsDetail = () => {
     isLoadingOccurrences,
     isLoadingChannelShare,
     isLoadingIntentEmotionRegion,
-    isLoadingTopics,
+    isLoadingTopics, // Restored
     isLoadingTextSentiment,
   ]);
 
@@ -118,7 +118,7 @@ const TopicsDetail = () => {
     getOccurrencesData();
     getChannelShareData();
     getIntentEmotionRegionData();
-    getTopicsShareData();
+    getTopicsShareData(); // Restored
     getTextSentiment();
   }, [dataAdvanceFilter, dataDateFilter]);
 
@@ -130,7 +130,7 @@ const TopicsDetail = () => {
       !isLoadingOccurrences &&
       !isLoadingChannelShare &&
       !isLoadingIntentEmotionRegion &&
-      !isLoadingTopics &&
+      !isLoadingTopics && // Restored
       !isLoadingTextSentiment
     );
   };
@@ -229,10 +229,10 @@ const TopicsDetail = () => {
     }
   };
 
-  const getTopicsShareData = async () => {
+  const getTopicsShareData = async () => { // Restored
     setIsLoadingTopics(true);
     try {
-      const resp = await getTopicToWatch(generateReqBody());
+      const resp = await getTopicToWatch(generateReqBody(true)); // Pass true to use activeKeywords.keywords
       if (resp) {
         setListTopicsData(resp);
       }
@@ -316,16 +316,20 @@ const TopicsDetail = () => {
       intentShareData.length === 0 &&
       regionData.length === 0 &&
       channelShareData.length === 0 &&
-      listTopicsData.length === 0
+      listTopicsData.length === 0 // Restored
     );
   };
 
-  const generateReqBody = () => {
+  const generateReqBody = (useActiveKeywordsAsDefault = false) => {
+    const defaultKeywords = useActiveKeywordsAsDefault
+      ? activeKeywords.keywords
+      : [...topicsData.list_issue];
+
     const data = {
       keywords:
         dataAdvanceFilter?.keywords?.length > 0
           ? dataAdvanceFilter?.keywords
-          : activeKeywords.keywords,
+          : defaultKeywords,
       search_exact_phrases: dataAdvanceFilter?.search_exact_phrases
         ? dataAdvanceFilter?.search_exact_phrases
         : false,
@@ -481,7 +485,7 @@ const TopicsDetail = () => {
                       <div className="topic-detail-flex-2">
                         <div className="topic-detail-flex-vertical">
                           <CustomContentBox
-                            title="Top mentions"
+                            title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Top mentions</span>}
                             seeAll="See all mentions"
                             tooltip="Monitor the most impactful mentions driving the conversation. See which posts are gaining traction and influencing sentiment, sorted by engagement and platform reach."
                           >
@@ -500,13 +504,14 @@ const TopicsDetail = () => {
                         </div>
                         <div className="topic-detail-flex-vertical">
                           <CustomContentBox
-                            title="Context of discussion"
+                            title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Context of discussion</span>}
                             tooltip="Explore the context of discussions with a word cloud. See the most mentioned keywords, their frequency, and the sentiment behind each term to understand public narratives."
                           >
                             <ContextComponent data={contextData} />
                           </CustomContentBox>
                           <CustomContentBox
-                            title="KOL to watch"
+                            title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>KOL to watch</span>}
+                            
                             seeAll="See all KOL"
                             handleSeeAll={redirectToKOL}
                             tooltip="Track key opinion leaders (KOLs) driving online conversations. See who's shaping narratives, their influence level, and the topics they're actively discussing."
@@ -529,7 +534,7 @@ const TopicsDetail = () => {
                           <Occurrences data={occurrencesData} />
                         </CustomContentBox>
                         <CustomContentBox
-                          title="Channel share"
+                          title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Channel share</span>}
                           tooltip="See where conversations are happening. Compare platform activity to understand where your topic resonates most and tailor your outreach strategy."
                         >
                           <Channels data={channelShareData} />
@@ -537,13 +542,13 @@ const TopicsDetail = () => {
                       </div>
                       <div className="topic-detail-flex-2">
                         <CustomContentBox
-                          title="Intent Share"
+                          title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Intent Share</span>} 
                           tooltip="Understand why people are talking about this topic. Analyze conversation intent-whether it's informational, advocacy-driven or purely entertaining-to refine your messaging."
                         >
                           <IntentShare data={intentShareData} />
                         </CustomContentBox>
                         <CustomContentBox
-                          title="Emotions share"
+                          title= {<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Emotions share</span>}
                           tooltip="Explore the emotional undertone of conversations. Track emotional distribution to uncover how people feel about he topic, beyond just positive or negative sentiment."
                         >
                           <EmotionShare data={emotionShareData} />
@@ -551,7 +556,7 @@ const TopicsDetail = () => {
                       </div>
                       <div className="topic-detail-flex-2">
                         <CustomContentBox
-                          title="Overall sentiments"
+                          title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Overall sentiments</span>}
                           tooltip="Get a complete view of public sentiment. See the percentage of positive, negative, and neutral mentions, alongside insights into the factors driving each sentiment."
                         >
                           <OverallSentiment
@@ -561,10 +566,47 @@ const TopicsDetail = () => {
                           />
                         </CustomContentBox>
                         <CustomContentBox
-                          title="Topics share"
+                          title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Topics share</span>}
                           tooltip="Analyze topic prominence relative to other discussions. See how much of the conversation your topic captures, helping you gauge its share of public attention."
                         >
-                          <TopicShare data={listTopicsData.slice(0, 9)} />
+                          <TopicShare
+                            data={(() => {
+                              let displayTopics = listTopicsData.slice(0, 9);
+                              const currentTopicUnifiedIssue = topicsData.unified_issue;
+                              const currentTopicInDisplay = displayTopics.find(
+                                (topic) => topic.unified_issue === currentTopicUnifiedIssue
+                              );
+
+                              if (!currentTopicInDisplay && currentTopicUnifiedIssue) {
+                                const currentTopicData = {
+                                  unified_issue: currentTopicUnifiedIssue,
+                                  total_posts: topicsData.total_posts, // Assuming this is the correct value for the current topic's bar
+                                  // Add any other properties TopicShare might expect, if necessary
+                                };
+                                if (displayTopics.length < 9) {
+                                  displayTopics.push(currentTopicData);
+                                } else {
+                                  // Replace the last item if already 9, to make space for current topic
+                                  // Or, if you want to always add it and potentially have 10 items:
+                                  // displayTopics.pop(); // to keep it at 9 before adding
+                                  // displayTopics.push(currentTopicData);
+                                  // For now, let's ensure it's visible, potentially replacing the 9th if not already there
+                                  // A better approach might be to ensure the top X includes current if it's not there.
+                                  // For simplicity, if not in top 9, add it as 10th, or replace 9th if list is full.
+                                  // Let's ensure it's added, making it up to 10 items.
+                                  if (displayTopics.length === 9) { // if it was already 9, and current is not in it
+                                     displayTopics.pop(); // remove last to make space
+                                  }
+                                  displayTopics.push(currentTopicData);
+                                }
+                              }
+                              // Ensure we don't exceed 10 items, prioritizing the current topic
+                              // This logic might need refinement based on exact display rules for >9 items + current
+                              // A simple slice to 10 at the end if it grew beyond.
+                              return displayTopics.slice(0,10);
+                            })()}
+                            currentTopicUnifiedIssue={topicsData.unified_issue}
+                          />
                         </CustomContentBox>
                       </div>
                     </div>

@@ -181,6 +181,12 @@ const Sidebar = () => {
     navigate(`/onboard?from=sidebar`, { replace: true });
   };
 
+  const reportListRoute = () => {
+    setActiveMenu("report-list"); // Set a unique identifier for this menu
+    setActiveKeywordSidebar(""); // Clear active project context
+    navigate(`/report-list`, { replace: true });
+  };
+
   const findKeyword = (keyword) => {
     if (!keyword || !listKeywords) return null;
     
@@ -236,11 +242,12 @@ const Sidebar = () => {
             </>
           )}
         </div>
+
         {/* Project avatars for collapsed sidebar */}
         <div className="project-avatars-container">
           {listKeywords?.map((value, index) => (
             <React.Fragment key={`avatar-fragment-${value.name}-${index}`}>
-              <div 
+              <div
                 key={`avatar-${value.name}-${index}`}
                 className={`project-avatar tooltip ${activeKeywordSidebar === value.name ? 'active' : ''}`}
                 onClick={() => handleOnSelectAccordion(value.name, "dashboard")}
@@ -260,7 +267,7 @@ const Sidebar = () => {
                   >
                     <img
                       className="sidebar-icon-accordion"
-                      src={window.location.origin + "/message-circle-02.svg"}
+                      src={window.location.origin + "/monitor-04.svg"}
                     />
                     <span className="tooltiptext">Dashboard</span>
                   </div>
@@ -324,6 +331,26 @@ const Sidebar = () => {
                     />
                     <span className="tooltiptext">Moskal AI</span>
                   </div>
+                  <div
+                    className={`collapsed-submenu-item tooltip ${isMenuActive(value.name, "mentions") ? 'active' : ''}`}
+                    onClick={() => handleOnSelectAccordion(value.name, "mentions")}
+                  >
+                    <img
+                      className="sidebar-icon-accordion"
+                      src={window.location.origin + "/message-circle-02.svg"} /* Using dashboard icon as placeholder */
+                    />
+                    <span className="tooltiptext">Mentions</span>
+                  </div>
+                  <div 
+                    className={`collapsed-submenu-item tooltip ${isMenuActive(value.name, "generate-report") ? 'active' : ''}`}
+                    onClick={() => handleOnSelectAccordion(value.name, "generate-report")}
+                  >
+                    <img
+                      className="sidebar-icon-accordion"
+                      src={window.location.origin + "/download-01.svg"} 
+                    />
+                    <span className="tooltiptext">Generate Report</span>
+                  </div>
                 </div>
               )}
             </React.Fragment>
@@ -362,7 +389,7 @@ const Sidebar = () => {
                 >
                   <img
                     className="sidebar-icon-accordion"
-                    src={window.location.origin + "/message-circle-02.svg"}
+                    src={window.location.origin + "/monitor-04.svg"}
                   />
                   <CustomText color="b900" bold="medium" size="sss">
                     Dashboard
@@ -459,6 +486,40 @@ const Sidebar = () => {
                   />
                   <CustomText color="b900" bold="medium" size="sss">
                     Moskal AI
+                  </CustomText>
+                </div>
+                <div
+                  className={`sidebar-accordion-inner-container ${
+                    isMenuActive(value.name, "mentions") &&
+                    "sidebar-accordion-active"
+                  }`}
+                  onClick={() =>
+                    handleOnSelectAccordion(value.name, "mentions")
+                  }
+                >
+                  <img
+                    className="sidebar-icon-accordion"
+                    src={window.location.origin + "/message-circle-02.svg"} /* Using dashboard icon as placeholder */
+                  />
+                  <CustomText color="b900" bold="medium" size="sss">
+                    Mentions
+                  </CustomText>
+                </div>
+                <div
+                  className={`sidebar-accordion-inner-container ${
+                    isMenuActive(value.name, "generate-report") &&
+                    "sidebar-accordion-active"
+                  }`}
+                  onClick={() =>
+                    handleOnSelectAccordion(value.name, "generate-report")
+                  }
+                >
+                  <img
+                    className="sidebar-icon-accordion"
+                    src={window.location.origin + "/download-01.svg"} 
+                  />
+                  <CustomText color="b900" bold="medium" size="sss">
+                    Generate Report
                   </CustomText>
                 </div>
               </AccordionDetails>

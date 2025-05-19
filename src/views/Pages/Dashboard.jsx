@@ -713,6 +713,7 @@ const Dashboard = () => {
                       <ContextComponent
                         type={activeTabContext.toLowerCase()}
                         data={contextData}
+                        isLoading={isLoadingContext} // Pass the loading state
                       />
                     </CustomContentBox>
                   </div>
@@ -724,36 +725,44 @@ const Dashboard = () => {
                     handleChange={handleMentionChange}
                     tooltip="Monitor mentions across platforms to see how your topic is being discussed. Sort by popularity or recency, and track sentiment to capture the public's perception."
                   >
-                    <>
-                      {mentionData?.map((value, index) => (
-                        <MentionComponent
-                          key={`mention-${index}`}
-                          data={value}
-                          borderBottom
-                          isShowAction
-                        />
-                      ))}
-                      <div className="dashboard-pagination">
-                        <Pagination
-                          count={mentionPage.total_pages}
-                          page={mentionPage.page}
-                          onChange={handleChangeMentionPage}
-                          renderItem={(item) => (
-                            <PaginationItem
-                              components={{
-                                previous: () => (
-                                  <img src="/chevron-left.svg" alt="Previous" className="pagination-arrow" />
-                                ),
-                                next: () => (
-                                  <img src="/chevron-right.svg" alt="Next" className="pagination-arrow" />
-                                ),
-                              }}
-                              {...item}
-                            />
-                          )}
-                        />
+                    {isLoadingMentions ? (
+                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                        <img src="/loading.svg" alt="Loading mentions..." style={{ width: '50px', height: '50px' }} />
                       </div>
-                    </>
+                    ) : (
+                      <>
+                        {mentionData?.map((value, index) => (
+                          <MentionComponent
+                            key={`mention-${index}`}
+                            data={value}
+                            borderBottom
+                            isShowAction
+                          />
+                        ))}
+                        {mentionData && mentionData.length > 0 && (
+                          <div className="dashboard-pagination">
+                            <Pagination
+                              count={mentionPage.total_pages}
+                              page={mentionPage.page}
+                              onChange={handleChangeMentionPage}
+                              renderItem={(item) => (
+                                <PaginationItem
+                                  components={{
+                                    previous: () => (
+                                      <img src="/chevron-left.svg" alt="Previous" className="pagination-arrow" />
+                                    ),
+                                    next: () => (
+                                      <img src="/chevron-right.svg" alt="Next" className="pagination-arrow" />
+                                    ),
+                                  }}
+                                  {...item}
+                                />
+                              )}
+                            />
+                          </div>
+                        )}
+                      </>
+                    )}
                   </CustomContentBox>
                 </div>
               </>

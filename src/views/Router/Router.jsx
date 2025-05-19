@@ -13,7 +13,12 @@ import AccountSettings from "../Pages/AccountSettings";
 import OnBoard from "../Pages/Onboard";
 import Sidebar from "../../components/Sidebar";
 import TopicsDetail from "../Pages/components/TopicsDetail";
-import MoskalAI from "../Pages/MoskalAI"; // Import the new page
+import MoskalAI from "../Pages/MoskalAI";
+import Mentions from "../Pages/Mentions"; // Import the Mentions page
+// import Reporting from "../Pages/Reporting"; // Import the Reporting page - File doesn't exist
+// import ReportPage from "../Pages/ReportPage"; // Import the new ReportPage - File doesn't exist
+import GenerateReport from "../Pages/GenerateReport"; // Import the new GenerateReport page
+import ReportList from "../Pages/ReportList"; // Import the new ReportList page
 import { useSelector } from "react-redux";
 
 // Auth guard
@@ -92,8 +97,28 @@ const router = createBrowserRouter([
     element: <ProtectedRouteSidebar element={<KOL />} />,
   },
   {
-    path: "/:keyword/moskal-ai", // Add route for MoskalAI
+    path: "/:keyword/moskal-ai",
     element: <ProtectedRouteSidebar element={<MoskalAI />} />,
+  },
+  {
+    path: "/:keyword/mentions",
+    element: <ProtectedRouteSidebar element={<Mentions />} />,
+  },
+  // {
+  //   path: "/:keyword/reporting",
+  //   element: <ProtectedRouteSidebar element={<Reporting />} />,
+  // },
+  // {
+  //   path: "/:keyword/report", // New route for the embedded report
+  //   element: <ProtectedRouteSidebar element={<ReportPage />} />,
+  // },
+  {
+    path: "/:keyword/generate-report", // New route for generating reports
+    element: <ProtectedRouteSidebar element={<GenerateReport />} />,
+  },
+  {
+    path: "/report-list", // New route for listing reports
+    element: <ProtectedRouteSidebar element={<ReportList />} />,
   },
   {
     path: "/account-settings",

@@ -1,11 +1,13 @@
 .custom-content-box-container {
-  border: 1px solid #e9eaeb;
-  border-radius: 8px;
+  border-radius: 12px; /* More rounded corners */
   padding: 24px;
   width: 100%;
   height: fit-content;
   flex: 1;
   overflow-y: hidden; /* Added to prevent vertical scrollbar */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05); /* Subtle shadow */
+  background-color: #ffffff; /* Ensure content box stands out */
+  border: none; /* Remove existing border */
 }
 
 .custom-content-header-container {

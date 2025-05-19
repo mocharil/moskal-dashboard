@@ -1,0 +1,87 @@
+.report-list-container {
+  padding: 20px;
+  max-width: 1200px; /* Allow wider content for table */
+  margin: 20px auto;
+  font-family: 'Arial', sans-serif;
+  background-color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07);
+}
+
+.report-list-container .page-title {
+  text-align: center;
+  margin-bottom: 25px;
+  color: #2c3e50;
+}
+
+.reports-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+  font-size: 0.9rem;
+}
+
+.reports-table th,
+.reports-table td {
+  border: 1px solid #ecf0f1; /* Light grey border */
+  padding: 12px 15px; /* Increased padding for better readability */
+  text-align: left;
+  vertical-align: middle; /* Align content vertically */
+}
+
+.reports-table th {
+  background-color: #f8f9fa; /* Very light grey for header */
+  color: #34495e; /* Darker text for header */
+  font-weight: 600;
+  text-transform: capitalize; /* Capitalize headers */
+}
+
+.reports-table tbody tr:nth-child(even) {
+  background-color: #fdfdfd; /* Slightly off-white for even rows */
+}
+
+.reports-table tbody tr:hover {
+  background-color: #f0f5f9; /* Light blue hover for rows */
+}
+
+.reports-table td {
+  color: #555; /* Standard text color */
+}
+
+.reports-table .download-link {
+  color: #007bff;
+  text-decoration: none;
+  font-weight: 500;
+}
+
+.reports-table .download-link:hover {
+  text-decoration: underline;
+  color: #0056b3;
+}
+
+/* Responsive adjustments if needed */
+@media (max-width: 768px) {
+  .reports-table {
+    display: block;
+    overflow-x: auto; /* Allow horizontal scrolling on small screens */
+  }
+  .reports-table th,
+  .reports-table td {
+    white-space: nowrap; /* Prevent text wrapping in cells on small screens */
+  }
+}
+
+.view-summary-btn {
+  padding: 6px 12px;
+  font-size: 0.85rem;
+  color: #fff;
+  background-color: #17a2b8; /* Info blue */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.view-summary-btn:hover {
+  background-color: #138496; /* Darker info blue */
+}

@@ -396,3 +396,50 @@
 .sidebar-container .MuiList-root::-webkit-scrollbar {
   display: none; /* Chrome, Safari, Opera */
 }
+
+/* Styles for new top-level items like Report List */
+.sidebar-top-level-item {
+  padding: 15px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between; /* To push icon to the right */
+  gap: 5px;
+  cursor: pointer;
+  /* border-top: 1px solid #e9eaeb; */ /* Optional: if separation is needed */
+  /* border-bottom: 1px solid #e9eaeb; */
+  transition: background-color 0.2s ease, padding 0.3s ease;
+}
+
+.sidebar-collapsed .sidebar-top-level-item {
+  padding: 10px;
+  justify-content: center;
+  margin: 0 auto;
+  width: 36px; /* Match avatar size */
+  height: 36px;
+  border-radius: 50%;
+  /* background-color: #0047AB;  Default background for collapsed icon items */
+  border: none;
+  display: flex;
+  align-items: center;
+}
+
+.sidebar-top-level-item:hover {
+  background-color: #e9ecef; /* Subtle hover for expanded item */
+}
+
+.sidebar-collapsed .sidebar-top-level-item:hover {
+  background-color: #d5d7da; /* Hover for collapsed icon */
+}
+
+.sidebar-top-level-item.active-menu-item {
+  background-color: #f0f4ff; /* Lighter blue background for active expanded item */
+  /* border-left: 4px solid #0047AB; */ /* Active indicator like accordion items */
+  /* padding-left: 16px; */ /* Adjust padding if border-left is used */
+}
+.sidebar-collapsed .sidebar-top-level-item.active-menu-item {
+  background-color: #0047AB; /* Primary blue for active collapsed icon */
+}
+
+.sidebar-collapsed .sidebar-top-level-item.active-menu-item svg {
+ color: #FFFFFF !important; /* Ensure icon color is white when active and collapsed */
+}

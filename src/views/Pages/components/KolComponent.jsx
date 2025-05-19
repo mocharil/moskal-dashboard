@@ -76,15 +76,11 @@ const KolComponent = (props) => {
                   {formatNumber(data.user_followers)} followers
                 </CustomText>
                 <div className="kol-component-bullet"></div>
-                <CustomText size="sss" color="b500" inline>
-                  {formatNumber(data.views)} views
-                </CustomText>
-                <div className="kol-component-bullet"></div>
-                <CustomText size="sss" color="b500" inline>
-                  Influencer level {data.user_influence_score?.toFixed(2)}/10
-                </CustomText>
               </>
             )}
+            <CustomText size="sss" color="b500" inline>
+              Influence level {data.user_influence_score?.toFixed(2)}/10
+            </CustomText>            
           </div>
           <CustomText size="sss" color="b500">
             Actively discussing

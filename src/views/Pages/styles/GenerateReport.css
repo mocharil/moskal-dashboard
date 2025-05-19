@@ -1,0 +1,351 @@
+.generate-report-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 20px auto; /* Added top/bottom margin */
+  font-family: 'Arial', sans-serif; /* Consider using a project-wide font */
+  background-color: #ffffff; /* Changed to white for a cleaner look */
+  border-radius: 12px; /* Slightly more rounded corners */
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07); /* Softer, more modern shadow */
+  animation: fadeIn 0.5s ease-out; /* Simple fade-in animation */
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-title {
+  /* Assuming CustomText handles its own styling, or use a specific class if needed */
+  text-align: center;
+  margin-bottom: 10px; /* Adjusted margin */
+  color: #2c3e50; /* Darker, more modern blue/grey */
+}
+
+.page-subtitle {
+  text-align: center;
+  margin-bottom: 30px;
+  color: #7f8c8d; /* Softer grey for subtitle */
+  line-height: 1.6;
+}
+
+.page-subtitle strong {
+  color: #3498db; /* Highlight project name */
+}
+
+.form-section {
+  margin-bottom: 30px; /* Increased spacing between sections */
+  padding: 25px;
+  background-color: #fdfdfd; /* Very light grey for sections, almost white */
+  border: 1px solid #ecf0f1; /* Subtle border */
+  border-radius: 8px;
+  transition: box-shadow 0.3s ease;
+}
+
+.form-section:hover {
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* Subtle hover effect */
+}
+
+/* Styling for CustomText component when used as a label */
+.form-section .custom-text-label {
+  display: block;
+  font-size: 1rem; /* Relative font size */
+  font-weight: 600; /* Slightly bolder */
+  color: #34495e; /* Dark blue/grey */
+  margin-bottom: 12px;
+}
+
+.date-range-display {
+  display: flex;
+  align-items: center;
+  gap: 15px; /* Increased gap */
+}
+
+.date-range-display input[type="date"] {
+  padding: 12px 15px; /* Increased padding */
+  border: 1px solid #bdc3c7; /* Lighter border */
+  border-radius: 6px; /* More rounded */
+  font-size: 0.95rem;
+  flex-grow: 1;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  background-color: #fff;
+}
+
+.date-range-display input[type="date"]:focus {
+  border-color: #3498db; /* Primary color for focus */
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.2); /* Focus ring */
+  outline: none;
+}
+
+.date-range-display span {
+  color: #7f8c8d;
+  font-weight: 500;
+}
+
+/* Styles for the new Date Range Picker controls */
+.date-range-picker-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  background-color: #f9f9f9;
+  margin-bottom: 10px; /* If needed, or manage spacing within form-section */
+}
+
+.date-range-display-text {
+  font-size: 0.95rem;
+  color: #333;
+  display: flex;
+  align-items: center;
+}
+
+.change-date-btn { /* Targeting the MUI Button via className */
+  padding: 8px 16px !important;
+  font-size: 0.9rem !important;
+  text-transform: none !important; /* Keep casing as is */
+  background-color: #f0f0f0 !important;
+  color: #333 !important;
+  border: 1px solid #ccc !important;
+  transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease !important;
+}
+
+.change-date-btn:hover {
+  background-color: #e0e0e0 !important;
+  border-color: #bbb !important;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.07) !important; /* Subtle shadow on hover */
+}
+
+.keyword-count {
+  background-color: #3498db; /* Primary color */
+  color: white;
+  padding: 3px 9px; /* Adjusted padding */
+  border-radius: 16px; /* More pill-like */
+  font-size: 0.75rem; /* Smaller font size */
+  margin-left: 10px;
+  font-weight: 500;
+  vertical-align: middle;
+  display: inline-block; /* Ensures proper alignment and padding */
+}
+
+.keywords-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px; /* Increased gap */
+  margin-top: 12px;
+}
+
+.keyword-chip {
+  display: flex;
+  align-items: center;
+  padding: 8px 12px; /* Adjusted padding */
+  border-radius: 20px; /* Pill shape */
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease-in-out; /* Slightly faster transition */
+  cursor: default; /* Default cursor, remove button will have pointer */
+}
+
+.keyword-chip:hover {
+  transform: translateY(-2px) scale(1.03); /* Lift and slightly scale on hover */
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08); /* Softer shadow for hover */
+}
+
+.keyword-chip.active {
+  background-color: #e9f5ff; /* Light blue background */
+  color: #005f9e; /* Darker blue text */
+  border: 1px solid #b3d9ff; /* Light blue border */
+}
+
+.keyword-chip.custom {
+  background-color: #e8f7f0; /* Light green background */
+  color: #00633a; /* Darker green text */
+  border: 1px solid #b3e6c9; /* Light green border */
+}
+
+.remove-keyword-btn {
+  background: none;
+  border: none;
+  color: inherit; /* Inherit color from parent chip */
+  opacity: 0.7;
+  margin-left: 8px;
+  cursor: pointer;
+  font-size: 1.1rem; /* Slightly larger for better clickability */
+  padding: 0 4px; /* Small padding for click area */
+  line-height: 1;
+  transition: opacity 0.2s ease;
+}
+
+.remove-keyword-btn:hover {
+  opacity: 1;
+}
+
+.add-keyword-input-group {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px; /* Space before displaying added custom keywords */
+}
+
+.custom-keyword-input {
+  flex-grow: 1;
+  padding: 12px 15px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.custom-keyword-input:focus {
+  border-color: #2ecc71; /* Green focus for custom keyword input */
+  box-shadow: 0 0 0 3px rgba(46, 204, 113, 0.25), 0 1px 2px rgba(0,0,0,0.05) inset; /* Softer glow + subtle inset */
+  outline: none;
+}
+
+.add-keyword-btn { /* Targeting CustomButton */
+  /* Assuming CustomButton has base styles, these are overrides/additions */
+  padding: 10px 20px !important; /* Ensure padding is applied */
+  font-weight: 500 !important;
+  background-color: #2ecc71 !important; /* Green for "Add" button */
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  cursor: pointer !important;
+  transition: background-color 0.3s ease !important;
+}
+
+.add-keyword-btn:hover {
+  background-color: #27ae60 !important; /* Darker green on hover */
+}
+
+.custom-keywords-display {
+  margin-top: 15px; /* Space above the list of added custom keywords */
+}
+
+.email-input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid #bdc3c7;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  margin-bottom: 8px;
+  box-sizing: border-box; /* Ensures padding doesn't add to width */
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.email-input:focus {
+  border-color: #3498db;
+  box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.25), 0 1px 2px rgba(0,0,0,0.05) inset; /* Softer glow + subtle inset */
+  outline: none;
+}
+
+.email-caption {
+  font-size: 0.85rem;
+  color: #95a5a6; /* Lighter grey for caption */
+}
+
+.generate-send-btn { /* Targeting CustomButton */
+  display: block !important;
+  width: 100% !important;
+  padding: 15px 20px !important;
+  font-size: 1.1rem !important;
+  font-weight: 600 !important;
+  background-color: #007bff !important; /* Primary button color */
+  color: white !important;
+  border: none !important;
+  border-radius: 8px !important;
+  cursor: pointer !important;
+  margin-top: 30px !important;
+  transition: background-color 0.3s ease, transform 0.1s ease !important;
+}
+
+.generate-send-btn:hover {
+  background-color: #0056b3 !important; /* Darker on hover */
+}
+
+.generate-send-btn:active {
+  transform: scale(0.97); /* More noticeable click effect */
+  background-color: #004da0 !important; /* Slightly darker on active press */
+}
+
+.generate-send-btn:disabled {
+  background-color: #cccccc !important;
+  cursor: not-allowed !important;
+}
+
+.api-response-message {
+  margin-top: 25px;
+  padding: 15px;
+  border-radius: 6px;
+  text-align: center;
+  animation: slideDownFadeIn 0.5s ease-out;
+}
+
+@keyframes slideDownFadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.api-response-message.success {
+  background-color: #e8f7f0; /* Light green */
+  border: 1px solid #b3e6c9;
+  color: #00633a; /* Dark green text */
+}
+
+.api-response-message.error {
+  background-color: #fdecea; /* Light red */
+  border: 1px solid #f5c6cb;
+  color: #721c24; /* Dark red text */
+}
+
+.api-response-message .custom-text-bold {
+  display: block;
+  margin-bottom: 5px;
+}
+
+.api-response-message .custom-text-caption {
+  font-size: 0.8rem;
+  color: #6c757d; /* Muted color for Job ID */
+  margin-top: 5px;
+}
+
+/* Basic responsive adjustments */
+@media (max-width: 600px) {
+  .generate-report-container {
+    margin: 10px;
+    padding: 15px;
+  }
+
+  .page-title {
+    font-size: 24px;
+  }
+
+  .page-subtitle {
+    font-size: 14px;
+  }
+
+  .form-section {
+    padding: 15px;
+  }
+
+  .date-range-display {
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .date-range-display input[type="date"] {
+    width: 100%;
+  }
+
+  .add-keyword-input-group {
+    flex-direction: column;
+  }
+
+  .add-keyword-btn {
+    width: 100%;
+  }
+
+  .generate-send-btn {
+    padding: 12px 15px !important;
+    font-size: 1rem !important;
+  }
+}

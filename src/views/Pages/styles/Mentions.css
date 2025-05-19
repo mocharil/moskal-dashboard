@@ -1,0 +1,80 @@
+/* Styles for the main Mentions page container */
+.mentions-page-container {
+  padding: 20px;
+  font-family: "Inter", sans-serif; /* Assuming Inter is a project font */
+  display: flex;
+  flex-direction: column;
+  gap: 20px; /* Space between main sections */
+}
+
+/* Inherits from Dashboard.css:
+.dashboard-search-container 
+.dashboard-checkbox-container 
+.dashboard-pagination 
+*/
+
+/* Specific controls for the Mentions page, like sort buttons */
+.mentions-controls {
+  display: flex;
+  justify-content: flex-end; /* Align sort buttons to the right */
+  align-items: center;
+  margin-top: 10px; /* Space above sort buttons */
+  margin-bottom: 10px; /* Space below sort buttons */
+}
+
+.sort-buttons-container {
+  display: flex;
+  gap: 10px;
+}
+
+.sort-button {
+  padding: 8px 15px;
+  border: 1px solid #d0d5dd; /* Neutral border */
+  border-radius: 8px; /* Consistent border radius */
+  background-color: #ffffff; /* White background */
+  color: #344054; /* Neutral text color */
+  cursor: pointer;
+  font-size: 14px;
+  font-weight: 500;
+  transition: background-color 0.2s ease-in-out, border-color 0.2s ease-in-out;
+}
+
+.sort-button:hover {
+  background-color: #f9fafb; /* Lighter hover */
+  border-color: #b2bac6;
+}
+
+.sort-button.active {
+  background-color: #0047ab; /* Primary color for active */
+  color: white;
+  border-color: #0047ab;
+}
+
+/* Container for the list of mention items */
+.mentions-content-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1px; /* Creates a thin line between MentionComponent items if they have borders */
+  background-color: #f9fafb; /* Light background for the list area */
+  border: 1px solid #eaecf0;
+  border-radius: 8px;
+  overflow: hidden; /* Ensures border-radius clips children */
+}
+
+/* Ensure MentionComponent itself doesn't add extra margins if not needed */
+.mentions-content-list > div { /* Targeting MentionComponent wrapper */
+  /* background-color: #fff; */ /* Handled by MentionComponent if needed */
+}
+
+/* Styling for pagination arrows if not already covered by dashboard.css */
+.pagination-arrow {
+    width: 20px;
+    height: 20px;
+    filter: invert(45%) sepia(6%) saturate(478%) hue-rotate(176deg) brightness(94%) contrast(86%); /* Adjust to match icon color if needed */
+}
+
+/* Ensure CustomText within Checkbox label is styled correctly if needed */
+.dashboard-checkbox-container .MuiTypography-root { /* Target Joy UI CustomText if it renders as MuiTypography */
+    font-size: 14px; /* Example */
+    color: #344054; /* Example */
+}

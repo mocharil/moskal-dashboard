@@ -1,0 +1,33 @@
+.my-reports-container {
+  /* Using MUI Box for padding, so not much needed here unless specific overrides */
+}
+
+/* Styles for table cells to ensure content fits well */
+.my-reports-container .MuiTableCell-root {
+  padding: 12px 16px; /* Adjust padding for cells */
+}
+
+.my-reports-container .MuiTableCell-head {
+  font-weight: bold;
+  background-color: #f9fafb; /* Light grey for header */
+}
+
+.my-reports-container .MuiTypography-subtitle2 { /* For Report Topic */
+  font-weight: 500;
+}
+
+.my-reports-container .MuiChip-root { /* General styling for MUI Chips */
+  margin-right: 4px;
+  margin-bottom: 4px;
+  font-size: 0.75rem; /* Smaller font for chips */
+}
+
+/* Ensure action buttons in table are spaced a bit */
+.my-reports-container .MuiTableCell-alignCenter .MuiIconButton-root {
+  margin: 0 4px;
+}
+
+.my-reports-container .MuiLinearProgress-root {
+  height: 8px;
+  border-radius: 4px;
+}

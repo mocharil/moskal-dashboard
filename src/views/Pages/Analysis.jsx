@@ -59,8 +59,8 @@ const Analysis = () => {
   const [isSearchExactPhraseChecked, setIsSearchExactPhraseChecked] =
     useState(false);
 
-  const tabListMention = ["Mentions & Reach", "Sentiment"];
-  const [activeTabMention, setActiveTabMention] = useState("Mentions & Reach");
+  const tabListMention = ["Most Popular", "From top public profiles"];
+  const [activeTabMention, setActiveTabMention] = useState("Most Popular");
 
   const [mentionData, setMentionData] = useState([]);
   const [overviewData, setOverviewData] = useState([]);
@@ -330,7 +330,7 @@ const Analysis = () => {
       const mentionReq = {
         ...generateReqBody(),
         sort_type:
-          activeTabMention === "Mentions & Reach" ? "popular" : "recent",
+          activeTabMention === "Most Popular" ? "popular" : "recent",
         page: currentMentionPage,
         page_size: 5,
       };
@@ -718,30 +718,38 @@ const Analysis = () => {
               handleChange={handleMentionChange}
               tooltip="Monitor mentions across platforms to see how your topic is being discussed. Sort by popularity or recency, and track sentiment to capture the public's perception."
             >
-              <>
-                {mentionData?.map((value, index) => (
-                  <MentionComponent
-                    key={`mention-${index}`}
-                    data={value}
-                    borderBottom
-                    isShowAction
-                  />
-                ))}
-                <div className="dashboard-pagination">
-                  <Pagination
-                    count={mentionPage.total_pages}
-                    page={currentMentionPage}
-                    onChange={handleChangeMentionPage}
-                  />
+              {isMentionLoading ? (
+                <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                  <img src="/loading.svg" alt="Loading mentions..." style={{ width: '50px', height: '50px' }} />
                 </div>
-              </>
+              ) : (
+                <>
+                  {mentionData?.map((value, index) => (
+                    <MentionComponent
+                      key={`mention-${index}`}
+                      data={value}
+                      borderBottom
+                      isShowAction
+                    />
+                  ))}
+                  {mentionData && mentionData.length > 0 && (
+                    <div className="dashboard-pagination">
+                      <Pagination
+                        count={mentionPage.total_pages}
+                        page={currentMentionPage}
+                        onChange={handleChangeMentionPage}
+                      />
+                    </div>
+                  )}
+                </>
+              )}
             </CustomContentBox>
             <div className="analysis-content-split">
               <CustomContentBox
                 title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Keyword Trends</span>}
                 tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
               >
-                <KeywordComponent data={keywordData} type="Mentions & Reach" />
+                <KeywordComponent data={keywordData} type="Most Popular" />
               </CustomContentBox>
               <CustomContentBox
                 title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions by categories</span>}
@@ -766,28 +774,44 @@ const Analysis = () => {
             </div>
             <div className="analysis-content-split">
               <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Most share of voice</span>}>
-                <>
-                  <MostShareOfVoiceComponent data={mostShareVoiceData} />
-                  <div className="dashboard-pagination">
-                    <Pagination
-                      count={voicePage.total_pages}
-                      page={currentVoicePage}
-                      onChange={handleChangeVoicePage}
-                    />
+                {isMostShareVoiceLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                    <img src="/loading.svg" alt="Loading most share of voice..." style={{ width: '50px', height: '50px' }} />
                   </div>
-                </>
+                ) : (
+                  <>
+                    <MostShareOfVoiceComponent data={mostShareVoiceData} />
+                    {mostShareVoiceData && mostShareVoiceData.length > 0 && (
+                      <div className="dashboard-pagination">
+                        <Pagination
+                          count={voicePage.total_pages}
+                          page={currentVoicePage}
+                          onChange={handleChangeVoicePage}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </CustomContentBox>
               <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Most followers</span>}>
-                <>
-                  <MostFollowersComponent data={mostFollowersData} />
-                  <div className="dashboard-pagination">
-                    <Pagination
-                      count={followerPage.total_pages}
-                      page={currentFollowerPage}
-                      onChange={handleChangeFollowerPage}
-                    />
+                {isMostFollowersLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                    <img src="/loading.svg" alt="Loading most followers..." style={{ width: '50px', height: '50px' }} />
                   </div>
-                </>
+                ) : (
+                  <>
+                    <MostFollowersComponent data={mostFollowersData} />
+                    {mostFollowersData && mostFollowersData.length > 0 && (
+                      <div className="dashboard-pagination">
+                        <Pagination
+                          count={followerPage.total_pages}
+                          page={currentFollowerPage}
+                          onChange={handleChangeFollowerPage}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </CustomContentBox>
             </div>
             <div className="analysis-content-split">
@@ -806,28 +830,44 @@ const Analysis = () => {
             </div>
             <div className="analysis-content-split">
               <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Trending hashtags</span>}>
-                <>
-                  <TrendingHashtagComponent data={hashTagData} />
-                  <div className="dashboard-pagination">
-                    <Pagination
-                      count={hashtagPage.total_pages}
-                      page={currentHashtagPage}
-                      onChange={handleChangeHashtagPage}
-                    />
+                {isTrendingHashtagLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                    <img src="/loading.svg" alt="Loading trending hashtags..." style={{ width: '50px', height: '50px' }} />
                   </div>
-                </>
+                ) : (
+                  <>
+                    <TrendingHashtagComponent data={hashTagData} />
+                    {hashTagData && hashTagData.length > 0 && (
+                      <div className="dashboard-pagination">
+                        <Pagination
+                          count={hashtagPage.total_pages}
+                          page={currentHashtagPage}
+                          onChange={handleChangeHashtagPage}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </CustomContentBox>
               <CustomContentBox title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Trending links</span>}>
-                <>
-                  <TrendingLinkComponent data={linkData} />
-                  <div className="dashboard-pagination">
-                    <Pagination
-                      count={linkPage.total_pages}
-                      page={currentLinkPage}
-                      onChange={handleChangeLinkPage}
-                    />
+                {isTrendingLinkLoading ? (
+                  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                    <img src="/loading.svg" alt="Loading trending links..." style={{ width: '50px', height: '50px' }} />
                   </div>
-                </>
+                ) : (
+                  <>
+                    <TrendingLinkComponent data={linkData} />
+                    {linkData && linkData.length > 0 && (
+                      <div className="dashboard-pagination">
+                        <Pagination
+                          count={linkPage.total_pages}
+                          page={currentLinkPage}
+                          onChange={handleChangeLinkPage}
+                        />
+                      </div>
+                    )}
+                  </>
+                )}
               </CustomContentBox>
             </div>
             <div className="analysis-content-split">
@@ -835,7 +875,7 @@ const Analysis = () => {
                 title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Context of discussion</span>}
                 tooltip="Explore the context of discussions with a word cloud. See the most mentioned keywords, their frequency, and the sentiment behind each term to understand public narratives."
               >
-                <ContextComponent data={contextOfDiscussionData} />
+                <ContextComponent data={contextOfDiscussionData} isLoading={isContextLoading} />
               </CustomContentBox>
               <CustomContentBox
                 title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Most popular emojis</span>}

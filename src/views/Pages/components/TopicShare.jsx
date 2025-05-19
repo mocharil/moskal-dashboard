@@ -1,7 +1,10 @@
 import ReactApexChart from "react-apexcharts";
 import CustomText from "../../../components/CustomText";
 
-const TopicShare = ({ data = [] }) => {
+const HIGHLIGHT_COLOR = "#FF8C00"; // Example: DarkOrange
+const DEFAULT_COLOR = "#008FFB";   // Example: Default ApexCharts blue
+
+const TopicShare = ({ data = [], currentTopicUnifiedIssue }) => {
   const series = [
     {
       name: "Share",
@@ -9,6 +12,12 @@ const TopicShare = ({ data = [] }) => {
     },
   ];
   const labels = data.map((item) => item.unified_issue);
+
+  const chartColors = data.map((item) =>
+    item.unified_issue === currentTopicUnifiedIssue
+      ? HIGHLIGHT_COLOR
+      : DEFAULT_COLOR
+  );
 
   const options = {
     chart: {
@@ -42,7 +51,7 @@ const TopicShare = ({ data = [] }) => {
         formatter: (val) => `${val.toLocaleString()} posts`,
       },
     },
-    colors: undefined, // will use default distributed colors
+    colors: chartColors,
   };
 
   return (

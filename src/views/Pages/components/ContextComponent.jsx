@@ -6,6 +6,7 @@ import { useMemo } from "react";
 import "./styles/ContextComponent.css";
 
 const ContextComponent = (props) => {
+  const { data, type, isLoading } = props; // Added isLoading from props
   const containerRef = useRef(null);
   const svgRef = useRef(null);
   const [size, setSize] = useState({ width: 500, height: 400 });
@@ -17,12 +18,18 @@ const ContextComponent = (props) => {
     negative: "#c00",
   };
   useEffect(() => {
-    if (!props.data || props.data.length === 0) return;
+    if (!data || data.length === 0) return;
 
     const filteredData =
-      props.type && props.type !== "all"
-        ? props.data.filter((d) => d.dominant_sentiment === props.type)
-        : props.data;
+      type && type !== "all"
+        ? data.filter((d) => d.dominant_sentiment === type)
+        : data;
+
+    // Ensure filteredData is not empty before calculating maxMentions
+    if (filteredData.length === 0) {
+      setFilteredWords([]);
+      return;
+    }
 
     const maxMentions = Math.max(
       ...filteredData.map((item) => item.total_mentions)
@@ -37,7 +44,7 @@ const ContextComponent = (props) => {
     }));
 
     setFilteredWords(mapped);
-  }, [props.data, props.type]);
+  }, [data, type]);
 
   useEffect(() => {
     // Resize observer to handle responsiveness
@@ -98,13 +105,29 @@ const ContextComponent = (props) => {
         })
         .on("mouseout", tip.hide);
     }
-  }, [size, filteredWords]);
+  }, [size, filteredWords, isLoading]); // Added isLoading to dependencies if it affects drawing logic, though direct check is primary
+
+  if (isLoading) {
+    return (
+      <div
+        ref={containerRef}
+        className="context-component-container"
+        style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', width: size.width || '100%', height: size.height || '400px' }}
+      >
+        <img src="/loading.svg" alt="Loading..." style={{ width: '50px', height: '50px' }} />
+      </div>
+    );
+  }
+
   if (filteredWords.length === 0) {
     return (
       <div
         ref={containerRef}
         className="context-component-container"
-      ></div>
+        style={{ width: size.width || '100%', height: size.height || '400px' }} // Ensure empty state also respects size
+      >
+        {/* Optionally, add a "No data to display" message here */}
+      </div>
     );
   }
 
