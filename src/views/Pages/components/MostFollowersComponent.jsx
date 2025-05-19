@@ -6,14 +6,29 @@ import Pagination from "@mui/material/Pagination";
 import "./styles/MostFollowersComponent.css";
 import { formatNumber } from "../../../helpers/utils";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const MostFollowersComponent = (props) => {
   const data = props.data;
   const [imgError, setImgError] = useState(false);
+  const navigate = useNavigate();
+  const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
+
   const fallbackUrl = (channel) => {
     console.log("called", channel);
     return `${window.location.origin}/${channel}.png`;
   };
+
+  const handleMentionClick = (username, channel) => {
+    if (activeKeywords && activeKeywords.name) {
+      navigate(`/${activeKeywords.name}/mentions?domain=${username}&channel=${channel}`);
+    } else {
+      console.error("Active keyword name not found, cannot navigate to mentions.");
+      // Optionally, show an error to the user or navigate to a default page
+    }
+  };
+
   return (
     <>
       <table className="most-followers-component-table">
@@ -99,7 +114,11 @@ const MostFollowersComponent = (props) => {
                 </div>
               </td>
               <td>
-                <div className="most-followers-component-mentions">
+                <div
+                  className="most-followers-component-mentions"
+                  onClick={() => handleMentionClick(value.username, value.channel)}
+                  style={{ cursor: "pointer" }}
+                >
                   <CustomText color="brand" bold="semibold" size="2xls" inline>
                     {formatNumber(value.total_mentions)}
                   </CustomText>

@@ -252,9 +252,7 @@ const MentionComponent = (props) => {
   return (
     <>
       <div
-        className={`mention-component-container ${
-          props.borderBottom && "mention-component-border-bottom"
-        }`}
+        className="mention-component-container" // Removed borderBottom logic
       >
         <div>
           <img
@@ -305,7 +303,7 @@ const MentionComponent = (props) => {
               <></>
             )}
             <CustomText size="2xls" color="b500" inline>
-              Influencer level {data.influence_score?.toFixed(2)}/10
+              Influence level {data.influence_score?.toFixed(2)}/10
             </CustomText>
           </div>
           <div className="mention-text-container">

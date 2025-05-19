@@ -290,7 +290,7 @@ const Summary = () => {
   };
 
   const handleChangeKOL = (event, newValue) => {
-    console.log(newValue);
+    // console.log(newValue); // Keep or remove console.log as per project standards
     setActiveTabKol(newValue);
     if (newValue === "Popular KOL") {
       const newArray = sortByField([...kolData], "most_viral", "desc");
@@ -300,6 +300,24 @@ const Summary = () => {
       setFilterKolData(getLimitArray(newArray));
     }
   };
+
+  const redirectToMentions = () => {
+    const basePayload = generateReqBody();
+    const sortTypeForMentionsPage = activeTabMentions === "Popular" ? "popular" : "recent";
+    
+    const navigationPayload = {
+      ...basePayload,
+      sort_type: sortTypeForMentionsPage 
+    };
+
+    navigate(`/${keyword}/mentions`, { 
+      state: { 
+        filters: navigationPayload, 
+        fromSummary: true // Flag to indicate navigation from Summary
+      } 
+    });
+  };
+
   return (
     <>
       <div className="summary-search-bar-container">
@@ -425,6 +443,7 @@ const Summary = () => {
                 <CustomContentBox
                   title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Top mentions</span>}
                   seeAll="See All Mentions"
+                  handleSeeAll={redirectToMentions} // Added handleSeeAll
                   activeTab={activeTabMentions}
                   tabList={tabListMention}
                   handleChange={handleChangeMentions}

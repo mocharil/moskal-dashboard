@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import CustomText from "../../../components/CustomText";
-import { ArrowOutward } from "@mui/icons-material";
+import { ArrowOutward, NorthEast } from "@mui/icons-material"; // Added NorthEast
 import { useNavigate, useParams } from "react-router-dom";
 
 import "./styles/TopicsComponent.css";
@@ -37,6 +37,10 @@ const TopicsComponent = (props) => {
     navigate(`/${keyword}/topics-detail`, { replace: true });
   };
 
+  const redirectToMentions = () => {
+    navigate(`/${keyword}/mentions?keywords=list_issue`, { replace: true });
+  };
+
   return (
     <>
       <div
@@ -65,12 +69,18 @@ const TopicsComponent = (props) => {
           {data.description}
         </CustomText>
         <div className="topics-component-stat-container">
-          <img
-            className="topics-component-bubble"
-            src={window.location.origin + "/message-circle-02.svg"}
-          />
-          <CustomText color="b600" size="sss" inline>
+          <CustomText
+            color="b600"
+            size="sss"
+            inline
+            pointer
+            onClick={redirectToMentions}
+            class="topics-component-right-flex-align"
+          >
             {mentions} Mentions
+            <NorthEast
+              className="topics-component-right-icon" // Use the same class as the working "Learn more" icon
+            />
           </CustomText>
           <div className="topics-component-bullet-grey"></div>
           <div className="topics-component-bullet-gradient topics-gradient-green"></div>

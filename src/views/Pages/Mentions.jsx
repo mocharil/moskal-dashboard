@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation, useNavigate } from "react-router-dom"; // Added useNavigate
 import { useSelector } from "react-redux";
 import Paper from "@mui/material/Paper";
 import IconButton from "@mui/material/IconButton";
@@ -47,22 +47,160 @@ const Mentions = () => {
   const [isDialogFilterOpen, setIsDialogFilterOpen] = useState(false);
 
   const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
+  const location = useLocation();
+  const navigate = useNavigate();
+
   // const userData = useSelector((state) => state.user); // If needed for API calls
 
   const [dataAdvanceFilter, setDataAdvanceFilter] = useState({});
   const [dataDateFilter, setDataDateFilter] = useState({});
 
-  const initialLoadRef = useRef(true);
+  // Removed initialLoadRef
+
+  useEffect(() => {
+    const navState = location.state;
+    if (navState && (navState.fromTopicDetail || navState.fromSummary || navState.fromAnalysis) && navState.filters) {
+      const { filters } = navState;
+      // console.log("Applying filters from navigation state:", JSON.stringify(filters));
+
+      const newAdvanceFilterState = {};
+      
+      // Keyword handling: Prioritize specific search_keyword from Analysis, then general keywords
+      if (navState.fromAnalysis && filters.search_keyword && filters.search_keyword.length > 0) {
+        newAdvanceFilterState.keywords = filters.search_keyword;
+      } else if (filters.keywords) { // General keywords from TopicDetail, Summary, or Analysis (if search_keyword was empty)
+        newAdvanceFilterState.keywords = filters.keywords;
+      }
+
+      // Common filters
+      if (filters.search_exact_phrases !== undefined) {
+        newAdvanceFilterState.search_exact_phrases = filters.search_exact_phrases;
+        setIsSearchExactPhraseChecked(filters.search_exact_phrases);
+      }
+      if (filters.sentiment) newAdvanceFilterState.sentiment = filters.sentiment;
+      if (filters.channels) newAdvanceFilterState.channels = filters.channels;
+      if (filters.importance) newAdvanceFilterState.importance = filters.importance;
+      if (filters.influence_score_min !== undefined) newAdvanceFilterState.influence_score_min = filters.influence_score_min;
+      if (filters.influence_score_max !== undefined) newAdvanceFilterState.influence_score_max = filters.influence_score_max;
+      if (filters.region) newAdvanceFilterState.region = filters.region;
+      if (filters.language) newAdvanceFilterState.language = filters.language;
+      if (filters.domain) newAdvanceFilterState.domain = filters.domain;
+      setDataAdvanceFilter(newAdvanceFilterState);
+
+      const newDateFilterState = {};
+      if (filters.date_filter) newDateFilterState.date_filter = filters.date_filter;
+      if (filters.custom_start_date) newDateFilterState.custom_start_date = filters.custom_start_date;
+      if (filters.custom_end_date) newDateFilterState.custom_end_date = filters.custom_end_date;
+      setDataDateFilter(newDateFilterState);
+
+      // Handle sort_type if passed (e.g., from Summary or Analysis)
+      if (filters.sort_type) {
+        // Analysis might send "top_profile", map it if necessary
+        let sortToApply = filters.sort_type;
+        if (filters.sort_type === "top_profile") {
+          sortToApply = "popular"; // Or "recent", depending on desired mapping
+        }
+        if (sortToApply === "popular" || sortToApply === "recent") {
+          setSortOrder(sortToApply);
+        }
+      }
+      
+      // Clear the processed flags from location.state to prevent re-processing
+      const clearedState = { ...navState, fromTopicDetail: false, fromSummary: false, fromAnalysis: false };
+      // Optionally, remove the filters from state if they shouldn't persist beyond this processing
+      // delete clearedState.filters; 
+      navigate(location.pathname, { state: clearedState, replace: true });
+    }
+  }, [location.state, navigate]);
+
+  // useEffect to handle domain and channel from query parameters
+  useEffect(() => {
+    const queryParams = new URLSearchParams(location.search);
+    const domainFromQuery = queryParams.get("domain");
+    const channelFromQuery = queryParams.get("channel");
+    const keywordsFromQuery = queryParams.getAll("keywords"); // Changed to getAll
+    const searchExactPhrasesFromQuery = queryParams.get("search_exact_phrases");
+
+    let filtersApplied = false;
+
+    // Check if keywordsFromQuery has entries, as getAll returns an array
+    if (domainFromQuery || channelFromQuery || (keywordsFromQuery && keywordsFromQuery.length > 0) || searchExactPhrasesFromQuery) {
+      setDataAdvanceFilter(prevFilters => {
+        const newFilters = { ...prevFilters };
+        if (domainFromQuery) {
+          newFilters.domain = [domainFromQuery];
+          filtersApplied = true;
+        }
+        if (channelFromQuery) {
+          newFilters.channels = [channelFromQuery];
+          filtersApplied = true;
+        }
+        if (keywordsFromQuery && keywordsFromQuery.length > 0) { // Check if array has items
+          newFilters.keywords = keywordsFromQuery; // Assign the array directly
+          // Clear search box if keywords are coming from query params
+          setSearchBoxValue(""); 
+          filtersApplied = true;
+        }
+        if (searchExactPhrasesFromQuery === "true") {
+          newFilters.search_exact_phrases = true;
+          setIsSearchExactPhraseChecked(true);
+          filtersApplied = true;
+        } else if (searchExactPhrasesFromQuery === "false") {
+          // Explicitly set to false if passed, otherwise default behavior applies
+          newFilters.search_exact_phrases = false;
+          setIsSearchExactPhraseChecked(false);
+          filtersApplied = true;
+        }
+        return newFilters;
+      });
+      
+      if (filtersApplied) {
+        // Clear query parameters from URL after applying them
+        navigate(location.pathname, { replace: true });
+      }
+    }
+  }, [location.search, navigate, setDataAdvanceFilter, setIsSearchExactPhraseChecked, setSearchBoxValue]);
+
+  // Unified data fetching effect
+  useEffect(() => {
+    if (activeKeywords.name) { // Ensure project context is loaded
+      // console.log("Data fetching effect triggered. Keywords in dataAdvanceFilter:", dataAdvanceFilter.keywords);
+      fetchMentionsData();
+    }
+    // This effect runs when any of these dependencies change.
+    // It covers initial load (if activeKeywords.name is ready) and subsequent updates.
+  }, [
+    activeKeywords.name,
+    dataAdvanceFilter,
+    dataDateFilter,
+    sortOrder,
+    mentionPage.page,
+    isSearchExactPhraseChecked,
+    keywordFromParams // Though this might be implicitly handled by activeKeywords.name
+  ]);
+
+  // Removed the old useEffect for initialLoadRef and useDidUpdateEffect for fetching.
+  // The unified effect above should handle all cases.
 
   const generateReqBody = () => {
+    const reqKeywords = 
+      (dataAdvanceFilter.keywords && dataAdvanceFilter.keywords.length > 0)
+        ? dataAdvanceFilter.keywords
+        : activeKeywords.keywords;
+
+    const reqSearchKeywords = (searchBoxValue || "")
+      .split(",")
+      .map((k) => k.trim())
+      .filter((k) => k);
+
+    const reqSearchExactPhrases = typeof dataAdvanceFilter?.search_exact_phrases === 'boolean'
+        ? dataAdvanceFilter.search_exact_phrases
+        : isSearchExactPhraseChecked;
+
     const data = {
-      keywords: activeKeywords.keywords,
-      search_keyword:
-        dataAdvanceFilter.keywords !== undefined &&
-        dataAdvanceFilter.keywords.length > 0
-          ? dataAdvanceFilter.keywords
-          : [],
-      search_exact_phrases: dataAdvanceFilter?.search_exact_phrases || isSearchExactPhraseChecked,
+      keywords: reqKeywords,
+      search_keyword: reqSearchKeywords,
+      search_exact_phrases: reqSearchExactPhrases,
       case_sensitive: false,
       sentiment:
         dataAdvanceFilter?.sentiment?.length > 0
@@ -157,29 +295,6 @@ const Mentions = () => {
     }
   };
   
-  useEffect(() => {
-    if (activeKeywords.name) { // Ensure activeKeywords is populated
-        fetchMentionsData();
-        initialLoadRef.current = false;
-    }
-  }, [activeKeywords.name]); // Depend on activeKeywords.name to ensure it's ready
-
-
-  useDidUpdateEffect(() => {
-    const debounceTimer = setTimeout(() => {
-      fetchMentionsData();
-    }, 300);
-    return () => clearTimeout(debounceTimer);
-  }, [
-    keywordFromParams, // from react-router
-    dataAdvanceFilter,
-    dataDateFilter,
-    sortOrder,
-    mentionPage.page,
-    isSearchExactPhraseChecked // Added this dependency
-  ]);
-
-
   const handleOpenDayDialog = () => setIsDialogDayOpen(true);
   const handleCloseDayDialog = () => setIsDialogDayOpen(false);
   const handleOpenFilterDialog = () => setIsDialogFilterOpen(true);
@@ -311,7 +426,7 @@ const Mentions = () => {
             <MentionComponent
               key={mention.id || `mention-${index}`} // Prefer a unique ID from data
               data={mention}
-              borderBottom={index < mentionData.length - 1}
+              // borderBottom prop is no longer needed due to card styling with margin-bottom
               isShowAction={true} // Assuming we always want "View Post"
             />
           ))}

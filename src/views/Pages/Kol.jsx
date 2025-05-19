@@ -20,13 +20,14 @@ import { useSelector } from "react-redux";
 import LoadingUI from "./components/LoadingUI";
 import { enqueueSnackbar } from "notistack";
 import NoDataUI from "./components/NoDataUI";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { Pagination } from "@mui/material";
 import { useDidUpdateEffect } from "../../helpers/loadState";
 
 const Kol = () => {
   const tabList = ["All", "Individual", "Brand/Media"];
   const { keyword } = useParams();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("All");
   const [imageErrors, setImageErrors] = useState({});
 
@@ -214,6 +215,14 @@ const Kol = () => {
       page: value,
     }));
     // The useEffect listening to kolPage.page will handle data slicing
+  };
+
+  const handleMentionClick = (kolItem) => {
+    navigate(
+      `/${keyword}/mentions?domain=${encodeURIComponent(
+        kolItem.username
+      )}&channels=${encodeURIComponent(kolItem.channel)}`
+    );
   };
 
   const handleOnChangeTab = (event, newValue) => {
@@ -487,7 +496,11 @@ const Kol = () => {
                                 </CustomText>
                               </td>
                               <td>
-                                <div className="kol-flex-item">
+                                <div
+                                  className="kol-flex-item"
+                                  style={{ cursor: "pointer" }}
+                                  onClick={() => handleMentionClick(item)}
+                                >
                                   <CustomText
                                     color="brand"
                                     size="sss"

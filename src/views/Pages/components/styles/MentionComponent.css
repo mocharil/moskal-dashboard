@@ -2,25 +2,38 @@
   display: flex;
   gap: 16px;
   width: 100%;
-  padding: 24px 0px;
+  padding: 20px; /* Adjusted padding */
+  border: 1px solid #e9eaeb; /* Softer border for the card */
+  border-radius: 8px; /* Rounded corners for the card */
+  background-color: #ffffff; /* White background for the card */
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05); /* Subtle box shadow */
+  margin-bottom: 16px; /* Space between cards */
 }
 
+/* Remove the old border-bottom style as the card has its own border */
 .mention-component-border-bottom {
-  border-bottom: 1px solid #d5d7da;
+  /* border-bottom: 1px solid #d5d7da; */ 
 }
+
 .mention-component-right-container {
   flex: 1;
+  display: flex; /* Added for better internal layout control */
+  flex-direction: column; /* Stack elements vertically */
+  gap: 8px; /* Consistent gap between elements in the right container */
 }
-.mention-component-icon {
-  width: 36px;
-  height: 36px;
-  background-color: black;
+
+.mention-component-icon { /* This seems to be for the user avatar, let's ensure it's styled well */
+  width: 40px; /* Slightly larger avatar */
+  height: 40px;
   border-radius: 50%;
   object-fit: cover;
+  border: 1px solid #e0e0e0; /* Optional: slight border for avatar */
 }
+
 .mention-component-header {
   display: flex;
   justify-content: space-between;
+  align-items: center; /* Align items vertically */
 }
 
 .mention-component-chip-negative {
@@ -34,6 +47,7 @@
   border: 1px solid #fecdca;
   background-color: #fef3f2;
   color: #b42318;
+  height: fit-content; /* Ensure badge height is based on content */
 }
 
 .mention-component-chip-positive {
@@ -47,6 +61,7 @@
   border: 1px solid #abefc6;
   background-color: #ecfdf3;
   color: #067647;
+  height: fit-content; /* Ensure badge height is based on content */
 }
 
 .mention-component-chip-neutral {
@@ -60,48 +75,56 @@
   border: 1px solid #e9eaeb;
   background-color: #fafafa;
   color: #414651;
+  height: fit-content; /* Ensure badge height is based on content */
 }
 
 .mention-component-detail {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin: 8px 0px;
+  gap: 6px; /* Slightly reduced gap */
+  margin: 4px 0px; /* Adjusted margin */
 }
 .mention-component-desc {
-  margin: 16px 0px;
+  /* margin: 16px 0px; */ /* Handled by parent gap */
+  line-height: 1.5; /* Improved readability for description text */
 }
 
 .mention-component-bullet {
-  width: 2px;
-  height: 2px;
-  background-color: #d5d7da;
+  width: 3px; /* Slightly larger bullet */
+  height: 3px;
+  background-color: #c0c0c0; /* Softer bullet color */
+  border-radius: 50%;
 }
 
 .mention-component-footer {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  margin-top: auto; /* Push footer to the bottom of the card */
 }
 .mention-component-footer-right {
   display: flex;
   align-items: center;
-  gap: 32px;
+  gap: 16px; /* Reduced gap */
 }
 .mention-component-right-flex-align {
   display: flex;
   align-items: center;
+  gap: 4px; /* Gap between "View Post" text and icon */
 }
 .mention-component-right-icon-blue {
-  width: 20px !important;
-  color: "#0047AB !important";
+  width: 18px !important; /* Adjusted size */
+  height: 18px !important; /* Added height for consistency */
+  color: #0047AB !important;
 }
 .mention-component-right-icon-black {
-  width: 20px !important;
-  color: "#717680 !important";
+  width: 18px !important; /* Adjusted size */
+  height: 18px !important; /* Added height for consistency */
+  color: #717680 !important;
 }
 .mentions-small-icon {
   width: 16px;
+  height: 16px; /* Ensure height is also set */
   filter: invert(49%) sepia(12%) saturate(297%) hue-rotate(182deg)
     brightness(91%) contrast(88%);
 }
@@ -115,4 +138,14 @@
 .mention-text-container {
   overflow-wrap: break-word;
   word-break: break-word;
+  margin: 8px 0; /* Add some vertical margin */
+}
+
+/* New styles for better visual appeal */
+.kol-component-icon { /* Renamed from .mention-component-icon in JSX for clarity if it's the avatar */
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid #e0e0e0; 
 }

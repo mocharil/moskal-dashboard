@@ -298,6 +298,13 @@ const TopicsDetail = () => {
     navigate(`/${keyword}/topics`, { replace: true });
   };
 
+  const redirectToMentions = () => {
+    const payload = generateReqBody();
+    // Pass the payload to the Mentions page via navigation state
+    // Adding a 'fromTopicDetail' flag can help the Mentions page identify the source if needed
+    navigate(`/${keyword}/mentions`, { state: { filters: payload, fromTopicDetail: true } });
+  };
+
   const handleChangeAdvanceFilter = (reqBody) => {
     setDataAdvanceFilter(reqBody);
   };
@@ -487,6 +494,7 @@ const TopicsDetail = () => {
                           <CustomContentBox
                             title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Top mentions</span>}
                             seeAll="See all mentions"
+                            handleSeeAll={redirectToMentions} // Added handleSeeAll prop
                             tooltip="Monitor the most impactful mentions driving the conversation. See which posts are gaining traction and influencing sentiment, sorted by engagement and platform reach."
                           >
                             <>

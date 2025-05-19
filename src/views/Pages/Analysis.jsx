@@ -330,7 +330,7 @@ const Analysis = () => {
       const mentionReq = {
         ...generateReqBody(),
         sort_type:
-          activeTabMention === "Most Popular" ? "popular" : "recent",
+          activeTabMention === "Most Popular" ? "popular" : "top_profile",
         page: currentMentionPage,
         page_size: 5,
       };
@@ -613,10 +613,33 @@ const Analysis = () => {
     e.preventDefault();
     setDataAdvanceFilter({
       ...dataAdvanceFilter,
-      keywords: searchBoxValue.split(","),
+      keywords: searchBoxValue.split(",").map(k => k.trim()).filter(k => k), // Ensure keywords are trimmed and filtered
       search_exact_phrases: isSearchExactPhraseChecked,
     });
   };
+
+  const redirectToMentions = () => {
+    const basePayload = generateReqBody();
+    // Determine sort_type for Mentions page based on Analysis page's active tab
+    // 'top_profile' from Analysis might map to 'popular' or 'recent' in Mentions.
+    // Let's map 'top_profile' to 'popular' for now, as it implies high engagement/visibility.
+    const sortTypeForMentionsPage = activeTabMention === "Most Popular" 
+      ? "popular" 
+      : (activeTabMention === "From top public profiles" ? "popular" : "recent"); // Default to recent if tab is unexpected
+
+    const navigationPayload = {
+      ...basePayload,
+      sort_type: sortTypeForMentionsPage,
+    };
+
+    navigate(`/${keyword}/mentions`, {
+      state: {
+        filters: navigationPayload,
+        fromAnalysis: true, // Flag to indicate navigation from Analysis
+      },
+    });
+  };
+
   return (
     <>
       <div className="analysis-header-container">
@@ -713,6 +736,7 @@ const Analysis = () => {
             <CustomContentBox
               title="Mentions"
               seeAll="See all mentions"
+              handleSeeAll={redirectToMentions} // Added handleSeeAll
               tabList={tabListMention}
               activeTab={activeTabMention}
               handleChange={handleMentionChange}
@@ -749,7 +773,7 @@ const Analysis = () => {
                 title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Keyword Trends</span>}
                 tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
               >
-                <KeywordComponent data={keywordData} type="Most Popular" />
+                <KeywordComponent data={keywordData} type="Mentions & Reach" />
               </CustomContentBox>
               <CustomContentBox
                 title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions by categories</span>}

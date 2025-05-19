@@ -16,7 +16,7 @@
 
 .topics-component-right-icon {
   width: 20px !important;
-  color: "#0047AB !important";
+  color: #0047AB !important; /* Corrected: Removed quotes from color value */
 }
 
 .topics-component-right-flex-align {

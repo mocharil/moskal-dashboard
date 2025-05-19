@@ -1655,16 +1655,17 @@ const ShareOfVoiceView = (props) => {
     0
   );
   const seriesMentions = filterData.map((item) =>
-    totalMentions === 0 ? 0 : (item.data.reach.value / totalMentions) * 100
+    // Bug fix: was using item.data.reach.value, should be item.data.mentions.value
+    totalMentions === 0 ? 0 : (item.data.mentions.value / totalMentions) * 100
   );
 
-  const options = (type) => {
+  const options = (type, seriesData) => { // Added seriesData parameter
     return {
       chart: {
         type: "donut",
       },
       labels: filterData.map((value) => value.project_name),
-      colors: ["#6DD5FA", "#C6FFDD"],
+      colors: ["#6DD5FA", "#C6FFDD"], // Consider making these dynamic or more contrasted if needed
       dataLabels: {
         enabled: false,
       },
@@ -1674,9 +1675,18 @@ const ShareOfVoiceView = (props) => {
           radius: 12,
         },
         formatter: function (seriesName, opts) {
-          const value = seriesReach[opts.seriesIndex];
-          return `${value}% ${seriesName}`;
+          // Use the passed seriesData for correct percentage
+          const value = seriesData[opts.seriesIndex];
+          return `${value.toFixed(2)}% ${seriesName}`; // Format to 2 decimal places
         },
+      },
+      tooltip: { // Added tooltip configuration
+        y: {
+          formatter: function (val) {
+            return val.toFixed(2) + "%";
+          },
+        },
+        theme: 'light' // Use light theme for tooltip for better contrast
       },
       plotOptions: {
         pie: {
@@ -1716,7 +1726,7 @@ const ShareOfVoiceView = (props) => {
         <div style={{ flex: 1 }}>
           <div>
             <Chart
-              options={options("Reach")}
+              options={options("Reach", seriesReach)} // Pass seriesReach
               series={seriesReach}
               type="donut"
               width="100%"
@@ -1727,7 +1737,7 @@ const ShareOfVoiceView = (props) => {
         <div style={{ flex: 1 }}>
           <div>
             <Chart
-              options={options("Mentions")}
+              options={options("Mentions", seriesMentions)} // Pass seriesMentions
               series={seriesMentions}
               type="donut"
               width="100%"

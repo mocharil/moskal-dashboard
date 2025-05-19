@@ -2,9 +2,13 @@ import React, { useState, useEffect } from "react";
 import CustomText from "../../../components/CustomText";
 import { ArrowOutward } from "@mui/icons-material";
 import ReactApexChart from "react-apexcharts";
+import { useNavigate, useParams } from "react-router-dom"; // Added import
 
 import "./styles/TopicsTable.css";
 const TopicsTable = (props) => {
+  const navigate = useNavigate(); // Added navigate
+  const { keyword } = useParams(); // Added keyword from params
+
   const handleClickLearnMore = (id) => {
     props.handleDetailClick(id);
   };
@@ -79,6 +83,42 @@ const TopicsTable = (props) => {
                         inline
                         pointer
                         class="topics-table-component-right-flex-align"
+                        onClick={() => {
+                          try {
+                            // Ensure 'keyword' from useParams is defined before using it in a route
+                            if (typeof keyword === 'undefined') {
+                              console.error("Route parameter 'keyword' is undefined. Cannot navigate.");
+                              return; // Prevent further execution
+                            }
+
+                            const directKeywords = [];
+                            if (item.list_issue && Array.isArray(item.list_issue)) {
+                              for (const issueString of item.list_issue) {
+                                // Use the string directly as a keyword, after trimming
+                                if (typeof issueString === 'string' && issueString.trim() !== '') {
+                                  directKeywords.push(issueString.trim());
+                                }
+                              }
+                            }
+
+                            if (directKeywords.length > 0) {
+                              const keywordsQuery = directKeywords.map(kw => `keywords=${encodeURIComponent(kw)}`).join('&');
+                              console.log(`Navigating to: /${keyword}/mentions?${keywordsQuery}`);
+                              navigate(`/${keyword}/mentions?${keywordsQuery}`, { replace: true });
+                            } else {
+                              console.log(`Navigating to: /${keyword}/mentions (no keywords)`);
+                              navigate(`/${keyword}/mentions`, { replace: true });
+                            }
+                          } catch (error) {
+                            console.error("Error processing keywords for navigation:", error);
+                            // Fallback navigation: ensure 'keyword' is defined here too
+                            if (typeof keyword !== 'undefined') {
+                              navigate(`/${keyword}/mentions`, { replace: true });
+                            } else {
+                              console.error("Route parameter 'keyword' is undefined in catch block. Cannot navigate for fallback.");
+                            }
+                          }
+                        }}
                       >
                         {item.total_posts}
                         <ArrowOutward className="topics-table-component-right-icon" />

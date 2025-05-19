@@ -6,14 +6,29 @@ import Pagination from "@mui/material/Pagination";
 import "./styles/MostShareOfVoiceComponent.css";
 import { formatNumber } from "../../../helpers/utils";
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { useSelector } from "react-redux";
 
 const MostShareOfVoiceComponent = (props) => {
   const data = props.data;
   const [imgError, setImgError] = useState(false);
+  const navigate = useNavigate();
+  const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
+
   const fallbackUrl = (channel) => {
     console.log("called", channel);
     return `${window.location.origin}/${channel}.png`;
   };
+
+  const handleMentionClick = (username, channel) => {
+    if (activeKeywords && activeKeywords.name) {
+      navigate(`/${activeKeywords.name}/mentions?domain=${username}&channel=${channel}`);
+    } else {
+      console.error("Active keyword name not found, cannot navigate to mentions.");
+      // Optionally, show an error to the user or navigate to a default page
+    }
+  };
+
   return (
     <>
       <table className="most-share-voice-component-table">
@@ -87,7 +102,11 @@ const MostShareOfVoiceComponent = (props) => {
                 </div>
               </td>
               <td>
-                <div className="most-share-voice-component-mentions">
+                <div
+                  className="most-share-voice-component-mentions"
+                  onClick={() => handleMentionClick(value.username, value.channel)}
+                  style={{ cursor: "pointer" }}
+                >
                   <CustomText color="brand" bold="semibold" size="2xls" inline>
                     {formatNumber(value.total_mentions)}
                   </CustomText>
