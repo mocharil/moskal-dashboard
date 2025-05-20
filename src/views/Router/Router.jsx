@@ -11,6 +11,7 @@ import Comparison from "../Pages/Comparison";
 import KOL from "../Pages/Kol";
 import AccountSettings from "../Pages/AccountSettings";
 import OnBoard from "../Pages/Onboard";
+import Settings from "../Pages/Settings"; // Import the new Settings page
 import Sidebar from "../../components/Sidebar";
 import TopicsDetail from "../Pages/components/TopicsDetail";
 import MoskalAI from "../Pages/MoskalAI";
@@ -123,6 +124,10 @@ const router = createBrowserRouter([
   {
     path: "/account-settings",
     element: <ProtectedRouteSidebar element={<AccountSettings />} />,
+  },
+  {
+    path: "/:keyword/settings", // Updated route for project-specific Settings page
+    element: <ProtectedRouteSidebar element={<Settings />} />,
   },
   {
     path: "/onboard",

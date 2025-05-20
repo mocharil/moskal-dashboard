@@ -1,0 +1,248 @@
+/* General Page Styles */
+.settings-page {
+  padding: 24px;
+  font-family: 'Inter', sans-serif; /* Assuming Inter is used project-wide */
+  background-color: #f9fafb; /* Lighter background */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center; /* Center content on the page */
+}
+
+.page-header {
+  font-size: 28px;
+  font-weight: 600;
+  color: #111827; /* Darker text */
+  margin-bottom: 32px;
+  text-align: center;
+}
+
+.settings-content-wrapper {
+  width: 100%;
+  max-width: 900px; /* Max width for content */
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* Section Styling */
+.settings-section {
+  background-color: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  border: 1px solid #e5e7eb; /* Subtle border */
+}
+
+.section-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-bottom: 16px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+/* Project Information Section */
+.project-info-section .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 16px;
+}
+
+.project-info-section .info-item {
+  display: flex;
+  flex-direction: column; /* Stack label and value */
+  padding: 8px;
+  background-color: #f9fafb; /* Slight contrast for info items */
+  border-radius: 6px;
+}
+
+.project-info-section .info-item .custom-text-label { /* Assuming CustomText with type="label" */
+  font-size: 13px;
+  color: #6b7280; /* Lighter label text */
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+
+.project-info-section .info-item .custom-text { /* For the value */
+  font-size: 15px;
+  color: #374151;
+  font-weight: 500;
+}
+
+
+/* Manage Keywords Section */
+.keywords-display-area {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.keyword-tag-display {
+  background-color: #e0e7ff; /* Light indigo */
+  color: #3730a3; /* Dark indigo */
+  padding: 6px 12px;
+  border-radius: 16px; /* Pill shape */
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.edit-keywords-btn {
+  /* Use CustomButton's default styling or add specific overrides */
+  margin-top: 8px;
+}
+
+.keywords-edit-area {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.current-keywords-editor {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  min-height: 80px; /* Ensure some space even if empty */
+  background-color: #f9fafb;
+}
+
+.keyword-tag-editable {
+  background-color: #dbeafe; /* Light blue */
+  color: #1e40af; /* Dark blue */
+  padding: 6px 8px 6px 12px;
+  border-radius: 16px;
+  font-size: 14px;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.remove-keyword-btn {
+  background: none;
+  border: none;
+  color: #1e40af; /* Match tag text color */
+  cursor: pointer;
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.remove-keyword-btn:hover {
+  background-color: rgba(30, 64, 175, 0.1); /* Slight hover for button */
+}
+.remove-keyword-btn .MuiSvgIcon-root { /* Target Material UI icon if used */
+  font-size: 16px;
+}
+
+
+.add-keyword-input-group {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.add-keyword-input {
+  flex-grow: 1;
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  color: #111827;
+}
+.add-keyword-input:focus {
+  outline: none;
+  border-color: #2563eb; /* Blue focus */
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
+}
+
+.add-keyword-btn {
+  /* Uses CustomButton styles */
+}
+
+.edit-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.save-keywords-btn {
+  /* Uses CustomButton styles, potentially primary */
+}
+.cancel-edit-btn {
+  /* Uses CustomButton styles, potentially secondary/ghost */
+}
+
+
+/* Danger Zone Section */
+.danger-zone-section {
+  border-color: #fecaca; /* Light red border */
+  background-color: #fff1f2; /* Very light red background */
+}
+
+.danger-zone-section .section-title.danger-title {
+  color: #dc2626; /* Red title */
+  border-bottom-color: #fca5a5; /* Lighter red border bottom */
+}
+
+.danger-content {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+.danger-content .custom-text {
+  color: #b91c1c; /* Darker red text */
+  font-size: 14px;
+}
+
+.delete-project-btn {
+  /* Ensure CustomButton variant="danger" is styled appropriately */
+  /* Or add specific styles here if needed */
+  background-color: #ef4444 !important; /* Force if needed */
+  color: white !important;
+}
+.delete-project-btn:hover {
+  background-color: #dc2626 !important;
+}
+
+
+/* Loading and Error States */
+.loading-spinner { /* Basic spinner, replace with actual component or better CSS */
+  border: 4px solid #f3f3f3;
+  border-top: 4px solid #3498db;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.settings-page .error-message { /* For the main page error */
+  width: 100%;
+  max-width: 800px;
+  text-align: center;
+  padding: 16px;
+  background-color: #fee2e2; /* Light red */
+  color: #991b1b; /* Dark red */
+  border: 1px solid #fecaca;
+  border-radius: 8px;
+}
+
+/* Ensure CustomText with type="label" is styled if not globally */
+.custom-text-label { 
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 4px;
+  font-weight: 500;
+}

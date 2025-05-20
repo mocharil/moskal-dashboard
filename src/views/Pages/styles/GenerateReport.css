@@ -1,12 +1,96 @@
 .generate-report-container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 20px auto; /* Added top/bottom margin */
+  padding: 30px; /* Increased padding */
+  width: 100%; /* Make it take full available width of its parent */
+  max-width: none; /* Remove any fixed max-width constraint */
+  margin: 20px; 
+  box-sizing: border-box; /* Ensure padding and border are included in the element's total width and height */
   font-family: 'Arial', sans-serif; /* Consider using a project-wide font */
   background-color: #ffffff; /* Changed to white for a cleaner look */
   border-radius: 12px; /* Slightly more rounded corners */
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.07); /* Softer, more modern shadow */
   animation: fadeIn 0.5s ease-out; /* Simple fade-in animation */
+}
+
+.report-page-header {
+  padding: 30px 35px; /* Increased padding all around */
+  margin-bottom: 30px; /* Space between header and the first form section */
+  border-radius: 12px; /* Rounded corners */
+  background: linear-gradient(135deg, #0047ab, #2b6cb0); /* Brand color gradient background */
+  color: white;
+  box-shadow: 0 8px 20px rgba(0, 71, 171, 0.15); /* Soft shadow for depth */
+  position: relative;
+  overflow: hidden;
+}
+
+/* Add decorative elements to the header */
+.report-page-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  transform: translate(30%, -30%);
+}
+
+.report-page-header::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 150px;
+  height: 150px;
+  background: radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0) 70%);
+  border-radius: 50%;
+  transform: translate(-30%, 30%);
+}
+
+/* Header content layout */
+.header-content {
+  display: flex;
+  align-items: center;
+  position: relative;
+  z-index: 2; /* Ensure content is above decorative elements */
+}
+
+.header-icon-container {
+  position: relative;
+  margin-right: 25px;
+  width: 60px;
+  height: 60px;
+}
+
+.header-icon {
+  color: white;
+  position: absolute;
+  transition: all 0.3s ease;
+}
+
+.header-icon.primary {
+  top: 0;
+  left: 0;
+  filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  animation: float 3s ease-in-out infinite;
+}
+
+.header-icon.secondary {
+  bottom: 0;
+  right: 0;
+  opacity: 0.7;
+  filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));
+  animation: float 3s ease-in-out infinite reverse;
+}
+
+@keyframes float {
+  0% { transform: translateY(0px); }
+  50% { transform: translateY(-5px); }
+  100% { transform: translateY(0px); }
+}
+
+.header-text {
+  flex: 1;
 }
 
 @keyframes fadeIn {
@@ -15,21 +99,56 @@
 }
 
 .page-title {
-  /* Assuming CustomText handles its own styling, or use a specific class if needed */
-  text-align: center;
-  margin-bottom: 10px; /* Adjusted margin */
-  color: #2c3e50; /* Darker, more modern blue/grey */
+  text-align: left; 
+  margin-bottom: 15px; 
+  color: white; 
+  font-size: 2.5rem; 
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: relative;
+  display: inline-block;
+  z-index: 1;
+}
+
+.page-title::after {
+  content: '';
+  position: absolute;
+  bottom: -5px;
+  left: 0;
+  width: 80px;
+  height: 4px;
+  background-color: #FEC84B; /* Yellow accent color */
+  border-radius: 2px;
 }
 
 .page-subtitle {
-  text-align: center;
-  margin-bottom: 30px;
-  color: #7f8c8d; /* Softer grey for subtitle */
+  text-align: left; 
+  margin-bottom: 0; /* Margin will be handled by report-page-header */
+  color: rgba(255, 255, 255, 0.9); 
   line-height: 1.6;
+  font-size: 1.2rem;
+  max-width: 80%;
+  position: relative;
+  z-index: 1;
 }
 
 .page-subtitle strong {
-  color: #3498db; /* Highlight project name */
+  color: #FEC84B; /* Yellow accent color */
+  font-weight: 600;
+  position: relative;
+  display: inline-block;
+}
+
+.page-subtitle strong::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #FEC84B; /* Yellow accent color */
+  border-radius: 1px;
+  opacity: 0.7;
 }
 
 .form-section {
@@ -285,34 +404,54 @@
   to { opacity: 1; transform: translateY(0); }
 }
 
-.api-response-message.success {
-  background-color: #e8f7f0; /* Light green */
-  border: 1px solid #b3e6c9;
-  color: #00633a; /* Dark green text */
-}
+/* Remove old .success and .error if they are no longer used elsewhere or rename if specific */
+/* .api-response-message.success { ... } */
+/* .api-response-message.error { ... } */
 
-.api-response-message.error {
-  background-color: #fdecea; /* Light red */
-  border: 1px solid #f5c6cb;
-  color: #721c24; /* Dark red text */
-}
-
-.api-response-message .custom-text-bold {
-  display: block;
-  margin-bottom: 5px;
-}
-
-.api-response-message .custom-text-caption {
-  font-size: 0.8rem;
-  color: #6c757d; /* Muted color for Job ID */
-  margin-top: 5px;
-}
+/* Styles for .modern-success, .modern-error, and related .api-response-message children are no longer needed as notifications are handled by react-toastify */
 
 /* Basic responsive adjustments */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .header-icon-container {
+    margin-right: 0;
+    margin-bottom: 15px;
+  }
+  
+  .header-text {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .page-title {
+    text-align: center;
+  }
+  
+  .page-title::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  
+  .page-subtitle {
+    text-align: center;
+    max-width: 100%;
+  }
+}
+
 @media (max-width: 600px) {
   .generate-report-container {
     margin: 10px;
     padding: 15px;
+  }
+  
+  .report-page-header {
+    padding: 20px 15px;
   }
 
   .page-title {
@@ -347,5 +486,14 @@
   .generate-send-btn {
     padding: 12px 15px !important;
     font-size: 1rem !important;
+  }
+  
+  .date-range-picker-control {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .change-date-btn {
+    width: 100%;
   }
 }

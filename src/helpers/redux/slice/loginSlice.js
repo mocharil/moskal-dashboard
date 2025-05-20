@@ -11,6 +11,7 @@ const initialState = loadFromLocalStorage("user") || {
   token: "",
   refreshToken: "",
   tokenType: "",
+  id: null, // Added id field
   isLoggedIn: false,
   tokenExpiration: null,
 };
@@ -40,6 +41,7 @@ const userSlice = createSlice({
       state.token = token;
       state.refreshToken = refreshToken;
       state.tokenType = tokenType;
+      state.id = userId; // Store userId in state.id
       state.isLoggedIn = true;
       state.tokenExpiration = expirationDate;
 
@@ -52,6 +54,7 @@ const userSlice = createSlice({
           token,
           refreshToken,
           tokenType,
+          id: userId, // Save id to localStorage
           isLoggedIn: true,
           tokenExpiration: expirationDate,
         },
@@ -64,6 +67,7 @@ const userSlice = createSlice({
       state.token = "";
       state.refreshToken = "";
       state.tokenType = "";
+      state.id = null; // Clear id on logout
       state.isLoggedIn = false;
       state.tokenExpiration = null;
 

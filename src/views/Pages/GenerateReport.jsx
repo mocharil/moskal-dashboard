@@ -8,6 +8,12 @@ import CustomText from '../../components/CustomText';
 import DialogDateFilter from './components/DialogDateFilter'; // Import the date filter dialog
 import { Button } from '@mui/material'; // For the "Change Date Range" button
 import CalendarTodayIcon from '@mui/icons-material/CalendarToday'; // Optional: for an icon
+import AssessmentIcon from '@mui/icons-material/Assessment'; // Report icon for header
+import BarChartIcon from '@mui/icons-material/BarChart'; // Chart icon for header
+// import CheckCircleOutlineIcon from '@mui/icons-material/CheckCircleOutline'; // No longer needed
+// import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // No longer needed
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const GenerateReport = () => {
   const params = useParams();
@@ -22,13 +28,17 @@ const GenerateReport = () => {
   const [customKeywords, setCustomKeywords] = useState([]);
   const [newCustomKeyword, setNewCustomKeyword] = useState('');
   const [email, setEmail] = useState('');
-  const [dateRange, setDateRange] = useState({ 
-    startDate: new Date().toISOString().slice(0, 10), // Default to today
-    endDate: new Date().toISOString().slice(0, 10)    // Default to today
+  const [dateRange, setDateRange] = useState(() => {
+    const today = new Date();
+    const thirtyDaysAgo = new Date(new Date().setDate(today.getDate() - 30));
+    return {
+      startDate: thirtyDaysAgo.toISOString().slice(0, 10),
+      endDate: today.toISOString().slice(0, 10),
+    };
   });
   const [isDateDialogOpen, setIsDateDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [apiResponse, setApiResponse] = useState(null);
+  // const [apiResponse, setApiResponse] = useState(null); // No longer needed, using toast
 
   useEffect(() => {
     setProjectName(currentProjectNameFromUrl);
@@ -150,18 +160,18 @@ const GenerateReport = () => {
   
   const handleGenerateReport = async () => {
     setIsLoading(true);
-    setApiResponse(null);
+    // setApiResponse(null); // No longer needed
 
     const VITE_REPORT_API_BASE = import.meta.env.VITE_REPORT_API_BASE;
     if (!VITE_REPORT_API_BASE) {
-        setApiResponse({ status: "error", message: "API base URL not configured." });
+        toast.error("API base URL not configured.");
         setIsLoading(false);
         return;
     }
 
     const allKeywords = [...projectActiveKeywords, ...customKeywords]; // Use projectActiveKeywords
     if (allKeywords.length === 0) {
-      setApiResponse({ status: "error", message: "Please add at least one keyword (project or custom)." });
+      toast.error("Please add at least one keyword (project or custom).");
       setIsLoading(false);
       return;
     }
@@ -187,16 +197,53 @@ const GenerateReport = () => {
       });
 
       const result = await response.json();
-      setApiResponse(result);
+      // setApiResponse(result); // No longer needed
 
       if (result.status === 'success') {
-        console.log('Report generation started:', result.data.job_id);
+        // console.log('Report generation started:', result.data.job_id); // Job ID removed from user view
+        toast.success(
+          <div>
+            <CustomText type="bold" style={{ fontSize: '1.1rem', color: '#ffffff' }}>Report Generation Initiated!</CustomText>
+            <CustomText style={{ marginTop: '8px', fontSize: '0.95rem', color: '#ffffff' }}>
+              Awesome! Your report is being generated and will be sent to your email address (<strong>{email}</strong>) as soon as it's ready.
+            </CustomText>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 5000,
+            hideProgressBar: false,
+            closeOnClick: true,
+            pauseOnHover: true,
+            draggable: true,
+            progress: undefined,
+            theme: "colored", // Use colored theme for better default styling
+          }
+        );
       } else {
         console.error('Error generating report:', result.message);
+        toast.error(result.message || "An unknown error occurred while generating the report.", {
+          position: "top-right",
+          autoClose: 5000,
+          hideProgressBar: false,
+          closeOnClick: true,
+          pauseOnHover: true,
+          draggable: true,
+          progress: undefined,
+          theme: "colored",
+        });
       }
     } catch (error) {
       console.error('Failed to send request:', error);
-      setApiResponse({ status: "error", message: `Failed to send request: ${error.message}` });
+      toast.error(`Failed to send request: ${error.message}`, {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "colored",
+      });
     } finally {
       setIsLoading(false);
     }
@@ -204,10 +251,21 @@ const GenerateReport = () => {
 
   return (
     <div className="generate-report-container">
-      <CustomText type="title" className="page-title" style={{ marginBottom: '8px' }}>Generate Project Report</CustomText>
-      <CustomText type="sub-title" className="page-subtitle" style={{ marginBottom: '25px' }}>
-        Create a sentiment analysis report for project: <strong>{projectName}</strong>.
-      </CustomText>
+      <ToastContainer />
+      <div className="report-page-header">
+        <div className="header-content">
+          <div className="header-icon-container">
+            <AssessmentIcon className="header-icon primary" style={{ fontSize: 40 }} />
+            <BarChartIcon className="header-icon secondary" style={{ fontSize: 32 }} />
+          </div>
+          <div className="header-text">
+            <CustomText type="title" className="page-title">Generate Project Report</CustomText>
+            <CustomText type="sub-title" className="page-subtitle">
+              Create a sentiment analysis report for project: <strong>{projectName}</strong>.
+            </CustomText>
+          </div>
+        </div>
+      </div>
 
       <div className="form-section">
         <CustomText type="label" className="custom-text-label">Report Date Range</CustomText>
@@ -308,20 +366,7 @@ const GenerateReport = () => {
         {isLoading ? 'Generating Report...' : 'Generate & Send Report'}
       </CustomButton>
 
-      {apiResponse && (
-        <div 
-          className={`api-response-message ${apiResponse.status === 'success' ? 'success' : 'error'}`}
-          style={{ marginTop: '25px' }} // Ensure consistent spacing
-        >
-          <CustomText type="bold" style={{ marginBottom: '5px' }}>
-            {apiResponse.status === 'success' ? 'Report Generation Started!' : 'Error Generating Report'}
-          </CustomText>
-          <CustomText>{apiResponse.message}</CustomText>
-          {apiResponse.data && apiResponse.data.job_id && (
-            <CustomText type="caption" style={{ marginTop: '5px', color: '#6c757d' }}>Job ID: {apiResponse.data.job_id}</CustomText>
-          )}
-        </div>
-      )}
+      {/* The apiResponse display is now handled by react-toastify */}
     </div>
   );
 };

@@ -3,7 +3,7 @@ import AccordionGroup from "@mui/joy/AccordionGroup";
 import Accordion from "@mui/joy/Accordion";
 import AccordionDetails from "@mui/joy/AccordionDetails";
 import AccordionSummary from "@mui/joy/AccordionSummary";
-import { AddCircle, NavigateNext, ChevronLeft, ChevronRight } from "@mui/icons-material";
+import { AddCircle, NavigateNext, ChevronLeft, ChevronRight, SettingsOutlined, EditOutlined } from "@mui/icons-material"; // Added SettingsOutlined, EditOutlined
 import CustomText from "./CustomText";
 import { DescriptionOutlined } from "@mui/icons-material";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -144,7 +144,7 @@ const Sidebar = () => {
           token: resp.access_token,
           refreshToken: resp.refresh_token,
           tokenType: userData.tokenType,
-          userId: userData.id,
+          userId: userData.id, // Use userData.id for dispatch, assuming it's the pre-refresh source
           expiresInDays: userData.expiresInDays,
         })
       );
@@ -174,6 +174,8 @@ const Sidebar = () => {
     setActiveKeywordSidebar("");
     navigate(`/account-settings`, { replace: true });
   };
+
+  // Removed projectSettingsRoute
 
   const handleAddNewKeyword = () => {
     setActiveMenu("");
@@ -347,10 +349,26 @@ const Sidebar = () => {
                   >
                     <img
                       className="sidebar-icon-accordion"
-                      src={window.location.origin + "/download-01.svg"} 
+                      src={window.location.origin + "/download-01.svg"}
                     />
                     <span className="tooltiptext">Generate Report</span>
                   </div>
+                  {/* Collapsed Project Settings Link */}
+                  {(() => {
+                    const loggedInUserId = userData && userData.id !== undefined && userData.id !== null ? Number(userData.id) : null;
+                    const projectOwnerId = value && value.owner_id !== undefined && value.owner_id !== null ? Number(value.owner_id) : null;
+                    const isOwned = loggedInUserId !== null && projectOwnerId !== null && projectOwnerId === loggedInUserId;
+                    const canEditSettings = isOwned || value.role === 'full_access';
+                    return canEditSettings;
+                  })() && (
+                  <div
+                    className={`collapsed-submenu-item tooltip ${isMenuActive(value.name, "settings") ? 'active' : ''}`}
+                    onClick={() => handleOnSelectAccordion(value.name, "settings")}
+                  >
+                    <SettingsOutlined sx={{ fontSize: 18, color: isMenuActive(value.name, "settings") ? '#FFFFFF' : '#717680' }} />
+                    <span className="tooltiptext">Project Settings</span>
+                  </div>
+                  )}
                 </div>
               )}
             </React.Fragment>
@@ -359,7 +377,15 @@ const Sidebar = () => {
 
         {/* Regular accordion for expanded sidebar */}
         <AccordionGroup sx={{ maxWidth: isSidebarCollapsed ? 60 : 192 }}>
-          {listKeywords?.map((value, index) => (
+          {listKeywords?.map((value, index) => {
+            // Ensure type-consistent comparison for ownership
+            const loggedInUserId = userData && userData.id !== undefined && userData.id !== null ? Number(userData.id) : null;
+            const projectOwnerId = value && value.owner_id !== undefined && value.owner_id !== null ? Number(value.owner_id) : null;
+            
+            const isOwned = loggedInUserId !== null && projectOwnerId !== null && projectOwnerId === loggedInUserId;
+            const canEditSettings = isOwned || value.role === 'full_access';
+
+            return (
             <Accordion
               key={`${value.name} - ${index}`}
               expanded={activeIndex === index || activeKeywordSidebar === value.name}
@@ -522,9 +548,27 @@ const Sidebar = () => {
                     Generate Report
                   </CustomText>
                 </div>
+                {/* Expanded Project Settings Link */}
+                {canEditSettings && (
+                <div
+                  className={`sidebar-accordion-inner-container ${
+                    isMenuActive(value.name, "settings") &&
+                    "sidebar-accordion-active"
+                  }`}
+                  onClick={() =>
+                    handleOnSelectAccordion(value.name, "settings")
+                  }
+                >
+                  <SettingsOutlined className="sidebar-icon-accordion" />
+                  <CustomText color="b900" bold="medium" size="sss">
+                    Settings
+                  </CustomText>
+                </div>
+                )}
               </AccordionDetails>
             </Accordion>
-          ))}
+            );
+          })}
         </AccordionGroup>
         <div className="sidebar-profile-container tooltip" onClick={accountRoute}>
           <div className="sidebar-profile-left">
@@ -541,6 +585,8 @@ const Sidebar = () => {
           <NavigateNext sx={{ color: "#717680", width: "16px" }} />
           {isSidebarCollapsed && <span className="tooltiptext">Account Settings</span>}
         </div>
+
+        {/* Removed General Project Settings Link */}
       </div>
     </>
   );
