@@ -16,8 +16,6 @@ const MoskalAI = () => {
 
   // Template questions
   const templateQuestions = [
-    "What was the reach of positive mentions last month?",
-    "What are our strengths and weaknesses compared to the competition?",
     "Who are the top influencers?",
     "How can we achieve the best short-term results in our brand's communication and marketing?",
     "What is the most viral topic in the last 7 days?",
