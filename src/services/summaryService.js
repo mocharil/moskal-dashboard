@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_DATA_API_BASE;
+const API_BASE = "/data-api";
 
 export const getSummaryOverview = async (topicToWatchData) => {
   try {

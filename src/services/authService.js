@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_AUTH_API_BASE;
+const API_BASE = "/auth-api";
 
 const authService = {
   login: async (username, password) => {

@@ -1,7 +1,7 @@
 import axios from "axios";
 
-const API_BASE = import.meta.env.VITE_AUTH_API_BASE;
-const SUGGESTION_API = import.meta.env.VITE_REPORT_API_BASE;
+const API_BASE = "/auth-api";
+const SUGGESTION_API = "/report-api";
 
 export const getProjects = async () => {
   try {

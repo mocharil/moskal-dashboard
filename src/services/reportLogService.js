@@ -1,4 +1,4 @@
-const API_BASE_URL = import.meta.env.VITE_REPORT_API_BASE;
+const API_BASE_URL = "/report-api";
 
 /**
  * Fetches report jobs from the API with pagination.
