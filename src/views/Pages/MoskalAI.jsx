@@ -155,14 +155,6 @@ const MoskalAI = () => {
     return elements.length > 0 ? <>{elements}</> : <p>{processLineContent(text, 'single-p')}</p>;
   };
 
-  const dummyChartData = [
-    { name: 'Topic A', value: 400 },
-    { name: 'Topic B', value: 300 },
-    { name: 'Topic C', value: 200 },
-    { name: 'Topic D', value: 278 },
-    { name: 'Topic E', value: 189 },
-  ];
-
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
     if (!isTyping && e.target.value.trim() !== '') {

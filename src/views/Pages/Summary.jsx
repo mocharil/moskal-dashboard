@@ -30,8 +30,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useDidUpdateEffect } from "../../helpers/loadState";
 
 const Summary = () => {
-  const { keyword } = useParams();
+  const { keyword } = useParams(); 
   const navigate = useNavigate();
+  // location is no longer needed for report-specific summary view
+
+  // Removed isReportSummaryView and reportSpecificSummary states
+
   const [mentionData, setMentionData] = useState([]);
   const [kolData, setKolData] = useState([]);
   const [keywordData, setKeywordData] = useState([]);
@@ -62,6 +66,7 @@ const Summary = () => {
   const userData = useSelector((state) => state.user);
 
   const [dataReqBody, setDataReqBody] = useState({
+    // Initialize directly as it's always for keyword summary now
     keywords: activeKeywords.keywords,
     owner_id: `${activeKeywords.owner_id}`,
     project_name: activeKeywords.name,
@@ -71,23 +76,47 @@ const Summary = () => {
   const [dataAdvanceFilter, setDataAdvanceFilter] = useState({});
 
   useEffect(() => {
-    getMentionsData();
-    getKolToWatchData();
-    getKeywordData();
-    getStatData();
-    getSummaryData();
-  }, []);
+    // This effect now always runs for the keyword-based summary
+    // Ensure activeKeywords is loaded before setting dataReqBody and fetching
+    if (keyword && activeKeywords) {
+      setDataReqBody({
+        keywords: activeKeywords.keywords,
+        owner_id: `${activeKeywords.owner_id}`,
+        project_name: activeKeywords.name,
+        channels: [],
+      });
+      // Initial data fetch
+      getMentionsData();
+      getKolToWatchData();
+      getKeywordData();
+      getStatData();
+      getSummaryData();
+    }
+  }, [keyword, activeKeywords]); // Depend on keyword and activeKeywords
 
+  // Effect for keyword changes (existing logic, simplified)
   useDidUpdateEffect(() => {
-    setIsLoadingFirst(true);
-    setIsLoading(true);
-    getMentionsData();
-    getKolToWatchData();
-    getKeywordData();
-    getStatData();
-    getSummaryData();
-  }, [keyword]);
+    if (keyword && dataReqBody) { // dataReqBody check is still good
+      setIsLoadingFirst(true);
+      setIsLoading(true);
+      // Update dataReqBody if activeKeywords changed for the new 'keyword'
+      if (activeKeywords && activeKeywords.name === keyword) {
+         setDataReqBody(prev => ({
+            ...prev,
+            keywords: activeKeywords.keywords,
+            owner_id: `${activeKeywords.owner_id}`,
+            project_name: activeKeywords.name,
+        }));
+      }
+      getMentionsData();
+      getKolToWatchData();
+      getKeywordData();
+      getStatData();
+      getSummaryData();
+    }
+  }, [keyword]); // Only keyword, dataReqBody will be updated by the main useEffect or this one
 
+  // Effect for loading completion (existing logic, simplified)
   useDidUpdateEffect(() => {
     if (isLoadingDone()) {
       setIsLoadingFirst(false);
@@ -95,25 +124,33 @@ const Summary = () => {
     }
   }, [mentionData, kolData, keywordData, statData, summaryData]);
 
+  // Effect for date filter changes (existing logic, simplified)
   useDidUpdateEffect(() => {
-    setIsLoading(true);
-    getMentionsData();
-    getKolToWatchData();
-    getKeywordData();
-    getStatData();
-    getSummaryData();
+    if (dataReqBody) { // dataReqBody check is still good
+      setIsLoading(true);
+      getMentionsData();
+      getKolToWatchData();
+      getKeywordData();
+      getStatData();
+      getSummaryData();
+    }
   }, [dataDateFilter]);
 
+  // Effect for mentions tab changes (existing logic, simplified)
   useDidUpdateEffect(() => {
-    getMentionsData();
+    if (dataReqBody) { // dataReqBody check is still good
+      getMentionsData();
+    }
   }, [activeTabMentions]);
 
   const generateReqBody = () => {
+    if (!dataReqBody || !activeKeywords) return null; // Guard against null dataReqBody or activeKeywords
+
     const data = {
       keywords:
         dataAdvanceFilter?.keywords?.length > 0
           ? dataAdvanceFilter?.keywords
-          : activeKeywords.keywords,
+          : dataReqBody.keywords, // Use from dataReqBody state
       search_exact_phrases: dataAdvanceFilter?.search_exact_phrases
         ? dataAdvanceFilter?.search_exact_phrases
         : false,
@@ -153,13 +190,14 @@ const Summary = () => {
       ...(dataAdvanceFilter?.domain?.length > 0 && {
         domain: dataAdvanceFilter?.domain,
       }),
-      owner_id: `${activeKeywords.owner_id}`,
-      project_name: activeKeywords.name,
+      owner_id: dataReqBody.owner_id, 
+      project_name: dataReqBody.project_name, 
     };
     return data;
   };
 
   const isLoadingDone = () => {
+    // Simplified: no longer depends on isReportSummaryView
     return (
       !isLoadingKol &&
       !isLoadingMentions &&
@@ -278,11 +316,11 @@ const Summary = () => {
     }
   };
   const handleRedirectAnalysis = () => {
-    navigate(`/${keyword}/analysis`, { replace: true });
+    if (keyword) navigate(`/${keyword}/analysis`, { replace: true });
   };
 
   const handleRedirectKOL = () => {
-    navigate(`/${keyword}/kol`, { replace: true });
+    if (keyword) navigate(`/${keyword}/kol`, { replace: true });
   };
 
   const handleChangeMentions = (event, newValue) => {
@@ -310,14 +348,19 @@ const Summary = () => {
       sort_type: sortTypeForMentionsPage 
     };
 
-    navigate(`/${keyword}/mentions`, { 
-      state: { 
-        filters: navigationPayload, 
-        fromSummary: true // Flag to indicate navigation from Summary
-      } 
-    });
+    if (keyword) { // Ensure keyword is defined before navigating
+      navigate(`/${keyword}/mentions`, { 
+        state: { 
+          filters: navigationPayload, 
+          fromSummary: true // Flag to indicate navigation from Summary
+        } 
+      });
+    }
   };
 
+  // Removed the 'if (isReportSummaryView)' block as this component now only handles keyword-based summary
+
+  // Below is the existing rendering logic for keyword-based summary
   return (
     <>
       <div className="summary-search-bar-container">
@@ -377,7 +420,7 @@ const Summary = () => {
               </div>
               <div>
                 <CustomText bold="semibold" size="lgs" color="b900" inline>
-                  {activeKeywords.name}
+                  {activeKeywords?.name} {/* Added optional chaining for safety */}
                 </CustomText>
                 <div className="summary-presence-score">
                   <CustomText size="2xls" color="b500" inline>

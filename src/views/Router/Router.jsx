@@ -121,6 +121,11 @@ const router = createBrowserRouter([
     path: "/report-list", // New route for listing reports
     element: <ProtectedRouteSidebar element={<ReportList />} />,
   },
+  // Removed specific report summary route, as it's now a modal
+  // {
+  //   path: "/summary/:reportId", 
+  //   element: <ProtectedRouteSidebar element={<Summary />} />,
+  // },
   {
     path: "/account-settings",
     element: <ProtectedRouteSidebar element={<AccountSettings />} />,

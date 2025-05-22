@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 // import { useSelector } from 'react-redux'; // No longer using for project keywords
-import { useParams } from 'react-router-dom';
+import { useParams, Link } from 'react-router-dom'; // Import Link
 import { getProjects } from '../../services/projectService'; // Import project service
 import './styles/GenerateReport.css';
 import CustomButton from '../../components/CustomButton';
@@ -358,13 +358,29 @@ const GenerateReport = () => {
         </CustomText>
       </div>
 
-      <CustomButton
-        onClick={handleGenerateReport}
-        disabled={isLoading || isProjectKeywordsLoading} // Also disable if project keywords are loading
-        className="generate-send-btn"
-      >
-        {isLoading ? 'Generating Report...' : 'Generate & Send Report'}
-      </CustomButton>
+      <div className="action-buttons-container">
+        <div className="primary-button-wrapper">
+          <CustomButton
+            onClick={handleGenerateReport}
+            disabled={isLoading || isProjectKeywordsLoading}
+            className="generate-send-btn"
+          >
+            {isLoading ? 'Generating Report...' : 'Generate & Send Report'}
+          </CustomButton>
+        </div>
+
+        <div className="secondary-button-wrapper">
+          <Link to="/report-list" className="view-reports-link">
+            <CustomButton
+              variant="outlined"
+              className="view-report-list-btn"
+              startIcon={<AssessmentIcon />}
+            >
+              View Report List
+            </CustomButton>
+          </Link>
+        </div>
+      </div>
 
       {/* The apiResponse display is now handled by react-toastify */}
     </div>

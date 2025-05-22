@@ -1,29 +1,51 @@
-// Elasticsearch client and related logic have been removed as per request.
-// Functions are modified to return empty/default data.
+// const VITE_ES_HOST = import.meta.env.VITE_ES_HOST; // Kept for context, but not used
+// const VITE_ES_USERNAME = import.meta.env.VITE_ES_USERNAME; // Kept for context, but not used
+// const VITE_ES_PASSWORD = import.meta.env.VITE_ES_PASSWORD; // Kept for context, but not used
 
-// const VITE_ES_HOST = import.meta.env.VITE_ES_HOST;
-// const VITE_ES_USERNAME = import.meta.env.VITE_ES_USERNAME;
-// const VITE_ES_PASSWORD = import.meta.env.VITE_ES_PASSWORD;
-
-// let client;
-
-// if (VITE_ES_HOST) {
-//   // Client initialization removed
-// } else {
-//   console.error("Elasticsearch host URL (VITE_ES_HOST) is not defined in .env. ES functionality disabled.");
-// }
+const API_BASE_URL = 'https://api.moskal.id'; // Using the provided API base
 
 /**
- * Fetches all report jobs. (Elasticsearch connection removed)
- * Returns an empty array.
+ * Fetches report jobs from the API with pagination.
  */
-export const getReportJobs = async (size = 100) => { // Default to fetching 100 jobs
-  console.warn("getReportJobs: Elasticsearch functionality has been removed. Returning empty array.");
-  return []; // Return empty array as ES is disconnected
+export const getReportJobs = async (email = "arilindra21@gmail.com", page = 1, size = 10) => {
+  try {
+    const response = await fetch(`${API_BASE_URL}/list_jobs?email=${encodeURIComponent(email)}&page=${page}&size=${size}`, {
+      method: 'GET',
+      headers: {
+        'accept': 'application/json',
+      },
+    });
+
+    if (!response.ok) {
+      // Try to parse error response from API if available
+      let errorMessage = `API error: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage; // Use API's error detail if present
+      } catch (e) {
+        // Ignore if error response is not JSON
+      }
+      throw new Error(errorMessage);
+    }
+
+    const data = await response.json();
+    // The API response structure is { status, page, size, total, count, data: [...] }
+    // We need to return the array of reports and pagination info
+    return {
+      reports: data.data || [],
+      page: data.page,
+      size: data.size,
+      total: data.total,
+      count: data.count,
+    };
+  } catch (error) {
+    console.error("Failed to fetch report jobs:", error);
+    throw error; // Re-throw the error to be caught by the calling component
+  }
 };
 
 /**
- * Fetches a specific report detail. (Elasticsearch connection removed)
+ * Fetches a specific report detail. (Original functionality kept, but ES connection removed)
  * Returns null.
  */
 export const getDetailedReport = async (topic, startDate, endDate) => {
@@ -34,3 +56,49 @@ export const getDetailedReport = async (topic, startDate, endDate) => {
 // You can add more functions here to query 'moskal-reports' if needed,
 // for example, by a report ID if 'moskal-report-jobs' provides a direct link.
 // These would also need to be implemented without direct ES client usage.
+
+/**
+ * Calls the API to regenerate a report.
+ * @param {string} jobId - The ID of the job to regenerate.
+ * @param {object} params - Optional parameters for regeneration.
+ * @param {string} [params.email] - Optional new email.
+ * @param {string} [params.start_date] - Optional new start date.
+ * @param {string} [params.end_date] - Optional new end date.
+ * @param {string[]} [params.sub_keywords] - Optional new list of sub keywords.
+ */
+export const regenerateReportJob = async (jobId, params = {}) => {
+  try {
+    const queryParams = new URLSearchParams({ job_id: jobId });
+    if (params.email) queryParams.append('email', params.email);
+    if (params.start_date) queryParams.append('start_date', params.start_date);
+    if (params.end_date) queryParams.append('end_date', params.end_date);
+    if (params.sub_keywords && params.sub_keywords.length > 0) {
+      // The API expects sub_keywords as multiple query params with the same name
+      params.sub_keywords.forEach(keyword => queryParams.append('sub_keywords', keyword));
+    }
+
+    const response = await fetch(`${API_BASE_URL}/regenerate-report?${queryParams.toString()}`, {
+      method: 'POST',
+      headers: {
+        'accept': 'application/json',
+      },
+      // Body is not needed as per the cURL example, parameters are in query string
+    });
+
+    if (!response.ok) {
+      let errorMessage = `API error: ${response.status} ${response.statusText}`;
+      try {
+        const errorData = await response.json();
+        errorMessage = errorData.detail || errorMessage;
+      } catch (e) {
+        // Ignore if error response is not JSON
+      }
+      throw new Error(errorMessage);
+    }
+
+    return await response.json(); // Returns { status, message, data: { job_id } }
+  } catch (error) {
+    console.error("Failed to regenerate report job:", error);
+    throw error;
+  }
+};
