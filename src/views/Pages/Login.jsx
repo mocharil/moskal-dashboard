@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useSnackbar } from "notistack";
 import FormControl from "@mui/joy/FormControl";
+import IconButton from '@mui/joy/IconButton';
 import FormLabel from "@mui/joy/FormLabel";
 import Checkbox from "@mui/joy/Checkbox";
 
@@ -31,6 +32,7 @@ const Login = () => {
 
   const [emailLogin, setEmailLogin] = useState("");
   const [passwordLogin, setPasswordLogin] = useState("");
+  const [showPasswordLogin, setShowPasswordLogin] = useState(false);
   const [isRememberChecked, setIsRememberChecked] = useState(false);
 
   const [isLoginError, setIsLoginError] = useState(false);
@@ -49,6 +51,8 @@ const Login = () => {
   const handleOnChangePasswordLogin = (event) => {
     setPasswordLogin(event.target.value);
   };
+
+  const handleClickShowPasswordLogin = () => setShowPasswordLogin((show) => !show);
 
   const handleOnChangeRemember = (event) => {
     setIsRememberChecked(event.target.value);
@@ -295,10 +299,26 @@ const Login = () => {
                 </FormLabel>
                 <Input
                   placeholder="********"
-                  type="password"
+                  type={showPasswordLogin ? "text" : "password"}
                   value={passwordLogin}
                   onChange={handleOnChangePasswordLogin}
                   error={isLoginError}
+                  endDecorator={
+                    <IconButton
+                      onClick={handleClickShowPasswordLogin}
+                      // onMouseDown={handleMouseDownPassword} // Optional: to prevent focus shift
+                      edge="end"
+                      variant="plain"
+                      color="neutral"
+                      sx={{ marginRight: '-0.25rem' }} // Adjust spacing if needed
+                    >
+                      <img 
+                        src={showPasswordLogin ? window.location.origin + "/eye-open.svg" : window.location.origin + "/eye-close.svg"} 
+                        alt={showPasswordLogin ? "Hide password" : "Show password"} 
+                        style={{ width: '20px', height: '20px', opacity: 0.7 }}
+                      />
+                    </IconButton>
+                  }
                 />
                 {isLoginError && (
                   <FormHelperText>

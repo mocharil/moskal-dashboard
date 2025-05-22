@@ -6,6 +6,218 @@ import axios from 'axios';
 import { getProjects } from '../../services/projectService'; // Import getProjects
 import './styles/MoskalAI.css';
 
+// Helper functions for dynamic chart keys
+const cleanKey = (key) => {
+  if (typeof key !== 'string') return 'Value';
+  return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+};
+
+const findKeyInData = (keysInSample, hint) => {
+  if (!hint || !keysInSample) return null;
+  if (keysInSample.includes(hint)) return hint;
+  const lowerHint = hint.toLowerCase();
+  return keysInSample.find(k => k.toLowerCase() === lowerHint) || null;
+};
+
+const isValueSuitableForAxis = (value) => {
+  return typeof value === 'number' || (typeof value === 'string' && String(value).trim() !== '');
+};
+
+const identifyChartKeys = (data, apiXHint, apiYHintsInput, chartTitle = "") => {
+  if (!data || data.length === 0) {
+    const yHints = apiYHintsInput ? (Array.isArray(apiYHintsInput) ? apiYHintsInput : [apiYHintsInput]) : ['value'];
+    return {
+      xAxisKey: apiXHint || 'date',
+      yAxisSeries: yHints.map(hint => ({ dataKey: hint, name: cleanKey(hint) }))
+    };
+  }
+
+  const sample = data[0];
+  const keysInSample = Object.keys(sample);
+  let determinedXAxisKey = null;
+
+  // 1. Determine X-Axis Key
+  // Try API hint (case-insensitive), but only if its values are suitable
+  if (apiXHint) {
+      const keyFromHint = findKeyInData(keysInSample, apiXHint);
+      if (keyFromHint && sample.hasOwnProperty(keyFromHint) && isValueSuitableForAxis(sample[keyFromHint])) {
+          determinedXAxisKey = keyFromHint;
+      }
+  }
+  
+  // If API hint didn't match or wasn't suitable, try common categorical keys
+  if (!determinedXAxisKey) {
+    const commonCatKeys = ['name', 'label', 'category', 'kategori']; // Add 'kategori' for case-insensitivity with findKeyInData
+    for (const commonName of commonCatKeys) {
+        const potentialKey = findKeyInData(keysInSample, commonName);
+        if (potentialKey && sample.hasOwnProperty(potentialKey) && isValueSuitableForAxis(sample[potentialKey])) {
+            determinedXAxisKey = potentialKey;
+            break;
+        }
+    }
+  }
+
+  // If not found, try to find a date-like key with suitable values
+  if (!determinedXAxisKey) {
+      const dateKeywords = ['date', 'time', 'period', 'day', 'month', 'year', 'timestamp', 'tanggal', 'waktu', 'post_date'];
+      const potentialDateKey = keysInSample.find(key => {
+          if (sample.hasOwnProperty(key) && isValueSuitableForAxis(sample[key])) {
+              const lowerKey = key.toLowerCase();
+              if (dateKeywords.some(dk => lowerKey.includes(dk))) {
+                  return (typeof sample[key] === 'number' ||
+                         (typeof sample[key] === 'string' && (String(sample[key]).match(/^\d{4}-\d{2}-\d{2}/) || !isNaN(Date.parse(String(sample[key]))))));
+              }
+          }
+          return false;
+      });
+      if (potentialDateKey) {
+          determinedXAxisKey = potentialDateKey;
+      }
+  }
+
+  // If still no key, fallback to the first key with a suitable string value
+  if (!determinedXAxisKey) {
+      const firstSuitableStringKey = keysInSample.find(k => sample.hasOwnProperty(k) && typeof sample[k] === 'string' && isValueSuitableForAxis(sample[k]));
+      if (firstSuitableStringKey) {
+          determinedXAxisKey = firstSuitableStringKey;
+      }
+  }
+  
+  // If still no key, fallback to the first key with any suitable value
+  if (!determinedXAxisKey) {
+      const firstSuitableKey = keysInSample.find(k => sample.hasOwnProperty(k) && isValueSuitableForAxis(sample[k]));
+      if (firstSuitableKey) {
+          determinedXAxisKey = firstSuitableKey;
+      }
+  }
+
+  // Absolute fallbacks if no suitable key is found
+  if (!determinedXAxisKey || !keysInSample.includes(determinedXAxisKey)) {
+       if (keysInSample.length > 0) {
+          // If all else fails, use the first key from the data, hoping for the best.
+          // Or, if apiXHint was provided but not found/suitable, it might be an intended non-data key (less likely for X-axis).
+          console.warn(`X-axis key determination failed to find a suitable key for chart "${chartTitle}". Hint: "${apiXHint}". Defaulting to first data key: "${keysInSample[0]}".`);
+          determinedXAxisKey = keysInSample[0];
+       } else {
+          // Data is empty or has no keys, this case should ideally be caught earlier.
+          determinedXAxisKey = apiXHint || 'x'; 
+       }
+  }
+  
+  // Final check: ensure determinedXAxisKey is an actual key if data exists.
+  // This might be slightly redundant given the above, but acts as a safeguard.
+  if (data.length > 0 && keysInSample.length > 0 && !keysInSample.includes(determinedXAxisKey)) {
+      console.warn(`Final X-axis key "${determinedXAxisKey}" is not in data keys [${keysInSample.join(', ')}] for chart "${chartTitle}". Defaulting to "${keysInSample[0]}".`);
+      determinedXAxisKey = keysInSample[0];
+  }
+  
+  // 2. Determine Y-Axis Series
+  const yAxisSeries = [];
+  const apiYHints = apiYHintsInput ? (Array.isArray(apiYHintsInput) ? apiYHintsInput : [apiYHintsInput]) : [];
+
+  if (chartTitle === "Tren Sentimen Harian" &&
+      keysInSample.includes('positive') && typeof sample['positive'] === 'number' &&
+      keysInSample.includes('negative') && typeof sample['negative'] === 'number' &&
+      keysInSample.includes('neutral') && typeof sample['neutral'] === 'number') {
+    if (keysInSample.includes('post_date')) determinedXAxisKey = 'post_date';
+    yAxisSeries.push({ dataKey: 'positive', name: 'Positive' });
+    yAxisSeries.push({ dataKey: 'negative', name: 'Negative' });
+    yAxisSeries.push({ dataKey: 'neutral', name: 'Neutral' });
+  } else {
+    if (apiYHints.length > 0) {
+      apiYHints.forEach(hint => {
+        const foundYKey = findKeyInData(keysInSample, hint);
+        if (foundYKey && typeof sample[foundYKey] === 'number') {
+          yAxisSeries.push({ dataKey: foundYKey, name: cleanKey(hint) });
+        }
+      });
+    }
+    if (yAxisSeries.length === 0) {
+      keysInSample.forEach(key => {
+        if (key !== determinedXAxisKey && typeof sample[key] === 'number') {
+          yAxisSeries.push({ dataKey: key, name: cleanKey(key) });
+        }
+      });
+    }
+  }
+
+  if (yAxisSeries.length === 0) {
+    const fallbackYKey = keysInSample.find(k => k !== determinedXAxisKey && typeof sample[k] === 'number') ||
+                         keysInSample.find(k => k !== determinedXAxisKey) ||
+                         (keysInSample.length > 1 ? keysInSample[1] : null);
+    if (fallbackYKey) {
+        yAxisSeries.push({ dataKey: fallbackYKey, name: cleanKey(fallbackYKey) });
+    } else if (apiYHints.length > 0 && apiYHints[0]) {
+        yAxisSeries.push({ dataKey: apiYHints[0], name: cleanKey(apiYHints[0]) });
+    } else {
+        yAxisSeries.push({ dataKey: 'value', name: 'Value' });
+    }
+  }
+  return { xAxisKey: determinedXAxisKey, yAxisSeries };
+};
+
+const identifyPieChartKeys = (data, apiNameKeyHint, apiDataKeyHint) => {
+  if (!data || data.length === 0) {
+    return { nameKey: apiNameKeyHint || 'name', dataKey: apiDataKeyHint || 'value' };
+  }
+  const sample = data[0];
+  const keysInSample = Object.keys(sample);
+  let determinedNameKey = apiNameKeyHint;
+  let determinedDataKey = apiDataKeyHint;
+
+  let foundNameKey = findKeyInData(keysInSample, apiNameKeyHint);
+  if (foundNameKey && (typeof sample[foundNameKey] === 'string' || typeof sample[foundNameKey] === 'number')) { // Name key can be number sometimes
+      determinedNameKey = foundNameKey;
+  } else {
+      const commonNameKeys = ['name', 'label', 'sentiment', 'category', 'group'];
+      determinedNameKey = keysInSample.find(k => commonNameKeys.includes(k.toLowerCase()) && (typeof sample[k] === 'string' || typeof sample[k] === 'number')) ||
+                          keysInSample.find(k => (typeof sample[k] === 'string' || typeof sample[k] === 'number'));
+      if (!determinedNameKey && apiNameKeyHint) determinedNameKey = apiNameKeyHint;
+      else if (!determinedNameKey) determinedNameKey = keysInSample[0];
+  }
+  determinedNameKey = determinedNameKey || keysInSample[0] || 'name';
+
+  let foundDataKey = findKeyInData(keysInSample, apiDataKeyHint);
+   if (foundDataKey && typeof sample[foundDataKey] === 'number') {
+      determinedDataKey = foundDataKey;
+  } else {
+      const commonDataKeys = ['value', 'count', 'mentions', 'total', 'amount', 'percentage'];
+      determinedDataKey = keysInSample.find(k => commonDataKeys.includes(k.toLowerCase()) && typeof sample[k] === 'number' && k !== determinedNameKey) ||
+                          keysInSample.find(k => typeof sample[k] === 'number' && k !== determinedNameKey);
+      if (!determinedDataKey) {
+          determinedDataKey = keysInSample.find(k => typeof sample[k] === 'number');
+      }
+      if (!determinedDataKey && apiDataKeyHint) determinedDataKey = apiDataKeyHint;
+      else if (!determinedDataKey) {
+          const otherKeys = keysInSample.filter(k => k !== determinedNameKey);
+          determinedDataKey = otherKeys.length > 0 ? otherKeys[0] : (keysInSample.length > 1 ? keysInSample[1] : keysInSample[0]);
+      }
+  }
+  determinedDataKey = determinedDataKey || (keysInSample.length > 1 ? keysInSample.find(k => k !== determinedNameKey) || keysInSample[1] : 'value');
+
+  if (determinedDataKey === determinedNameKey || typeof sample[determinedDataKey] !== 'number') {
+      const alternativeDataKey = keysInSample.find(k => k !== determinedNameKey && typeof sample[k] === 'number');
+      if (alternativeDataKey) {
+          determinedDataKey = alternativeDataKey;
+      } else if (typeof sample[determinedDataKey] !== 'number') {
+          const anyNumeric = keysInSample.find(k => typeof sample[k] === 'number');
+          if (anyNumeric) determinedDataKey = anyNumeric;
+          else determinedDataKey = apiDataKeyHint || 'value';
+      }
+  }
+  return { nameKey: determinedNameKey, dataKey: determinedDataKey };
+};
+
+const extractCleanUrl = (text) => {
+  if (typeof text !== 'string') return null;
+  const match = text.match(/https?:\/\/[^\s]+/);
+  return match ? match[0] : null;
+};
+
+const BAR_COLORS = ['#4A6CF7', '#82ca9d', '#ff7300', '#8884d8', '#FFBB28', '#FF8042', '#AF19FF'];
+const LINE_COLORS = ['#8884d8', '#82ca9d', '#ff7300', '#4A6CF7', '#FFBB28', '#FF8042', '#AF19FF'];
+const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1919', '#8884d8'];
+
 const MoskalAI = () => {
   const { keyword: encodedProjectName } = useParams(); // Changed projectName to keyword
   const userData = useSelector((state) => state.user);
@@ -319,18 +531,19 @@ const MoskalAI = () => {
                     <p>{msg.text}</p> // User messages are simple text
                   ) : msg.sender === 'ai' && msg.components ? ( // AI messages with new JSON structure
                     <>
-                      {msg.components.map((component, index) => {
+                      {msg.components.map((component, compIndex) => {
+                        const componentClasses = compIndex > 0 ? "mt-8" : ""; // Add top margin if not the first component
                         if (component.type === 'text') {
-                          return <div key={`comp-text-${index}`} className="ai-text-content">{renderFormattedText(component.content)}</div>;
+                          return <div key={`comp-text-${compIndex}`} className={`ai-text-content ${componentClasses}`}>{renderFormattedText(component.content)}</div>;
                         } else if (component.type === 'table' && component.headers && component.rows) {
                           return (
-                            <div key={`comp-${index}`} className="ai-table-component my-2">
-                              {component.title && <h4 className="text-md font-semibold mb-1">{component.title}</h4>}
-                              <table className="ai-table w-full text-sm text-left">
-                                <thead className="text-xs uppercase bg-gray-100">
+                            <div key={`comp-${compIndex}`} className={`ai-table-component w-full ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
+                              {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
+                              <table className="ai-table w-full"> {/* text-sm, border-collapse, border, border-gray-300 are now in CSS */}
+                                <thead className="text-xs uppercase"> {/* bg-gray-200 is now in CSS for th */}
                                   <tr>
                                     {component.headers.map((header, hIndex) => (
-                                      <th key={`th-${hIndex}`} scope="col" className="px-3 py-2">
+                                      <th key={`th-${hIndex}`} scope="col" className="font-semibold"> {/* All padding, text-align, borders are in CSS */}
                                         {header}
                                       </th>
                                     ))}
@@ -343,9 +556,10 @@ const MoskalAI = () => {
                                       return null; // Skip rendering this row
                                     }
                                     return (
-                                      <tr key={`tr-${rIndex}`} className="bg-white border-b">
+                                      // bg-white and conditional border-b are handled by CSS (tbody tr and tbody tr:nth-child(even))
+                                      <tr key={`tr-${rIndex}`}> 
                                         {row.map((cell, cIndex) => (
-                                          <td key={`td-${cIndex}`} className="px-3 py-2">
+                                          <td key={`td-${cIndex}`}> {/* All padding, text-align, borders are in CSS */}
                                             {String(cell)}
                                           </td>
                                         ))}
@@ -356,155 +570,66 @@ const MoskalAI = () => {
                               </table>
                             </div>
                           );
-                        } else if (component.type === 'chart' && component.data && component.x_axis && component.y_axis) {
+                        } else if (component.type === 'chart' && component.data && component.data.length > 0) {
                           if (component.chart_type === 'bar') {
+                            const { xAxisKey, yAxisSeries } = identifyChartKeys(component.data, component.x_axis, component.y_axis, component.title);
+                            if (!xAxisKey || yAxisSeries.length === 0 || !yAxisSeries[0].dataKey) {
+                                console.warn(`Bar Chart: Could not determine valid keys for chart titled '${component.title}'. X-Key: ${xAxisKey}, Y-Series: ${JSON.stringify(yAxisSeries)}`);
+                                return <div key={`comp-${compIndex}-error`} className={`ai-chart-component text-red-500 ${componentClasses}`}>Chart data incomplete for "{component.title}"</div>;
+                            }
                             return (
-                              <div key={`comp-${index}`} className="ai-chart-component my-2">
-                                {component.title && <h4 className="text-md font-semibold mb-1">{component.title}</h4>}
+                              <div key={`comp-${compIndex}`} className={`ai-chart-component ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
+                                {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
                                 <div className="chart-container" style={{ width: '100%', height: 300 }}>
                                   <ResponsiveContainer>
                                     <BarChart data={component.data}>
                                       <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis dataKey={(() => {
-                                        // Special case for "Tren Sentimen Harian"
-                                        if (component.title === "Tren Sentimen Harian" && component.data.length > 0 && component.data[0].hasOwnProperty('post_date')) {
-                                          return 'post_date';
-                                        }
-                                        // General case for other charts
-                                        if (typeof component.x_axis === 'string' && component.data.length > 0) {
-                                          const lowerCaseXKey = component.x_axis.toLowerCase();
-                                          if (component.data[0].hasOwnProperty(lowerCaseXKey)) {
-                                            return lowerCaseXKey; // Use lowercase if it exists in data
-                                          }
-                                          // If lowercase key doesn't exist, try the original component.x_axis value
-                                          if (component.data[0].hasOwnProperty(component.x_axis)) {
-                                            return component.x_axis;
-                                          }
-                                          // If neither specific lowercase nor original case key is found, log a warning.
-                                          // Default to component.x_axis; chart might not display X-axis correctly.
-                                          console.warn(`Chart X-axis key issue: Neither '${component.x_axis}' (original) nor '${lowerCaseXKey}' (lowercase) found in data for chart titled '${component.title}'. Defaulting to '${component.x_axis}'.`);
-                                        }
-                                        return component.x_axis; // Fallback to original x_axis value if no data or not a string
-                                      })()} />
+                                      <XAxis dataKey={xAxisKey} />
                                       <YAxis />
                                       <Tooltip />
                                       <Legend />
-                                      {/* Check if the data is for sentiment trends by looking for positive/negative/neutral keys */}
-                                      {component.data.length > 0 &&
-                                      typeof component.data[0].positive !== 'undefined' &&
-                                      typeof component.data[0].negative !== 'undefined' &&
-                                      typeof component.data[0].neutral !== 'undefined' ? (
-                                        <>
-                                          <Bar dataKey="positive" fill="#82ca9d" name="Positive" />
-                                          <Bar dataKey="negative" fill="#ff7300" name="Negative" />
-                                          <Bar dataKey="neutral" fill="#8884d8" name="Neutral" />
-                                        </>
-                                      ) : (
-                                        // Fallback to original single bar
-                                        (() => {
-                                          if (!component.y_axis || typeof component.y_axis !== 'string' || component.data.length === 0) {
-                                            return null; // Cannot render bar without y_axis, or if data is empty
-                                          }
-                                          const originalYKey = component.y_axis;
-                                          const lowerCaseYKey = originalYKey.toLowerCase();
-                                          let dataKeyToUse = null;
-
-                                          // Prioritize lowercase key if it exists in the data, as per example discrepancy
-                                          if (component.data[0].hasOwnProperty(lowerCaseYKey)) {
-                                            dataKeyToUse = lowerCaseYKey;
-                                          } else if (component.data[0].hasOwnProperty(originalYKey)) {
-                                            // Fallback to original key if lowercase isn't found but original is
-                                            dataKeyToUse = originalYKey;
-                                          }
-
-                                          if (dataKeyToUse) {
-                                            return <Bar dataKey={dataKeyToUse} fill="#4A6CF7" name={originalYKey || 'Value'} />;
-                                          } else {
-                                            // If neither key is found, log a warning and render no bar.
-                                            console.warn(`Chart Y-axis key issue: Neither '${originalYKey}' (original) nor '${lowerCaseYKey}' (lowercase) found in data for chart titled '${component.title}'. Bar not rendered.`);
-                                            return null;
-                                          }
-                                        })()
-                                      )}
+                                      {yAxisSeries.map((series, idx) => (
+                                        <Bar key={idx} dataKey={series.dataKey} fill={BAR_COLORS[idx % BAR_COLORS.length]} name={series.name} />
+                                      ))}
                                     </BarChart>
                                   </ResponsiveContainer>
                                 </div>
                               </div>
                             );
                           } else if (component.chart_type === 'line') {
+                            const { xAxisKey, yAxisSeries } = identifyChartKeys(component.data, component.x_axis, component.y_axis, component.title);
+                             if (!xAxisKey || yAxisSeries.length === 0 || !yAxisSeries[0].dataKey) {
+                                console.warn(`Line Chart: Could not determine valid keys for chart titled '${component.title}'. X-Key: ${xAxisKey}, Y-Series: ${JSON.stringify(yAxisSeries)}`);
+                                return <div key={`comp-${compIndex}-error`} className={`ai-chart-component text-red-500 ${componentClasses}`}>Chart data incomplete for "{component.title}"</div>;
+                            }
                             return (
-                              <div key={`comp-${index}`} className="ai-chart-component my-2">
-                                {component.title && <h4 className="text-md font-semibold mb-1">{component.title}</h4>}
+                              <div key={`comp-${compIndex}`} className={`ai-chart-component ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
+                                {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
                                 <div className="chart-container" style={{ width: '100%', height: 300 }}>
                                   <ResponsiveContainer>
                                     <LineChart data={component.data}>
                                       <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis dataKey={(() => {
-                                        // For "Tren Sentimen Harian", x_axis is always 'post_date' if available
-                                        if (component.title === "Tren Sentimen Harian" && component.data.length > 0 && component.data[0].hasOwnProperty('post_date')) {
-                                          return 'post_date';
-                                        }
-                                        // General case for other line charts
-                                        if (typeof component.x_axis === 'string' && component.data.length > 0) {
-                                          const lowerCaseXKey = component.x_axis.toLowerCase();
-                                          if (component.x_axis === "Tanggal" && component.data[0].hasOwnProperty('date')) return 'date'; // Specific for "Tanggal" -> "date"
-                                          if (component.data[0].hasOwnProperty(lowerCaseXKey)) return lowerCaseXKey;
-                                          if (component.data[0].hasOwnProperty(component.x_axis)) return component.x_axis;
-                                          console.warn(`Line Chart X-axis key issue: Neither '${component.x_axis}' nor '${lowerCaseXKey}' found for chart '${component.title}'. Defaulting.`);
-                                        }
-                                        return component.x_axis;
-                                      })()} />
+                                      <XAxis dataKey={xAxisKey} />
                                       <YAxis domain={['auto', 'auto']} />
                                       <Tooltip />
                                       <Legend />
-                                      {/* Logic for rendering lines */}
-                                      {component.title === "Tren Sentimen Harian" && component.data.length > 0 ? (
-                                        <>
-                                          {component.data[0].hasOwnProperty('positive') && <Line type="monotone" dataKey="positive" stroke="#82ca9d" name="Positive" />}
-                                          {component.data[0].hasOwnProperty('negative') && <Line type="monotone" dataKey="negative" stroke="#ff7300" name="Negative" />}
-                                          {component.data[0].hasOwnProperty('neutral') && <Line type="monotone" dataKey="neutral" stroke="#8884d8" name="Neutral" />}
-                                        </>
-                                      ) : (
-                                        (() => { // Generic line chart with one line based on y_axis
-                                          if (!component.y_axis || typeof component.y_axis !== 'string' || component.data.length === 0) return null;
-                                          const originalYKey = component.y_axis;
-                                          const lowerCaseYKey = originalYKey.toLowerCase();
-                                          let dataKeyToUse = null;
-                                          if (originalYKey === "Jumlah Mentions" && component.data[0].hasOwnProperty('total_mentions')) dataKeyToUse = 'total_mentions';
-                                          else if (component.data[0].hasOwnProperty(lowerCaseYKey)) dataKeyToUse = lowerCaseYKey;
-                                          else if (component.data[0].hasOwnProperty(originalYKey)) dataKeyToUse = originalYKey;
-
-                                          if (dataKeyToUse) {
-                                            return <Line type="monotone" dataKey={dataKeyToUse} stroke="#8884d8" name={originalYKey || 'Value'} />;
-                                          }
-                                          console.warn(`Generic Line Chart Y-axis key issue for '${component.title}'. Neither '${originalYKey}' nor '${lowerCaseYKey}' found. Line not rendered.`);
-                                          return null;
-                                        })()
-                                      )}
+                                      {yAxisSeries.map((series, idx) => (
+                                        <Line key={idx} type="monotone" dataKey={series.dataKey} stroke={LINE_COLORS[idx % LINE_COLORS.length]} name={series.name} />
+                                      ))}
                                     </LineChart>
                                   </ResponsiveContainer>
                                 </div>
                               </div>
                             );
                           } else if (component.chart_type === 'pie' && component.data) {
-                            const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1919'];
-                            // Determine the name key, preferring 'label', then 'name', then 'sentiment' (from older examples)
-                            const nameKey = component.data.length > 0 ? 
-                                            (component.data[0].hasOwnProperty('label') ? 'label' : 
-                                            (component.data[0].hasOwnProperty('name') ? 'name' : 
-                                            (component.data[0].hasOwnProperty('sentiment') ? 'sentiment' : 'label'))) 
-                                            : 'label';
-                            const dataKeyToUse = component.data.length > 0 && component.data[0].hasOwnProperty('value') ? 'value' : 
-                                                 (component.data.length > 0 && component.data[0].hasOwnProperty('mentions') ? 'mentions' : 'value');
-
-                            if (!(component.data.length > 0 && (component.data[0].hasOwnProperty(nameKey) && component.data[0].hasOwnProperty(dataKeyToUse)))) {
-                                console.warn(`Pie Chart key issue: Cannot find '${nameKey}' or '${dataKeyToUse}' in data for chart titled '${component.title}'. Pie chart not rendered.`);
-                                return null;
+                            const { nameKey, dataKey } = identifyPieChartKeys(component.data, component.name_key, component.value_key); // API might provide these hints
+                            if (!nameKey || !dataKey || !component.data[0].hasOwnProperty(nameKey) || !component.data[0].hasOwnProperty(dataKey)) {
+                                console.warn(`Pie Chart: Could not determine valid keys for chart titled '${component.title}'. Name Key: ${nameKey}, Data Key: ${dataKey}`);
+                                return <div key={`comp-${compIndex}-error`} className={`ai-chart-component text-red-500 ${componentClasses}`}>Chart data incomplete for "{component.title}"</div>;
                             }
-
                             return (
-                              <div key={`comp-${index}`} className="ai-chart-component my-2">
-                                {component.title && <h4 className="text-md font-semibold mb-1">{component.title}</h4>}
+                              <div key={`comp-${compIndex}`} className={`ai-chart-component ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
+                                {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
                                 <div className="chart-container" style={{ width: '100%', height: 300 }}>
                                   <ResponsiveContainer>
                                     <PieChart>
@@ -513,7 +638,7 @@ const MoskalAI = () => {
                                         cx="50%"
                                         cy="50%"
                                         labelLine={false}
-                                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent, index }) => {
+                                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
                                           const RADIAN = Math.PI / 180;
                                           const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
                                           const x = cx + radius * Math.cos(-midAngle * RADIAN);
@@ -525,12 +650,12 @@ const MoskalAI = () => {
                                           );
                                         }}
                                         outerRadius={80}
-                                        fill="#8884d8"
-                                        dataKey={dataKeyToUse}
+                                        fill="#8884d8" // Default fill, overridden by Cell
+                                        dataKey={dataKey}
                                         nameKey={nameKey}
                                       >
                                         {component.data.map((entry, cIndex) => (
-                                          <Cell key={`cell-${cIndex}`} fill={COLORS[cIndex % COLORS.length]} />
+                                          <Cell key={`cell-${cIndex}`} fill={PIE_COLORS[cIndex % PIE_COLORS.length]} />
                                         ))}
                                       </Pie>
                                       <Tooltip />
@@ -548,20 +673,44 @@ const MoskalAI = () => {
                       {msg.footnotes && msg.footnotes.length > 0 && (
                         <div className="ai-footnotes mt-3 pt-2 border-t border-gray-200">
                           <h5 className="text-sm font-semibold mb-1">References:</h5>
-                          {msg.footnotes.map((footnote, fIndex) => (
-                            <p key={`fn-${fIndex}`} className="text-xs text-gray-500 italic">
-                              {/* Assuming footnote.content is a URL. If it can be other text, this needs adjustment. */}
-                              {/* Also, ensure footnote.url or similar field is available if content is just a description */}
-                              <a 
-                                href={footnote.url || footnote.content} // Prefer footnote.url if available
-                                target="_blank" 
-                                rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline"
-                              >
-                                {footnote.content || footnote.url}
-                              </a>
-                            </p>
-                          ))}
+                          {msg.footnotes.map((footnote, fIndex) => {
+                            const rawLinkSource = footnote.url || footnote.content;
+                            const cleanedHref = extractCleanUrl(rawLinkSource);
+
+                            if (!cleanedHref) {
+                              return (
+                                <p key={`fn-${fIndex}-nourl`} className="text-xs text-gray-500 italic">
+                                  {footnote.content || footnote.url || "Reference (invalid URL)"}
+                                </p>
+                              );
+                            }
+
+                            let linkDisplayText = cleanedHref; // Default display text
+                            if (footnote.content && footnote.content.trim() !== "" && footnote.content !== rawLinkSource && footnote.content !== cleanedHref) {
+                                // Case 1: footnote.content is meaningful and different from the link source or cleaned link
+                                linkDisplayText = footnote.content;
+                            } else if (footnote.content && footnote.content.trim() !== "" && footnote.content === rawLinkSource && rawLinkSource !== cleanedHref) {
+                                // Case 2: footnote.content was the source of the link and it got cleaned (e.g., "Referensi: http://...")
+                                linkDisplayText = cleanedHref;
+                            } else if (footnote.content && footnote.content.trim() !== "") {
+                                // Case 3: footnote.content is present (e.g., it was already a clean URL or same as rawLinkSource which was clean)
+                                linkDisplayText = footnote.content;
+                            }
+                            // If linkDisplayText is still just cleanedHref and footnote.content is empty but footnote.url was the source, it's fine.
+
+                            return (
+                              <p key={`fn-${fIndex}`} className="text-xs text-gray-500 italic">
+                                <a
+                                  href={cleanedHref}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-500 hover:underline"
+                                >
+                                  {linkDisplayText}
+                                </a>
+                              </p>
+                            );
+                          })}
                         </div>
                       )}
                     </>

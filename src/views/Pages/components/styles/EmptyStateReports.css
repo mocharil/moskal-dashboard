@@ -1,0 +1,55 @@
+.empty-state-reports-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+  background-color: #f8fafc; /* Match page background or use a subtle card-like bg */
+  border-radius: 16px;
+  /* box-shadow: 0 8px 16px rgba(0, 0, 0, 0.05); */ /* Optional: if you want a card feel */
+  margin: 40px auto; /* Center it on the page if it's the only content */
+  max-width: 600px; /* Limit width for better readability */
+}
+
+.empty-state-illustration {
+  width: 100px; /* Adjust size as needed */
+  height: 100px; /* Adjust size as needed */
+  margin-bottom: 30px;
+  opacity: 0.7; /* Optional: if the SVG is too strong */
+}
+
+.empty-state-title {
+  font-size: 1.75em !important; /* Larger title */
+  color: #1e293b !important; /* Dark slate gray */
+  margin-bottom: 12px !important;
+}
+
+.empty-state-message {
+  font-size: 1.05em !important;
+  color: #64748b !important; /* Cool gray */
+  line-height: 1.6 !important;
+  max-width: 450px; /* Limit message width */
+  margin-bottom: 30px !important;
+}
+
+.empty-state-cta-link {
+  text-decoration: none;
+}
+
+.empty-state-cta-button {
+  padding: 14px 28px !important;
+  font-size: 1em !important;
+  font-weight: 600 !important;
+  background-color: #0e6bf7 !important; /* Indigo */
+  color: white !important;
+  border-radius: 12px !important;
+  box-shadow: 0 4px 14px rgba(79, 70, 229, 0.25) !important;
+  transition: all 0.3s ease !important;
+}
+
+.empty-state-cta-button:hover {
+  background-color: #4338CA !important; /* Darker Indigo */
+  transform: translateY(-2px) !important;
+  box-shadow: 0 6px 18px rgba(79, 70, 229, 0.35) !important;
+}

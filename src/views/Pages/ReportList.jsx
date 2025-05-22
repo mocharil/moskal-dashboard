@@ -10,6 +10,7 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import ReplayIcon from '@mui/icons-material/Replay'; // For Regenerate
 import ErrorOutlineIcon from '@mui/icons-material/ErrorOutline'; // For View Error
 import LoadingUI from './components/LoadingUI'; // Import LoadingUI
+import EmptyStateReports from './components/EmptyStateReports'; // Import the new empty state component
 import './styles/ReportList.css';
 
 const ReportList = () => {
@@ -23,6 +24,7 @@ const ReportList = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
+  const [pageInput, setPageInput] = useState(''); // For page jump input
   const itemsPerPage = 10; // As per API pagination
 
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false);
@@ -48,12 +50,14 @@ const ReportList = () => {
 
 
   const activeKeyword = useSelector((state) => state.keywords.activeKeyword); // Get activeKeyword from Redux
-
-  // Hardcoded email for now, can be dynamic later (e.g., from user context)
-  const userEmail = "arilindra21@gmail.com";
+  const userEmail = useSelector((state) => state.user.email); // Get userEmail from Redux
 
   // Wrapped fetchReports in useCallback
   const fetchReports = useCallback(async (pageToFetch, isBackgroundRefresh = false) => {
+    if (!userEmail) { // Don't fetch if email is not available yet
+      setIsLoading(false); // Ensure loading state is handled
+      return;
+    }
     if (!isBackgroundRefresh) {
       setIsLoading(true);
     }
@@ -61,8 +65,46 @@ const ReportList = () => {
 
     try {
       const response = await getReportJobs(userEmail, pageToFetch, itemsPerPage);
+      const updatedReports = response.reports.map(report => {
+        // Check if status is not 'Completed'
+        if (report.status !== 'Completed') {
+          const originalCreatedAt = report.created_at;
+          const createdAtDate = new Date(originalCreatedAt);
+          const now = new Date();
+          const oneDayInMilliseconds = 24 * 60 * 60 * 1000;
+
+          // Debugging logs
+          // console.log(`[DEBUG] Report ID: ${report.id || 'N/A'}, Status: ${report.status}`);
+          // console.log(`[DEBUG] Original created_at: ${originalCreatedAt}`);
+
+          if (createdAtDate instanceof Date && !isNaN(createdAtDate.getTime())) {
+            const timeDifference = now.getTime() - createdAtDate.getTime();
+            // console.log(`[DEBUG] Parsed createdAtDate: ${createdAtDate.toISOString()}, Now: ${now.toISOString()}`);
+            // console.log(`[DEBUG] Time Difference (ms): ${timeDifference}, One Day (ms): ${oneDayInMilliseconds}`);
+            
+            if (timeDifference > oneDayInMilliseconds) {
+              // console.log(`[DEBUG] Marking report ID ${report.id || 'N/A'} as 'failed'.`);
+              // If the report was already 'failed', keep its original error details.
+              // Otherwise, if it's being changed to 'failed' due to age, set system errors.
+              const newErrorStep = report.status === 'failed' ? report.error_step : 'System Error';
+              const newErrorLocation = report.status === 'failed' ? report.error_location : 'System Error';
+              return {
+                ...report,
+                status: 'failed',
+                error_step: newErrorStep,
+                error_location: newErrorLocation
+              };
+            } else {
+              // console.log(`[DEBUG] Report ID ${report.id || 'N/A'} is not older than 1 day. Diff: ${timeDifference}ms`);
+            }
+          } else {
+            console.warn(`[DEBUG] Invalid created_at date for report ID: ${report.id || 'N/A'}, original created_at: "${originalCreatedAt}". Parsed as: ${createdAtDate}`);
+          }
+        }
+        return report;
+      });
       setReportsData({
-        reports: response.reports,
+        reports: updatedReports, // Use updated reports
         page: response.page,
         size: response.size,
         total: response.total,
@@ -82,34 +124,44 @@ const ReportList = () => {
   }, [userEmail, itemsPerPage]); // Dependencies for useCallback
 
   useEffect(() => {
-    fetchReports(currentPage); // Initial fetch
+    if (userEmail) { // Only fetch if userEmail is available
+      fetchReports(currentPage); // Initial fetch
 
-    // Set up an interval to fetch reports every 30 seconds
-    const intervalId = setInterval(() => {
-      // console.log("Auto-refreshing reports...");
-      fetchReports(currentPage, true); // Call the useCallback-wrapped fetchReports
-    }, 10000); // 30 seconds
+      // Set up an interval to fetch reports every 30 seconds
+      const intervalId = setInterval(() => {
+        // console.log("Auto-refreshing reports...");
+        fetchReports(currentPage, true); // Call the useCallback-wrapped fetchReports
+      }, 10000); // 30 seconds
 
-    // Cleanup function to clear the interval when the component unmounts
-    return () => clearInterval(intervalId);
-
-  }, [currentPage, fetchReports]); // Added fetchReports to dependencies
+      // Cleanup function to clear the interval when the component unmounts
+      return () => clearInterval(intervalId);
+    } else {
+      // Handle case where email is not yet loaded, maybe show a message or keep loading
+      setIsLoading(true); // Or a specific "waiting for user data" state
+    }
+  }, [currentPage, fetchReports, userEmail]); // Added userEmail to dependencies
 
   const formatKeywords = (keywordsArray) => {
     if (!keywordsArray || keywordsArray.length === 0) return 'N/A';
     return keywordsArray.join(', ');
   };
 
-  const formatDate = (dateString) => {
+  const formatDate = (dateString, includeTime = true) => {
     if (!dateString) return 'N/A';
     try {
       const date = new Date(dateString);
       const day = date.getDate();
-      const month = date.toLocaleString('en-GB', { month: 'long' });
+      // Use short month format e.g. Apr, Oct
+      const month = date.toLocaleString('en-GB', { month: 'short' }); 
       const year = date.getFullYear();
-      const hours = date.getHours().toString().padStart(2, '0');
-      const minutes = date.getMinutes().toString().padStart(2, '0');
-      return `${day} ${month} ${year} at ${hours}:${minutes}`;
+      
+      if (includeTime) {
+        const hours = date.getHours().toString().padStart(2, '0');
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        return `${day} ${month} ${year} at ${hours}:${minutes}`;
+      }
+      // Format as "01 Apr 2018"
+      return `${String(day).padStart(2, '0')} ${month} ${year}`; 
     } catch (e) {
       console.error("Error formatting date:", dateString, e);
       return dateString; // Fallback if date is not parsable
@@ -134,8 +186,74 @@ const ReportList = () => {
   const handlePreviousPage = () => {
     if (currentPage > 1) {
       setCurrentPage(currentPage - 1);
+      setPageInput(''); // Clear input on page change
     }
   };
+
+  const handlePageInputChange = (e) => {
+    setPageInput(e.target.value);
+  };
+
+  const handleGoToPage = () => {
+    const pageNumber = parseInt(pageInput, 10);
+    if (!isNaN(pageNumber) && pageNumber >= 1 && pageNumber <= totalPages) {
+      setCurrentPage(pageNumber);
+      setPageInput(''); // Clear input after jump
+    } else {
+      // Optionally, show an error or alert for invalid page number
+      alert(`Please enter a valid page number between 1 and ${totalPages}.`);
+      setPageInput('');
+    }
+  };
+
+  const handlePageNumberClick = (pageNumber) => {
+    setCurrentPage(pageNumber);
+    setPageInput('');
+  };
+
+  // Function to generate page numbers for display
+  const getPageNumbers = () => {
+    const pageNumbers = [];
+    const maxPagesToShow = 5; // Max page numbers to show (e.g., 1 ... 4 5 6 ... 10)
+    const halfPagesToShow = Math.floor(maxPagesToShow / 2);
+
+    if (totalPages <= maxPagesToShow) {
+      for (let i = 1; i <= totalPages; i++) {
+        pageNumbers.push(i);
+      }
+    } else {
+      // Always show the first page
+      pageNumbers.push(1);
+
+      let startPage = Math.max(2, currentPage - halfPagesToShow + (currentPage + halfPagesToShow > totalPages ? totalPages - currentPage - halfPagesToShow +1 : 0) );
+      let endPage = Math.min(totalPages - 1, currentPage + halfPagesToShow - (currentPage - halfPagesToShow < 2 ? currentPage - halfPagesToShow -1 :0));
+      
+      if (currentPage - halfPagesToShow <= 2) {
+        endPage = Math.min(totalPages -1, maxPagesToShow-1)
+      }
+      if (currentPage + halfPagesToShow >= totalPages -1 ) {
+        startPage = Math.max(2, totalPages - maxPagesToShow +2)
+      }
+
+
+      if (startPage > 2) {
+        pageNumbers.push('...');
+      }
+
+      for (let i = startPage; i <= endPage; i++) {
+        pageNumbers.push(i);
+      }
+
+      if (endPage < totalPages - 1) {
+        pageNumbers.push('...');
+      }
+      
+      // Always show the last page
+      pageNumbers.push(totalPages);
+    }
+    return pageNumbers;
+  };
+
 
   const openSummaryModal = (summaryData, topic) => {
     setCurrentReportSummary(summaryData);
@@ -274,8 +392,8 @@ const ReportList = () => {
           </Link>
         </div>
       </div>
-      {reportsData.reports.length === 0 ? (
-        <CustomText>No reports found.</CustomText>
+      {reportsData.reports.length === 0 && !isLoading ? ( // Also check !isLoading to prevent showing empty state during load
+        <EmptyStateReports />
       ) : (
         <>
           <div className="report-cards-container">
@@ -299,14 +417,36 @@ const ReportList = () => {
                     )}
                   </div>
                   <div className="report-card-body">
-                    <CustomText type="caption" className="report-date">
-                      Date Range: {report.start_date && report.end_date 
-                        ? `${formatDate(report.start_date)} - ${formatDate(report.end_date)}`
-                        : 'N/A'}
-                    </CustomText>
-                    <CustomText type="caption" className="report-date">
-                      Created At: {formatDate(report.created_at)}
-                    </CustomText>
+                    <div className="report-dates-container">
+                      {report.start_date && report.end_date && (
+                        <div className="date-item date-range-item">
+                          <img src="/calendar.svg" alt="Calendar" className="date-icon" />
+                          <div className="date-text-group">
+                            <CustomText type="label" className="date-label">From date</CustomText>
+                            <CustomText type="caption" bold="bold" className="date-value">
+                              {formatDate(report.start_date, false)}
+                            </CustomText>
+                          </div>
+                          <div className="date-separator">-</div>
+                          <img src="/calendar.svg" alt="Calendar" className="date-icon" />
+                          <div className="date-text-group">
+                            <CustomText type="label" className="date-label">To date</CustomText>
+                            <CustomText type="caption" bold="bold" className="date-value">
+                              {formatDate(report.end_date, false)}
+                            </CustomText>
+                          </div>
+                        </div>
+                      )}
+                      <div className="date-item created-at-item">
+                        <img src="/calendar.svg" alt="Calendar" className="date-icon" />
+                        <div className="date-text-group">
+                          <CustomText type="label" className="date-label">Created At</CustomText>
+                          <CustomText type="caption" bold="bold" className="date-value">
+                            {formatDate(report.created_at, true)} 
+                          </CustomText>
+                        </div>
+                      </div>
+                    </div>
                     
                     {rawKeywords.length > 0 && (
                       <div className="keywords-section">
@@ -326,19 +466,22 @@ const ReportList = () => {
                       </div>
                     )}
                     {report.progress !== undefined && displayStatus !== 'Completed' && report.status !== 'failed' && (
-                      <div className="progress-section">
-                        <CustomText type="info" className="progress-text">Progress: {report.progress}%</CustomText>
+                      <div className="progress-section modern-progress">
+                        <CustomText type="h3" bold="bold" className="modern-progress-percentage">{report.progress}%</CustomText>
                         <div className="progress-bar-container">
                           <div 
                             className="progress-bar" 
                             style={{ width: `${report.progress}%` }}
                           ></div>
                         </div>
+                        <CustomText type="caption" className="modern-progress-message">
+                          Please wait while the report is generating...
+                        </CustomText>
                       </div>
                     )}
                   </div>
                   <div className="report-card-actions">
-                    {report.status === 'failed' ? (
+                    {displayStatus === 'failed' ? ( // Changed from report.status to displayStatus
                       <>
                         <button
                           className="report-action-button regenerate-button"
@@ -399,17 +542,55 @@ const ReportList = () => {
             })}
           </div>
           <div className="pagination-controls">
-            <button onClick={handlePreviousPage} disabled={currentPage === 1}>
+            <button onClick={handlePreviousPage} disabled={currentPage === 1} className="pagination-button">
               Previous
             </button>
-            <CustomText>Page {currentPage} of {totalPages}</CustomText>
-            <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0}>
+            <div className="page-numbers">
+              {getPageNumbers().map((page, index) =>
+                typeof page === 'number' ? (
+                  <button
+                    key={index}
+                    onClick={() => handlePageNumberClick(page)}
+                    className={`pagination-button page-number ${currentPage === page ? 'active' : ''}`}
+                    disabled={currentPage === page}
+                  >
+                    {page}
+                  </button>
+                ) : (
+                  <span key={index} className="pagination-ellipsis">
+                    {page}
+                  </span>
+                )
+              )}
+            </div>
+            <button onClick={handleNextPage} disabled={currentPage === totalPages || totalPages === 0} className="pagination-button">
               Next
             </button>
+            {totalPages > 1 && (
+              <div className="page-jump-controls">
+                <input
+                  type="number"
+                  min="1"
+                  max={totalPages}
+                  value={pageInput}
+                  onChange={handlePageInputChange}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') {
+                      handleGoToPage();
+                    }
+                  }}
+                  placeholder={`1-${totalPages}`}
+                  className="page-jump-input"
+                />
+                <button onClick={handleGoToPage} className="pagination-button go-button">
+                  Go
+                </button>
+              </div>
+            )}
           </div>
         </>
       )}
-      <ReportSummaryModal 
+      <ReportSummaryModal
         isOpen={isSummaryModalOpen}
         onClose={closeSummaryModal}
         summary={currentReportSummary}

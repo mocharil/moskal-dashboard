@@ -3,13 +3,26 @@
   width: 192px;
   min-width: 192px;
   max-width: 192px;
-  /* position: relative; */
   border-right: 1px solid #d5d7da;
   position: sticky;
   top: 0;
   height: 100vh;
   transition: width 0.3s ease, min-width 0.3s ease;
   overflow-x: hidden;
+  display: flex; /* Added */
+  flex-direction: column; /* Added */
+}
+
+.sidebar-main-content { /* Added new style for the main content area */
+  flex-grow: 1;
+  overflow-y: auto; /* Allow scrolling for project list if it's too long */
+  /* Hide scrollbar for webkit browsers */
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  /* Hide scrollbar for IE, Edge, and Firefox */
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;     /* Firefox */
 }
 
 .sidebar-collapsed {
@@ -245,10 +258,11 @@
   justify-content: space-between;
   width: 100%;
   cursor: pointer;
-  position: absolute;
-  bottom: 0;
+  /* position: absolute; /* Removed */
+  /* bottom: 0; /* Removed */
   border-top: 1px solid #e9eaeb;
   transition: padding 0.3s ease;
+  margin-top: auto; /* Added to push to bottom in flex container */
 }
 
 .sidebar-collapsed .sidebar-profile-container {

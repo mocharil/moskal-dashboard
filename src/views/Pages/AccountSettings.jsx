@@ -107,7 +107,8 @@ const MainPage = ({ changePage }) => {
         </div>
       </div>
       <div className="account-setting-menu-container">
-        <CustomText color="b900" size="lgs" bold="semibold" inline>
+        {/* ----kedepannya ini akan dipakai, jangan di remove---- */}
+        {/* <CustomText color="b900" size="lgs" bold="semibold" inline>
           Integrations
         </CustomText>
         <div className="account-setting-menu-list">
@@ -141,7 +142,7 @@ const MainPage = ({ changePage }) => {
               Manage your connected accounted accounts and add new profiles
             </CustomText>
           </div>
-        </div>
+        </div> */}
         <CustomText color="b900" size="lgs" bold="semibold" inline>
           Settings
         </CustomText>
@@ -214,7 +215,7 @@ const FacebookAndInstagram = () => {
             </CustomText>
             <CustomText color="b600" size="2xls" inline>
               <CustomText bold="semibold" inline>
-                Important note:
+                Important note: 
               </CustomText>
               Moskal is available for instagram Business profiles and Facebook
               pages only. You will be redirected to Facebook Auth where you can

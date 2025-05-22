@@ -390,6 +390,54 @@
   transition: opacity 0.3s ease;
 }
 
+/* Table specific styles */
+.ai-table-component {
+  width: 100%;
+  overflow-x: auto; /* Allow horizontal scrolling if table is too wide */
+}
+
+.ai-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #e2e8f0; /* Tailwind gray-300 */
+  font-size: 0.875rem; /* text-sm */
+  table-layout: auto; /* Let browser decide column widths */
+}
+
+.ai-table th,
+.ai-table td {
+  text-align: center !important;
+  padding: 8px 12px !important; /* py-2 px-3 equivalent */
+  border-right: 1px solid #e2e8f0; /* Tailwind gray-300 */
+  border-bottom: 1px solid #e2e8f0; /* Tailwind gray-300 */
+}
+
+.ai-table th:last-child,
+.ai-table td:last-child {
+  border-right: none;
+}
+
+.ai-table thead tr {
+   border-bottom-width: 2px; /* Thicker bottom border for header row */
+   border-bottom-color: #cbd5e1; /* Tailwind gray-400 */
+}
+
+.ai-table thead th {
+  background-color: #f7fafc; /* Tailwind gray-100 */
+  font-weight: 600; /* semibold */
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.ai-table tbody tr:nth-child(even) {
+  background-color: #fdfdfe; /* Slightly off-white for even rows, subtle striping */
+}
+
+.ai-table tbody tr:hover {
+  background-color: #edf2f7; /* Tailwind gray-200 on hover */
+}
+
+
 /* Keyframe animations */
 @keyframes fadeInDown {
   from {
@@ -494,6 +542,14 @@
   .template-questions-grid {
     grid-template-columns: 1fr;
   }
+
+  .ai-table {
+    font-size: 0.8rem; /* Slightly smaller font for tables on small screens */
+  }
+  .ai-table th,
+  .ai-table td {
+    padding: 6px 8px !important;
+  }
 }
 
 @media (max-width: 480px) {
@@ -517,6 +573,14 @@
   .template-question-button {
     padding: 12px 15px;
     font-size: 14px;
+  }
+
+  .ai-table {
+    font-size: 0.75rem;
+  }
+  .ai-table th,
+  .ai-table td {
+    padding: 4px 6px !important;
   }
 }
 

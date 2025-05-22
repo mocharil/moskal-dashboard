@@ -1,13 +1,9 @@
-// const VITE_ES_HOST = import.meta.env.VITE_ES_HOST; // Kept for context, but not used
-// const VITE_ES_USERNAME = import.meta.env.VITE_ES_USERNAME; // Kept for context, but not used
-// const VITE_ES_PASSWORD = import.meta.env.VITE_ES_PASSWORD; // Kept for context, but not used
-
-const API_BASE_URL = 'https://api.moskal.id'; // Using the provided API base
+const API_BASE_URL = import.meta.env.VITE_REPORT_API_BASE;
 
 /**
  * Fetches report jobs from the API with pagination.
  */
-export const getReportJobs = async (email = "arilindra21@gmail.com", page = 1, size = 10) => {
+export const getReportJobs = async (email = "", page = 1, size = 10) => {
   try {
     const response = await fetch(`${API_BASE_URL}/list_jobs?email=${encodeURIComponent(email)}&page=${page}&size=${size}`, {
       method: 'GET',
@@ -52,10 +48,6 @@ export const getDetailedReport = async (topic, startDate, endDate) => {
   console.warn("getDetailedReport: Elasticsearch functionality has been removed. Returning null.");
   return null; // Return null as ES is disconnected
 };
-
-// You can add more functions here to query 'moskal-reports' if needed,
-// for example, by a report ID if 'moskal-report-jobs' provides a direct link.
-// These would also need to be implemented without direct ES client usage.
 
 /**
  * Calls the API to regenerate a report.

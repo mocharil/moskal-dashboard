@@ -223,13 +223,14 @@ const Sidebar = () => {
         <button className="sidebar-toggle" onClick={toggleSidebar}>
           {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
         </button>
-        <div>
-          <img
-            className="sidebar-moskal-icon"
-            src={window.location.origin + "/MOSKAL.svg"}
-          />
-        </div>
-        <div className="login-add-new-keyword tooltip" onClick={handleAddNewKeyword}>
+        <div className="sidebar-main-content"> {/* Added wrapper div */}
+          <div>
+            <img
+              className="sidebar-moskal-icon"
+              src={window.location.origin + "/MOSKAL.svg"}
+            />
+          </div>
+          <div className="login-add-new-keyword tooltip" onClick={handleAddNewKeyword}>
           {isSidebarCollapsed ? (
             <>
               <span className="add-icon">+</span>
@@ -388,7 +389,7 @@ const Sidebar = () => {
             return (
             <Accordion
               key={`${value.name} - ${index}`}
-              expanded={activeIndex === index || activeKeywordSidebar === value.name}
+              expanded={activeIndex === index}
               onChange={(event, expanded) => {
                 setActiveIndex(expanded ? index : null);
               }}
@@ -570,6 +571,7 @@ const Sidebar = () => {
             );
           })}
         </AccordionGroup>
+        </div> {/* Close sidebar-main-content wrapper */}
         <div className="sidebar-profile-container tooltip" onClick={accountRoute}>
           <div className="sidebar-profile-left">
             <div className="sidebar-profile-picture"></div>
