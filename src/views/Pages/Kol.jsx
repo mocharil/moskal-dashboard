@@ -547,7 +547,7 @@ const Kol = () => {
                                 >
                                   {formatNumber(
                                     item.share_of_voice?.toFixed(2)
-                                  )}
+                                  )}%
                                 </CustomText>
                               </td>
                               <td style={{ textAlign: "left" }}>
@@ -571,14 +571,14 @@ const Kol = () => {
                               </td>
                               <td>
                                 {influenceShare(
-                                  item.user_influence_score?.toFixed(2)
+                                  Math.round(item.user_influence_score * 10)
                                 )}
                               </td>
                               <td>
-                                <img
+                                {/* <img
                                   className="kol-trash-icon"
                                   src={window.location.origin + "/trash-01.svg"}
-                                />
+                                /> */}
                               </td>
                             </tr>
                           ))}

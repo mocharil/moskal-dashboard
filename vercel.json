@@ -1,20 +1,49 @@
 {
   "rewrites": [
     {
-      "source": "/auth-api/(.*)",
-      "destination": "https://moskal-auth-924335637775.asia-southeast2.run.app/api/v1/$1"
+      "source": "/auth-api/:path*",
+      "destination": "https://moskal-auth-924335637775.asia-southeast2.run.app/api/v1/:path*"
     },
     {
-      "source": "/data-api/(.*)",
-      "destination": "https://moskal-api-v2-924335637775.us-central1.run.app/api/v2/$1"
+      "source": "/data-api/:path*",
+      "destination": "https://moskal-api-v2-924335637775.us-central1.run.app/api/v2/:path*"
     },
     {
-      "source": "/report-api/(.*)",
-      "destination": "https://api.moskal.id/$1"
+      "source": "/report-api/:path*",
+      "destination": "https://api.moskal.id/:path*"
     },
     {
       "source": "/(.*)",
       "destination": "/index.html"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/auth-api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
+      ]
+    },
+    {
+      "source": "/data-api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
+      ]
+    },
+    {
+      "source": "/report-api/(.*)",
+      "headers": [
+        { "key": "Access-Control-Allow-Credentials", "value": "true" },
+        { "key": "Access-Control-Allow-Origin", "value": "*" },
+        { "key": "Access-Control-Allow-Methods", "value": "GET,OPTIONS,PATCH,DELETE,POST,PUT" },
+        { "key": "Access-Control-Allow-Headers", "value": "X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version, Authorization" }
+      ]
     }
   ]
 }

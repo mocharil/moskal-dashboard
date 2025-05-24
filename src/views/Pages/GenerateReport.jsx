@@ -261,7 +261,7 @@ const GenerateReport = () => {
           <div className="header-text">
             <CustomText type="title" className="page-title">Generate Project Report</CustomText>
             <CustomText type="sub-title" className="page-subtitle">
-              Create a sentiment analysis report for project: <strong>{projectName}</strong>.
+              Create a sentiment analysis report for project: <strong>{projectName}</strong>
             </CustomText>
           </div>
         </div>
@@ -307,7 +307,7 @@ const GenerateReport = () => {
               ))}
             </div>
             <CustomText type="caption" style={{ color: '#777' }}>
-              These are the default keywords for the project.
+            <br></br>These are the default project keywords configured in the Settings menu by the owner
             </CustomText>
           </>
         ) : (
@@ -354,7 +354,7 @@ const GenerateReport = () => {
           className="email-input"
         />
         <CustomText type="caption" className="email-caption" style={{ marginTop: '5px', color: '#777' }}>
-          The generated report will be sent to this email.
+          The generated report will be sent to this email
         </CustomText>
       </div>
 

@@ -176,7 +176,7 @@ const DialogFilter = (props) => {
       ...(language.trim() !== "" &&
         language !== "all language" && { language: language.split(",") }),
       search_exact_phrases: isExactPhraseChecked,
-      importance: "all mentions",
+      importance: activeVirality,
       influence_score_min: influenceScore[0],
       influence_score_max: influenceScore[1],
       // region: ["bandung", "jakarta"],

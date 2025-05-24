@@ -87,8 +87,6 @@ const Dashboard = () => {
 
   const [isLoading, setIsLoading] = useState(false);
 
-  const [isLoadingFirst, setIsLoadingFirst] = useState(true);
-
   const [isLoadingTopic, setIsLoadingTopic] = useState(true);
   const [isLoadingKol, setIsLoadingKol] = useState(true);
   const [isLoadingKeyword, setIsLoadingKeyword] = useState(true);
@@ -120,25 +118,29 @@ const Dashboard = () => {
   // Ref to track if initial data has been loaded
   const initialLoadRef = useRef(false);
 
-  useEffect(() => {
-    console.log("active key", activeKeywords);
-    console.log("userdata", userData);
-  }, []);
+  // useEffect(() => { // Optional: Keep for debugging if needed, otherwise remove
+  //   console.log("active key", activeKeywords);
+  //   console.log("userdata", userData);
+  // }, []);
 
-  const fetchAllData = async () => {
-    setIsLoading(true);
-    try {
-      await Promise.all([
-        getTopicsToWatchData(),
-        getKolToWatchData(),
-        getKeywordTrendsData(),
-        getContextOfDiscussion(),
-        getMentionsData()
-      ]);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-    setIsLoading(false);
+  const fetchAllData = () => {
+    setIsLoading(true); // Signal that a batch of fetches has started.
+    // Set all individual loading states to true when a full refresh is triggered
+    setIsLoadingTopic(true);
+    setIsLoadingKol(true);
+    setIsLoadingKeyword(true);
+    setIsLoadingContext(true);
+    setIsLoadingMentions(true);
+
+    // Initiate all data fetching operations. They will run in parallel.
+    getTopicsToWatchData();
+    getKolToWatchData();
+    getKeywordTrendsData();
+    getContextOfDiscussion(); // Will use activeTabContext by default for general refresh
+    getMentionsData();
+
+    // The global `isLoading` state will be set to `false` by the `useEffect`
+    // that monitors `isLoadingDone()`, once all individual fetches complete.
   };
 
   // Initial data load
@@ -169,15 +171,9 @@ const Dashboard = () => {
   }, [activeTabMentions, mentionPage.page]);
 
   useEffect(() => {
-    const loadingCheckTimer = setInterval(() => {
-      if (isLoadingDone()) {
-        setIsLoading(false);
-        setIsLoadingFirst(false);
-        clearInterval(loadingCheckTimer);
-      }
-    }, 500);
-
-    return () => clearInterval(loadingCheckTimer);
+    if (isLoadingDone()) {
+      setIsLoading(false);
+    }
   }, [isLoadingTopic, isLoadingKol, isLoadingKeyword, isLoadingContext, isLoadingMentions]);
 
   const isLoadingDone = () => {
@@ -262,17 +258,35 @@ const Dashboard = () => {
   const getTopicsToWatchData = async () => {
     setIsLoadingTopic(true);
     try {
-      const resp = await getTopicToWatch(generateReqBody());
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getTopicsToWatchData. Skipping API call.");
+        // setTopicsData([]); // Optionally clear data or leave as is
+        // setFilterTopicsData([]);
+        setIsLoadingTopic(false);
+        return;
+      }
+      const resp = await getTopicToWatch(reqBody);
       if (resp) {
         setTopicsData(resp);
-        setFilterTopicsData(getLimitArray(resp));
+        // Apply initial sort/filter based on activeListTopic
+        if (activeListTopic === "Most Viral") {
+          const newArray = sortByField([...resp], "share_of_voice", "desc");
+          setFilterTopicsData(getLimitArray(newArray));
+        } else { // "Issues"
+          const newArray = sortByField([...resp], "viral_score", "desc");
+          setFilterTopicsData(getLimitArray(newArray));
+        }
+      } else {
+        setTopicsData([]);
+        setFilterTopicsData([]);
       }
-      setIsLoadingTopic(false);
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
-      console.log(error);
+      enqueueSnackbar("Network Error fetching topics", { variant: "error" });
+      console.log("Error in getTopicsToWatchData:", error);
+      setTopicsData([]); // Clear data on error
+      setFilterTopicsData([]);
+    } finally {
       setIsLoadingTopic(false);
     }
   };
@@ -280,17 +294,42 @@ const Dashboard = () => {
   const getKolToWatchData = async () => {
     setIsLoadingKol(true);
     try {
-      const resp = await getKolToWatch(generateReqBody());
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getKolToWatchData. Skipping API call.");
+        // setKolData([]);
+        // setFilterKolData([]);
+        setIsLoadingKol(false);
+        return;
+      }
+      const resp = await getKolToWatch(reqBody);
       if (resp) {
         setKolData(resp);
-        setFilterKolData(getLimitArray(filterKOLMostNegative(resp)));
+        // Apply initial sort/filter based on activeTabListKol
+        if (activeTabListKol === "Most viral") {
+          const sortedViral = [...resp].sort((a, b) => {
+            const scoreA = parseFloat(a.user_influence_score);
+            const scoreB = parseFloat(b.user_influence_score);
+            if (isNaN(scoreA) && isNaN(scoreB)) return 0;
+            if (isNaN(scoreA)) return 1; // Put NaNs at the end
+            if (isNaN(scoreB)) return -1; // Put NaNs at the end
+            return scoreB - scoreA; // Descending
+          });
+          setFilterKolData(getLimitArray(sortedViral));
+        } else { // "Most negative"
+          const newArray = getLimitArray(filterKOLMostNegative(resp));
+          setFilterKolData(newArray); // Already limited by filterKOLMostNegative if needed, or apply getLimitArray here
+        }
+      } else {
+        setKolData([]);
+        setFilterKolData([]);
       }
-      setIsLoadingKol(false);
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
-      console.log(error);
+      enqueueSnackbar("Network Error fetching KOLs", { variant: "error" });
+      console.log("Error in getKolToWatchData:", error);
+      setKolData([]);
+      setFilterKolData([]);
+    } finally {
       setIsLoadingKol(false);
     }
   };
@@ -298,14 +337,20 @@ const Dashboard = () => {
   const getKeywordTrendsData = async () => {
     setIsLoadingKeyword(true);
     try {
-      const resp = await getKeywordTrends(generateReqBody());
-      setKeywordData(resp);
-      setIsLoadingKeyword(false);
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getKeywordTrendsData. Skipping API call.");
+        // setKeywordData([]);
+        setIsLoadingKeyword(false);
+        return;
+      }
+      const resp = await getKeywordTrends(reqBody);
+      setKeywordData(resp || []); // Ensure keywordData is an array even if resp is null/undefined
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
-      console.log(error);
+      enqueueSnackbar("Network Error fetching keyword trends", { variant: "error" });
+      console.log("Error in getKeywordTrendsData:", error);
+      setKeywordData([]);
+    } finally {
       setIsLoadingKeyword(false);
     }
   };
@@ -314,33 +359,30 @@ const Dashboard = () => {
     setIsLoadingContext(true);
     try {
       const baseReqBody = generateReqBody();
+      if (!baseReqBody) {
+        console.warn("generateReqBody returned null in getContextOfDiscussion. Skipping API call.");
+        // setContextData([]);
+        setIsLoadingContext(false);
+        return;
+      }
       let sentimentForContext;
-
-      // Use the passed currentTab if available (from direct tab click), 
-      // otherwise use the activeTabContext from state (for initial load or global filter changes)
       const tabToProcess = currentTab || activeTabContext;
 
       if (tabToProcess === "Positive") {
         sentimentForContext = ["positive"];
       } else if (tabToProcess === "Negative") {
         sentimentForContext = ["negative"];
-      } else { // "All" or any other case
-        // For "All", use the sentiment from advanced filters or default to all three
+      } else {
         sentimentForContext = baseReqBody.sentiment; 
       }
 
-      const reqBodyForContext = {
-        ...baseReqBody,
-        sentiment: sentimentForContext,
-      };
-      
+      const reqBodyForContext = { ...baseReqBody, sentiment: sentimentForContext };
       const resp = await getContext(reqBodyForContext);
-      setContextData(resp.data);
+      setContextData(resp.data || []); // Ensure contextData is an array
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
-      console.log(error);
+      enqueueSnackbar("Network Error fetching context", { variant: "error" });
+      console.log("Error in getContextOfDiscussion:", error);
+      setContextData([]);
     } finally {
       setIsLoadingContext(false);
     }
@@ -349,15 +391,21 @@ const Dashboard = () => {
   const getMentionsData = async () => {
     setIsLoadingMentions(true);
     try {
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getMentionsData. Skipping API call.");
+        // setMentionData([]);
+        setIsLoadingMentions(false);
+        return;
+      }
       const mentionReq = {
-        ...generateReqBody(),
+        ...reqBody,
         sort_type: activeTabMentions === "Popular first" ? "popular" : "recent",
         page: mentionPage.page,
         page_size: 10,
       };
       const resp = await getMentions(mentionReq);
-      setIsLoadingMentions(false);
-      if (resp.data) {
+      if (resp && resp.data) {
         setMentionData(resp.data);
         if (resp.pagination) {
           setMentionPage(prevState => ({
@@ -366,12 +414,17 @@ const Dashboard = () => {
             total_posts: resp.pagination.total_posts
           }));
         }
+      } else {
+        setMentionData([]);
+         // Reset pagination if no data or error
+        setMentionPage(prevState => ({ ...prevState, total_pages: 0, total_posts: 0, page: 1 }));
       }
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
-      console.log(error);
+      enqueueSnackbar("Network Error fetching mentions", { variant: "error" });
+      console.log("Error in getMentionsData:", error);
+      setMentionData([]);
+      setMentionPage(prevState => ({ ...prevState, total_pages: 0, total_posts: 0, page: 1 }));
+    } finally {
       setIsLoadingMentions(false);
     }
   };
@@ -394,26 +447,33 @@ const Dashboard = () => {
   const handleKOLChange = (event, newValue) => {
     setActiveTabListKol(newValue);
     if (newValue === "Most viral") {
-      const newArray = sortByField([...kolData], "viral_score", "asc");
-      setFilterKolData(getLimitArray(newArray));
-    } else {
-      const newArray = getLimitArray(filterKOLMostNegative(kolData));
+      const sortedViral = [...kolData].sort((a, b) => {
+        const scoreA = parseFloat(a.user_influence_score);
+        const scoreB = parseFloat(b.user_influence_score);
+        if (isNaN(scoreA) && isNaN(scoreB)) return 0;
+        if (isNaN(scoreA)) return 1; // Put NaNs at the end
+        if (isNaN(scoreB)) return -1; // Put NaNs at the end
+        return scoreB - scoreA; // Descending
+      });
+      setFilterKolData(getLimitArray(sortedViral));
+    } else { // "Most negative"
+      const newArray = filterKOLMostNegative(kolData);
       setFilterKolData(getLimitArray(newArray));
     }
   };
 
   const filterKOLMostNegative = (array) => {
-    const isNegativeArray = array.filter((value) => value.is_negative_driver);
-    const sortedKOL = sortByFieldsMultiple(isNegativeArray, [
-      {
-        key: "sentiment_negative",
-        order: "desc",
-      },
-      {
-        key: "most_viral",
-        order: "desc",
-      },
-    ]);
+    const isNegativeArray = array.filter((value) => value.is_negative_driver === true);
+    // Custom sort for influence_score numerically in descending order
+    const sortedKOL = [...isNegativeArray].sort((a, b) => {
+      const scoreA = parseFloat(a.user_influence_score);
+      const scoreB = parseFloat(b.user_influence_score);
+      // Handle cases where parsing might result in NaN, though ideally data is clean
+      if (isNaN(scoreA) && isNaN(scoreB)) return 0;
+      if (isNaN(scoreA)) return 1; // Put NaNs at the end for descending
+      if (isNaN(scoreB)) return -1; // Put NaNs at the end for descending
+      return scoreB - scoreA; // For descending order
+    });
     return sortedKOL;
   };
 
@@ -502,25 +562,8 @@ const Dashboard = () => {
 
   return (
     <>
-      {isLoadingFirst ? (
-        <div className="dashboard-loader-container">
-          <CustomText color="brand" bold="semibold" size="mds" inline>
-            #{keyword}
-          </CustomText>
-          <div className="dashboard-loader-longbar skeleton-loader"></div>
-          <div className="dashboard-loader-longbar skeleton-loader"></div>
-          <div className="dashboard-loader-flex">
-            <div className="dashboard-loader-square skeleton-loader"></div>
-            <div className="dashboard-loader-square skeleton-loader"></div>
-          </div>
-          <div className="dashboard-loader-flex">
-            <div className="dashboard-loader-square skeleton-loader"></div>
-            <div className="dashboard-loader-square skeleton-loader"></div>
-          </div>
-        </div>
-      ) : (
-        <>
-          <div className="dashboard-container">
+      <>
+        <div className="dashboard-container">
           <div>
             <CustomText color="brand" bold="semibold" size="mds">
               #{keyword}
@@ -643,103 +686,132 @@ const Dashboard = () => {
                 </TabList>
               </Tabs>
             </div>
-            {isLoading ? (
-              <LoadingUI />
-            ) : isNoDataUIShow() ? (
-              <>
+            {/* Main data container */}
+            <>
+              {isNoDataUIShow() && !isLoading ? ( // Show global NoDataUI only if all individual fetches are done and all data is empty
                 <NoDataUI />
-              </>
-            ) : (
-              <>
+              ) : (
                 <div className="dashboard-data-container">
-                  
                   <div className="dashboard-content-flex-two">
                     <CustomContentBox
                       title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Topics to watch 🔥</span>}
-                      seeAll="See all Topics"
-                      handleSeeAll={handleRedirectTopics}
-                      tabList={tabListTopic}
-                      handleChange={handleChangeTopics}
-                      activeTab={activeListTopic}
-                      tooltip="Explore trending topics and sentiment shifts over time. Use the date filter to adjust he analysis range and uncover insights into public conversations."
-                    >
-                      
-                      {filterTopicsData?.map((value, index) => (
-                        <TopicsComponent
-                          key={`topics-${index}`}
-                          data={value}
-                          borderBottom={index + 1 !== filterTopicsData.length}
-                        />
-                      ))}
-                    </CustomContentBox>
-                    <CustomContentBox
-                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>KOL to Watch</span>}
-                      seeAll="See all KOL"
-                      handleSeeAll={handleRedirectKOL}
-                      tabList={tabListKol}
-                      handleChange={handleKOLChange}
-                      activeTab={activeTabListKol}
-                      tooltip="Track key opinion leaders (KOLs) driving online conversations. See who's shaping narratives, their influence level, and the topics they're actively discussing."
-                    >
-                      {filterKolData?.map((value, index) => (
-                        <KolComponent
-                          key={`kol-${index}`}
-                          data={value}
-                          borderBottom={index + 1 !== filterKolData.length}
-                        />
-                      ))}
-                    </CustomContentBox>
-                  </div>
-                  <div className="dashboard-content-flex-two">
-                    <CustomContentBox
-                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Keywords Trends</span>}
-                      tabList={tabListKeyword}
-                      handleChange={handleChangeKeywords}
-                      activeTab={activeTabKeyword}
-                      tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
-                    >
-                      <KeywordComponent
-                        type={activeTabKeyword}
-                        data={keywordData}
-                      />
-                    </CustomContentBox>
-                    <CustomContentBox
-                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Context of discussion</span>}
-                      tabList={tabListContext}
-                      activeTab={activeTabContext}
-                      handleChange={handleChangeContext}
-                      tooltip="Explore the context of discussions with a word cloud. See the most mentioned keywords, their frequency, and the sentiment behind each term to understand public narratives."
-                    >
-                      <ContextComponent
-                        type={activeTabContext.toLowerCase()}
-                        data={contextData}
-                        isLoading={isLoadingContext} // Pass the loading state
-                      />
-                    </CustomContentBox>
-                  </div>
-                  <CustomContentBox
-                    title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions</span>}
-                    seeAll
-                    tabList={tabListMentions}
-                    activeTab={activeTabMentions}
-                    handleChange={handleMentionChange}
-                    tooltip="Monitor mentions across platforms to see how your topic is being discussed. Sort by popularity or recency, and track sentiment to capture the public's perception."
-                  >
-                    {isLoadingMentions ? (
-                      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
-                        <img src="/loading.svg" alt="Loading mentions..." style={{ width: '50px', height: '50px' }} />
-                      </div>
-                    ) : (
-                      <>
-                        {mentionData?.map((value, index) => (
-                          <MentionComponent
-                            key={`mention-${index}`}
-                            data={value}
-                            borderBottom
-                            isShowAction
+                        seeAll="See all Topics"
+                        handleSeeAll={handleRedirectTopics}
+                        tabList={tabListTopic}
+                        handleChange={handleChangeTopics}
+                        activeTab={activeListTopic}
+                        tooltip="Explore trending topics and sentiment shifts over time. Use the date filter to adjust he analysis range and uncover insights into public conversations."
+                      >
+                        {isLoadingTopic ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100px' }}>
+                            <img src="/loading.svg" alt="Loading topics" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                            <CustomText>Analysis Topics data...</CustomText>
+                          </div>
+                        ) : filterTopicsData?.length > 0 ? (
+                          filterTopicsData.map((value, index) => (
+                            <TopicsComponent
+                              key={`topics-${index}`}
+                              data={value}
+                              borderBottom={index + 1 !== filterTopicsData.length}
+                            />
+                          ))
+                        ) : (
+                          <div style={{ padding: '20px', textAlign: 'center' }}>
+                            <CustomText>No topic data available.</CustomText>
+                          </div>
+                        )}
+                      </CustomContentBox>
+                      <CustomContentBox
+                        title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>KOL to Watch</span>}
+                        seeAll="See all KOL"
+                        handleSeeAll={handleRedirectKOL}
+                        tabList={tabListKol}
+                        handleChange={handleKOLChange}
+                        activeTab={activeTabListKol}
+                        tooltip="Track key opinion leaders (KOLs) driving online conversations. See who's shaping narratives, their influence level, and the topics they're actively discussing."
+                      >
+                        {isLoadingKol ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100px' }}>
+                            <img src="/loading.svg" alt="Loading KOLs" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                            <CustomText>Analysis KOL ...</CustomText>
+                          </div>
+                        ) : filterKolData?.length > 0 ? (
+                          filterKolData.map((value, index) => (
+                            <KolComponent
+                              key={`kol-${index}`}
+                              data={value}
+                              borderBottom={index + 1 !== filterKolData.length}
+                            />
+                          ))
+                        ) : (
+                          <div style={{ padding: '20px', textAlign: 'center' }}>
+                            <CustomText>No KOL data available.</CustomText>
+                          </div>
+                        )}
+                      </CustomContentBox>
+                    </div>
+                    <div className="dashboard-content-flex-two">
+                      <CustomContentBox
+                        title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Keywords Trends</span>}
+                        tabList={tabListKeyword}
+                        handleChange={handleChangeKeywords}
+                        activeTab={activeTabKeyword}
+                        tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
+                      >
+                        {isLoadingKeyword ? (
+                          <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                            <img src="/loading.svg" alt="Loading keyword trends" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                            <CustomText>Loading keyword trends...</CustomText>
+                          </div>
+                        ) : keywordData && (Array.isArray(keywordData) ? keywordData.length > 0 : Object.keys(keywordData).length > 0) ? (
+                          <KeywordComponent
+                            type={activeTabKeyword}
+                            data={keywordData}
                           />
-                        ))}
-                        {mentionData && mentionData.length > 0 && (
+                        ) : (
+                          <div style={{ padding: '20px', textAlign: 'center', minHeight: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                            <CustomText>No keyword trend data available.</CustomText>
+                          </div>
+                        )}
+                      </CustomContentBox>
+                      <CustomContentBox
+                        title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Context of discussion</span>}
+                        tabList={tabListContext}
+                        activeTab={activeTabContext}
+                        handleChange={handleChangeContext}
+                        tooltip="Explore the context of discussions with a word cloud. See the most mentioned keywords, their frequency, and the sentiment behind each term to understand public narratives."
+                      >
+                        {/* ContextComponent handles its own isLoading and no data internally via its `isLoading` prop */}
+                        <ContextComponent
+                          type={activeTabContext.toLowerCase()}
+                          data={contextData}
+                          isLoading={isLoadingContext} 
+                        />
+                      </CustomContentBox>
+                    </div>
+                    <CustomContentBox
+                      title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Mentions</span>}
+                      seeAll // Assuming this is a boolean prop, if it's meant to show "See all" text, it should be a string
+                      tabList={tabListMentions}
+                      activeTab={activeTabMentions}
+                      handleChange={handleMentionChange}
+                      tooltip="Monitor mentions across platforms to see how your topic is being discussed. Sort by popularity or recency, and track sentiment to capture the public's perception."
+                    >
+                      {isLoadingMentions ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '200px' }}>
+                          <img src="/loading.svg" alt="Loading mentions" style={{ width: '50px', height: '50px', marginBottom: '8px' }} />
+                          <CustomText>Loading mentions data...</CustomText>
+                        </div>
+                      ) : mentionData?.length > 0 ? (
+                        <>
+                          {mentionData.map((value, index) => (
+                            <MentionComponent
+                              key={`mention-${index}`}
+                              data={value}
+                              borderBottom
+                              isShowAction
+                            />
+                          ))}
                           <div className="dashboard-pagination">
                             <Pagination
                               count={mentionPage.total_pages}
@@ -760,16 +832,18 @@ const Dashboard = () => {
                               )}
                             />
                           </div>
-                        )}
-                      </>
-                    )}
-                  </CustomContentBox>
-                </div>
-              </>
-            )}
+                        </>
+                      ) : (
+                        <div style={{ padding: '20px', textAlign: 'center', minHeight: '200px', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                           <CustomText>No mentions data available.</CustomText>
+                        </div>
+                      )}
+                    </CustomContentBox>
+                  </div>
+                )}
+            </>
           </div>
         </>
-      )}
       <DialogDateFilter
         open={isDialogDayOpen}
         onClose={handleCloseDayDialog}

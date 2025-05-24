@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router-dom'; // Import useParams
+import thumbsUpIcon from '/thumbs-up.svg';
+import thumbsDownIcon from '/face-frown.svg';
 import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
 import { getProjects } from '../../services/projectService'; // Import getProjects
@@ -228,6 +230,7 @@ const MoskalAI = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
   const [projectKeywords, setProjectKeywords] = useState([]); // State for project keywords
+  const [feedback, setFeedback] = useState({}); // { messageId: 'up' | 'down' | null }
   const chatAreaRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -402,7 +405,7 @@ const MoskalAI = () => {
     setInputValue('');
     setIsTyping(false);
 
-    console.log("MoskalAI - projectKeywords state in handleSendMessage:", projectKeywords); // Log 3
+    // console.log("MoskalAI - projectKeywords state in handleSendMessage:", projectKeywords); // Log 3 // Commented out original log
 
     // Show typing indicator
     const typingIndicator = {
@@ -476,6 +479,15 @@ const MoskalAI = () => {
     .finally(() => {
       setIsSending(false);
     });
+  };
+
+  const handleFeedback = (messageId, feedbackType) => {
+    setFeedback(prevFeedback => ({
+      ...prevFeedback,
+      [messageId]: prevFeedback[messageId] === feedbackType ? null : feedbackType,
+    }));
+    // Here you would typically send this feedback to your backend
+    console.log(`Feedback for message ${messageId}: ${feedbackType}`);
   };
 
   return (
@@ -717,6 +729,24 @@ const MoskalAI = () => {
                   ) : (
                      // Fallback for AI messages that don't fit the new structure
                      msg.sender === 'ai' && <div className="ai-text-content">{renderFormattedText(msg.text) || "Response from AI."}</div>
+                  )}
+                  {msg.sender === 'ai' && msg.response_type !== 'error' && !msg.type && (
+                    <div className="ai-feedback-buttons">
+                      <button
+                        onClick={() => handleFeedback(msg.id, 'up')}
+                        className={`feedback-button ${feedback[msg.id] === 'up' ? 'active' : ''}`}
+                        aria-label="Good response"
+                      >
+                        <img src={thumbsUpIcon} alt="Thumbs Up" />
+                      </button>
+                      <button
+                        onClick={() => handleFeedback(msg.id, 'down')}
+                        className={`feedback-button ${feedback[msg.id] === 'down' ? 'active' : ''}`}
+                        aria-label="Bad response"
+                      >
+                        <img src={thumbsDownIcon} alt="Thumbs Down" />
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

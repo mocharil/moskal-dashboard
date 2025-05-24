@@ -20,6 +20,7 @@ import Mentions from "../Pages/Mentions"; // Import the Mentions page
 // import ReportPage from "../Pages/ReportPage"; // Import the new ReportPage - File doesn't exist
 import GenerateReport from "../Pages/GenerateReport"; // Import the new GenerateReport page
 import ReportList from "../Pages/ReportList"; // Import the new ReportList page
+import NotificationTest from "../../components/NotificationTest"; // Import the notification test component
 import { useSelector } from "react-redux";
 
 // Auth guard
@@ -137,6 +138,10 @@ const router = createBrowserRouter([
   {
     path: "/onboard",
     element: <ProtectedRoute element={<OnBoard />} />,
+  },
+  {
+    path: "/notification-test",
+    element: <NotificationTest />, // No protection for easy testing
   },
 ]);
 

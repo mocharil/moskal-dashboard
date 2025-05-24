@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import CustomText from "../../components/CustomText";
 import { HelpOutline } from "@mui/icons-material";
 import Tooltip from "@mui/joy/Tooltip";
@@ -19,7 +19,7 @@ import {
   getKolToWatch,
   getMentions,
 } from "../../services/topicService";
-import { getLimitArray, sortByField } from "../../helpers/utils";
+import { getLimitArray, sortByField, sortByFieldsMultiple } from "../../helpers/utils";
 import { getSummaryOverview } from "../../services/summaryService";
 import { useSelector } from "react-redux";
 import { getAnalysisOverview } from "../../services/analysisService";
@@ -53,8 +53,8 @@ const Summary = () => {
 
   const [isDialogDayOpen, setIsDialogDayOpen] = useState(false);
 
-  const [isLoadingFirst, setIsLoadingFirst] = useState(true);
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoadingFirst, setIsLoadingFirst] = useState(true); // Removed: No more top-level skeleton
+  const [isLoading, setIsLoading] = useState(true); // True if any batch of fetches is in progress
 
   const [isLoadingKol, setIsLoadingKol] = useState(true);
   const [isLoadingMentions, setIsLoadingMentions] = useState(true);
@@ -65,76 +65,60 @@ const Summary = () => {
   const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
   const userData = useSelector((state) => state.user);
 
-  const [dataReqBody, setDataReqBody] = useState({
-    // Initialize directly as it's always for keyword summary now
-    keywords: activeKeywords.keywords,
-    owner_id: `${activeKeywords.owner_id}`,
-    project_name: activeKeywords.name,
-    channels: [],
-  });
+  const [dataReqBody, setDataReqBody] = useState(null); // Initialize dataReqBody to null
   const [dataDateFilter, setDataDateFilter] = useState({});
   const [dataAdvanceFilter, setDataAdvanceFilter] = useState({});
 
+  const fetchAllSummaryData = () => { // currentReqBody parameter removed as it was unused
+    // Individual get*Data functions already manage their own isLoading(true) state internally.
+    // Calling them here without await allows them to run concurrently.
+    // Each component will display its data as soon as its specific fetch completes.
+    
+    // generateReqBody is called inside each get*Data function, using the latest state values.
+    getMentionsData();
+    getKolToWatchData();
+    getKeywordData();
+    getStatData();
+    getSummaryData();
+  };
+
   useEffect(() => {
-    // This effect now always runs for the keyword-based summary
-    // Ensure activeKeywords is loaded before setting dataReqBody and fetching
-    if (keyword && activeKeywords) {
-      setDataReqBody({
+    // Handles initial load and changes to keyword or activeKeywords
+    // Ensure activeKeywords and its essential properties are available
+    if (keyword && activeKeywords && activeKeywords.name && activeKeywords.owner_id !== undefined && Array.isArray(activeKeywords.keywords)) {
+      const newReqBody = {
         keywords: activeKeywords.keywords,
-        owner_id: `${activeKeywords.owner_id}`,
+        owner_id: String(activeKeywords.owner_id), // Ensure owner_id is a string
         project_name: activeKeywords.name,
-        channels: [],
-      });
-      // Initial data fetch
-      getMentionsData();
-      getKolToWatchData();
-      getKeywordData();
-      getStatData();
-      getSummaryData();
+        channels: activeKeywords.channels || [], // Use channels from activeKeywords if present
+      };
+      setDataReqBody(newReqBody);
+    } else {
+      setDataReqBody(null); // Reset if activeKeywords is not fully ready
     }
-  }, [keyword, activeKeywords]); // Depend on keyword and activeKeywords
+  }, [keyword, activeKeywords]);
 
-  // Effect for keyword changes (existing logic, simplified)
-  useDidUpdateEffect(() => {
-    if (keyword && dataReqBody) { // dataReqBody check is still good
-      setIsLoadingFirst(true);
-      setIsLoading(true);
-      // Update dataReqBody if activeKeywords changed for the new 'keyword'
-      if (activeKeywords && activeKeywords.name === keyword) {
-         setDataReqBody(prev => ({
-            ...prev,
-            keywords: activeKeywords.keywords,
-            owner_id: `${activeKeywords.owner_id}`,
-            project_name: activeKeywords.name,
-        }));
-      }
-      getMentionsData();
-      getKolToWatchData();
-      getKeywordData();
-      getStatData();
-      getSummaryData();
+  // This effect triggers data fetching when dataReqBody is populated or dateFilter changes.
+  // Using regular useEffect instead of useDidUpdateEffect to ensure it runs on initial render and page refresh
+  useEffect(() => {
+    if (dataReqBody && dataReqBody.project_name) {
+      setIsLoading(true); // Indicate a batch of fetches is starting
+      fetchAllSummaryData();
     }
-  }, [keyword]); // Only keyword, dataReqBody will be updated by the main useEffect or this one
+    // If dataReqBody becomes null (e.g., activeKeywords becomes invalid),
+    // individual loading states should be managed by the get*Data functions or an isLoadingDone effect.
+  }, [dataReqBody, dataDateFilter]); // Trigger on dataReqBody object change or date filter change
 
-  // Effect for loading completion (existing logic, simplified)
-  useDidUpdateEffect(() => {
+
+  // Effect for overall loading completion
+  useEffect(() => {
     if (isLoadingDone()) {
-      setIsLoadingFirst(false);
-      setIsLoading(false);
+      setIsLoading(false); // All individual fetches in the current batch are complete.
+      // if (isLoadingFirst) { // Removed block related to isLoadingFirst
+      //   setIsLoadingFirst(false); 
+      // }
     }
-  }, [mentionData, kolData, keywordData, statData, summaryData]);
-
-  // Effect for date filter changes (existing logic, simplified)
-  useDidUpdateEffect(() => {
-    if (dataReqBody) { // dataReqBody check is still good
-      setIsLoading(true);
-      getMentionsData();
-      getKolToWatchData();
-      getKeywordData();
-      getStatData();
-      getSummaryData();
-    }
-  }, [dataDateFilter]);
+  }, [isLoadingKol, isLoadingMentions, isLoadingKeyword, isLoadingStat, isLoadingSummary]); // isLoadingFirst removed from dependencies
 
   // Effect for mentions tab changes (existing logic, simplified)
   useDidUpdateEffect(() => {
@@ -210,14 +194,18 @@ const Summary = () => {
   const getStatData = async () => {
     setIsLoadingStat(true);
     try {
-      const resp = await getSummaryOverview(generateReqBody());
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getStatData. Skipping API call.");
+        setIsLoadingStat(false);
+        return;
+      }
+      const resp = await getSummaryOverview(reqBody);
       setStatData(resp);
-      setIsLoadingStat(false);
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
+      enqueueSnackbar("Network Error", { variant: "error" });
       console.log(error);
+    } finally {
       setIsLoadingStat(false);
     }
   };
@@ -225,14 +213,18 @@ const Summary = () => {
   const getKeywordData = async () => {
     setIsLoadingKeyword(true);
     try {
-      const resp = await getKeywordTrends(generateReqBody());
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getKeywordData. Skipping API call.");
+        setIsLoadingKeyword(false);
+        return;
+      }
+      const resp = await getKeywordTrends(reqBody);
       setKeywordData(resp);
-      setIsLoadingKeyword(false);
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
+      enqueueSnackbar("Network Error", { variant: "error" });
       console.log(error);
+    } finally {
       setIsLoadingKeyword(false);
     }
   };
@@ -240,21 +232,23 @@ const Summary = () => {
   const getMentionsData = async () => {
     setIsLoadingMentions(true);
     try {
+      const baseReqBody = generateReqBody();
+      if (!baseReqBody) {
+        console.warn("generateReqBody returned null in getMentionsData. Skipping API call.");
+        setIsLoadingMentions(false);
+        return;
+      }
       const mentionReq = {
-        ...generateReqBody(),
+        ...baseReqBody,
         sort_type: activeTabMentions === "Popular" ? "popular" : "recent",
-        // page: mentionPage.page,
-        // page_size: 10,
       };
       const resp = await getMentions(mentionReq);
-      setIsLoadingMentions(false);
       setMentionData(resp.data);
       setFilterMentionData(getLimitArray(resp.data));
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
+      enqueueSnackbar("Network Error", { variant: "error" });
       console.log(error);
+    } finally {
       setIsLoadingMentions(false);
     }
   };
@@ -262,18 +256,37 @@ const Summary = () => {
   const getKolToWatchData = async () => {
     setIsLoadingKol(true);
     try {
-      const resp = await getKolToWatch(generateReqBody());
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getKolToWatchData. Skipping API call.");
+        setIsLoadingKol(false);
+        return;
+      }
+      const resp = await getKolToWatch(reqBody);
       if (resp) {
         setKolData(resp);
-        const newArray = sortByField([...resp], "most_viral", "desc");
-        setFilterKolData(getLimitArray(newArray));
+        // Apply initial sort/filter based on the activeTabKol
+        if (activeTabKol === "Popular KOL") {
+          const filteredKOL = resp.filter(kol => kol.channel !== 'news');
+          const sortedKOL = sortByFieldsMultiple([...filteredKOL], [
+            { key: 'user_influence_score', order: 'desc' },
+            { key: 'user_followers', order: 'desc' }
+          ]);
+          setFilterKolData(getLimitArray(sortedKOL));
+        } else { // "Popular sites"
+          const filteredSites = resp.filter(kol => kol.channel === 'news');
+          const sortedSites = sortByFieldsMultiple([...filteredSites], [
+            
+            { key: 'most_viral', order: 'desc' },
+            { key: 'link_post', order: 'desc' }
+          ]);
+          setFilterKolData(getLimitArray(sortedSites));
+        }
       }
-      setIsLoadingKol(false);
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
+      enqueueSnackbar("Network Error", { variant: "error" });
       console.log(error);
+    } finally {
       setIsLoadingKol(false);
     }
   };
@@ -281,14 +294,18 @@ const Summary = () => {
   const getSummaryData = async () => {
     setIsLoadingSummary(true);
     try {
-      const resp = await getAnalysisOverview(generateReqBody());
+      const reqBody = generateReqBody();
+      if (!reqBody) {
+        console.warn("generateReqBody returned null in getSummaryData. Skipping API call.");
+        setIsLoadingSummary(false);
+        return;
+      }
+      const resp = await getAnalysisOverview(reqBody);
       setSummaryData(resp);
-      setIsLoadingSummary(false);
     } catch (error) {
-      enqueueSnackbar("Network Error", {
-        variant: "error",
-      });
+      enqueueSnackbar("Network Error", { variant: "error" });
       console.log(error);
+    } finally {
       setIsLoadingSummary(false);
     }
   };
@@ -302,19 +319,17 @@ const Summary = () => {
   const handleChangeDateFilter = (reqBody) => {
     setDataDateFilter(reqBody);
   };
-  const isNoDataUIShow = () => {
-    if (!isLoading) {
-      return (
-        mentionData.length === 0 &&
-        kolData === 0 &&
-        keywordData === 0 &&
-        statData === 0 &&
-        summaryData === 0
-      );
-    } else {
-      return false;
-    }
+  const allDataSectionsEmpty = () => {
+    // This function checks if all data sections are empty, assuming their fetches are complete.
+    return (
+      (!mentionData || mentionData.length === 0) &&
+      (!kolData || kolData.length === 0) &&
+      (!keywordData || (Array.isArray(keywordData) ? keywordData.length === 0 : Object.keys(keywordData).length === 0)) &&
+      (!statData || (Array.isArray(statData) ? statData.length === 0 : Object.keys(statData).length === 0)) &&
+      (!summaryData || Object.keys(summaryData).length === 0)
+    );
   };
+
   const handleRedirectAnalysis = () => {
     if (keyword) navigate(`/${keyword}/analysis`, { replace: true });
   };
@@ -328,14 +343,22 @@ const Summary = () => {
   };
 
   const handleChangeKOL = (event, newValue) => {
-    // console.log(newValue); // Keep or remove console.log as per project standards
     setActiveTabKol(newValue);
     if (newValue === "Popular KOL") {
-      const newArray = sortByField([...kolData], "most_viral", "desc");
-      setFilterKolData(getLimitArray(newArray));
-    } else {
-      const newArray = sortByField([...kolData], "engagement_rate", "desc");
-      setFilterKolData(getLimitArray(newArray));
+      const filteredKOL = kolData.filter(kol => kol.channel !== 'news');
+      const sortedKOL = sortByFieldsMultiple([...filteredKOL], [
+        { key: 'user_influence_score', order: 'desc' },
+        { key: 'user_followers', order: 'desc' }
+      ]);
+      setFilterKolData(getLimitArray(sortedKOL));
+    } else { // "Popular sites"
+      const filteredSites = kolData.filter(kol => kol.channel === 'news');
+      const sortedSites = sortByFieldsMultiple([...filteredSites], [
+        { key: 'most_viral', order: 'desc' },
+        { key: 'link_post', order: 'desc' }
+        
+      ]);
+      setFilterKolData(getLimitArray(sortedSites));
     }
   };
 
@@ -364,197 +387,227 @@ const Summary = () => {
   return (
     <>
       <div className="summary-search-bar-container">
-        {isLoadingFirst ? (
-          <>
-            <div className="summary-top-loader skeleton-loader"></div>
-          </>
-        ) : (
-          <>
-            <div className="summary-search-bar-left">
-              <div>
-                <svg
-                  focusable="false"
-                  xmlns="http://www.w3.org/2000/svg"
+        {/* isLoadingFirst condition removed, search bar structure renders immediately */}
+        {/* Data inside (like presence_score) will populate when isLoadingSummary is false */}
+        <>
+          <div className="summary-search-bar-left">
+            <div>
+              <svg
+                focusable="false"
+                xmlns="http://www.w3.org/2000/svg"
+                aria-hidden="true"
+                tabIndex="-1"
+                width="56"
+                viewBox="0 0 100 100"
+              >
+                <circle
+                  strokeDasharray={`${summaryData.presence_score?.value} 100`}
+                  cx="50"
+                  cy="50"
+                  r="40"
+                  stroke="#0047AB"
+                  strokeWidth="16"
+                  fill="none"
+                  pathLength="100"
+                  transform="rotate(-90 50 50)"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="48"
+                  stroke="#E9EAEB"
+                  strokeWidth="1"
+                  fill="none"
+                />
+                <circle
+                  cx="50"
+                  cy="50"
+                  r="32"
+                  stroke="#E9EAEB"
+                  strokeWidth="1"
+                  fill="none"
+                />
+                <text
                   aria-hidden="true"
                   tabIndex="-1"
-                  width="56"
-                  viewBox="0 0 100 100"
+                  x="30"
+                  y="55"
+                  className="summary-circle-text"
                 >
-                  <circle
-                    strokeDasharray={`${summaryData.presence_score?.value} 100`}
-                    cx="50"
-                    cy="50"
-                    r="40"
-                    stroke="#0047AB"
-                    strokeWidth="16"
-                    fill="none"
-                    pathLength="100"
-                    transform="rotate(-90 50 50)"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="48"
-                    stroke="#E9EAEB"
-                    strokeWidth="1"
-                    fill="none"
-                  />
-                  <circle
-                    cx="50"
-                    cy="50"
-                    r="32"
-                    stroke="#E9EAEB"
-                    strokeWidth="1"
-                    fill="none"
-                  />
-                  <text
-                    aria-hidden="true"
-                    tabIndex="-1"
-                    x="30"
-                    y="55"
-                    className="summary-circle-text"
-                  >
-                    {summaryData.presence_score?.display}%
-                  </text>
-                </svg>
-              </div>
-              <div>
-                <CustomText bold="semibold" size="lgs" color="b900" inline>
-                  {activeKeywords?.name} {/* Added optional chaining for safety */}
+                  {summaryData.presence_score?.display}%
+                </text>
+              </svg>
+            </div>
+            <div>
+              <CustomText bold="semibold" size="lgs" color="b900" inline>
+                {activeKeywords?.name} {/* Added optional chaining for safety */}
+              </CustomText>
+              <div className="summary-presence-score">
+                <CustomText size="2xls" color="b500" inline>
+                  Presence Score
                 </CustomText>
-                <div className="summary-presence-score">
-                  <CustomText size="2xls" color="b500" inline>
-                    Presence Score
-                  </CustomText>
 
-                  <Tooltip
-                    title="Track your visibility across platforms with a presence score. This score reflects how much public attention a topic or figure is generating."
-                    placement="top"
-                    sx={{ maxWidth: "300px" }}
+                <Tooltip
+                  title="Track your visibility across platforms with a presence score. This score reflects how much public attention a topic or figure is generating."
+                  placement="top"
+                  sx={{ maxWidth: "300px" }}
+                >
+                  <HelpOutline
+                    sx={{ color: "#A4A7AE", width: "16px" }}
+                  ></HelpOutline>
+                </Tooltip>
+              </div>
+            </div>
+          </div>
+          <div className="summary-search-bar-right">
+            <CustomButton
+              variant="outlined"
+              endDecorator={<CalendarTodayIcon />}
+              onClick={handleOpenDayDialog}
+            >
+              Date Filter
+            </CustomButton>
+            <CustomButton variant="outlined-blue">
+              Latest Mentions
+            </CustomButton>
+          </div>
+        </>
+      </div>
+
+      {/* Content Area: Renders immediately. Individual components manage their loading state. */}
+      {/* !isLoadingFirst condition removed */}
+      <div className="summary-content-container">
+        {/* Show NoDataUI only if all fetches are complete AND all sections are empty */}
+        {isLoadingDone() && allDataSectionsEmpty() ? (
+            <NoDataUI />
+          ) : (
+            <>
+              {/* Row 1 */}
+              <div className="summary-content-flex-two">
+                {/* Top Mentions Section */}
+                <div className="summary-content-flex-vertical">
+                  <CustomContentBox
+                    title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Top mentions</span>}
+                    seeAll="See All Mentions"
+                    handleSeeAll={redirectToMentions}
+                    activeTab={activeTabMentions}
+                    tabList={tabListMention}
+                    handleChange={handleChangeMentions}
+                    tooltip="Monitor mentions across platforms to see how your topics is being discussed. Sort by popularity or recency, and track sentiment to capture the public's preception."
                   >
-                    <HelpOutline
-                      sx={{ color: "#A4A7AE", width: "16px" }}
-                    ></HelpOutline>
-                  </Tooltip>
+                    {isLoadingMentions ? (
+                      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '150px' }}>
+                        <img src="/loading.svg" alt="Loading mentions" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                        <CustomText>Loading mentions data...</CustomText>
+                      </div>
+                    ) : filterMentionData?.length > 0 ? (
+                      filterMentionData.map((value, index) => (
+                        <MentionComponent
+                          key={`mention-${index}`}
+                          data={value}
+                          borderBottom={index + 1 !== filterMentionData.length}
+                        />
+                      ))
+                    ) : (
+                      <div style={{ padding: '20px', textAlign: 'center' }}><CustomText>No mentions data available.</CustomText></div>
+                    )}
+                  </CustomContentBox>
+                </div>
+
+                {/* Summary & Keyword Sections */}
+                <div className="summary-content-flex-vertical">
+                  <div>
+                    <CustomContentBox
+                      title="Summary"
+                      tooltip="Get a snapshot of your topic's overall performance. Track mentions, reach, interactions, and sentiment shifts over time to understand the big picture."
+                    >
+                      {isLoadingSummary ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100px' }}>
+                          <img src="/loading.svg" alt="Loading summary" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                          <CustomText>Loading summary data...</CustomText>
+                        </div>
+                      ) : summaryData && Object.keys(summaryData).length > 0 ? (
+                        <SummaryComponent data={summaryData} />
+                      ) : (
+                        <div style={{ padding: '20px', textAlign: 'center' }}><CustomText>No summary data available.</CustomText></div>
+                      )}
+                    </CustomContentBox>
+                  </div>
+                  <div>
+                    <CustomContentBox
+                      title="Keyword"
+                      tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
+                    >
+                      {isLoadingKeyword ? (
+                        <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '100px' }}>
+                          <img src="/loading.svg" alt="Loading keywords" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                          <CustomText>Loading keyword data...</CustomText>
+                        </div>
+                      ) : keywordData && (Array.isArray(keywordData) ? keywordData.length > 0 : Object.keys(keywordData).length > 0) ? (
+                        <KeywordComponent
+                          data={keywordData}
+                          type="Mentions & Reach" // Ensure this type is appropriate or make it dynamic
+                        />
+                      ) : (
+                        <div style={{ padding: '20px', textAlign: 'center' }}><CustomText>No keyword data available.</CustomText></div>
+                      )}
+                    </CustomContentBox>
+                  </div>
                 </div>
               </div>
-            </div>
-            <div className="summary-search-bar-right">
-              <CustomButton
-                variant="outlined"
-                endDecorator={<CalendarTodayIcon />}
-                onClick={handleOpenDayDialog}
-              >
-                Date Filter
-              </CustomButton>
-              <CustomButton variant="outlined-blue">
-                Latest Mentions
-              </CustomButton>
-            </div>
-          </>
-        )}
-      </div>
-      <div className="summary-content-container">
-        {isLoadingFirst ? (
-          <>
-            <div className="summary-content-flex-two">
-              <div className="summary-content-flex-vertical">
-                <div className="summary-content-loader skeleton-loader"></div>
-              </div>
-              <div className="summary-content-flex-vertical">
-                <div className="summary-content-loader-small-1 skeleton-loader"></div>
-                <div className="summary-content-loader-small-2 skeleton-loader"></div>
-              </div>
-            </div>
-            <div className="summary-content-flex-two">
-              <div className="summary-content-loader skeleton-loader"></div>
-              <div className="summary-content-loader skeleton-loader"></div>
-            </div>
-          </>
-        ) : isLoading ? (
-          <>
-            <LoadingUI />
-          </>
-        ) : isNoDataUIShow() ? (
-          <>
-            <NoDataUI />
-          </>
-        ) : (
-          <>
-            <div className="summary-content-flex-two">
-              <div className="summary-content-flex-vertical">
+
+              {/* Row 2 */}
+              <div className="summary-content-flex-two">
+                {/* Influencer Section */}
                 <CustomContentBox
-                  title={<span style={{ display: 'inline-block', whiteSpace: 'nowrap' }}>Top mentions</span>}
-                  seeAll="See All Mentions"
-                  handleSeeAll={redirectToMentions} // Added handleSeeAll
-                  activeTab={activeTabMentions}
-                  tabList={tabListMention}
-                  handleChange={handleChangeMentions}
-                  tooltip="Monitor mentions across platforms to see how your topics is being discussed. Sort by popularity or recency, and track sentiment to capture the public's preception."
+                  title="Influencer"
+                  seeAll="See all KOLs" // Corrected "See all" text
+                  activeTab={activeTabKol}
+                  tabList={tabListKol}
+                  handleSeeAll={handleRedirectKOL}
+                  handleChange={handleChangeKOL}
+                  tooltip="Identify influential voices driving the conversation. See who's talking about your topic, their sentiment, and how much reach they generate."
                 >
-                  <>
-                    {filterMentionData?.map((value, index) => (
-                      <MentionComponent
-                        key={`mention-${index}`}
+                  {isLoadingKol ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '150px' }}>
+                      <img src="/loading.svg" alt="Loading influencers" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                      <CustomText>Loading influencer data...</CustomText>
+                    </div>
+                  ) : filterKolData?.length > 0 ? (
+                    filterKolData.map((value, index) => (
+                      <KolComponent
+                        key={`kol-${index}`}
                         data={value}
-                        borderBottom={index + 1 !== filterMentionData.length}
+                        borderBottom={index + 1 !== filterKolData.length}
                       />
-                    ))}
-                  </>
+                    ))
+                  ) : (
+                    <div style={{ padding: '20px', textAlign: 'center' }}><CustomText>No influencer data available.</CustomText></div>
+                  )}
+                </CustomContentBox>
+
+                {/* Stats Section */}
+                <CustomContentBox
+                  title="Stats"
+                  seeAll="See analysis"
+                  handleSeeAll={handleRedirectAnalysis}
+                  tooltip="Analyze detailed engagement metrics. Track mentions, shares, likes, and video activity across platforms to measure audience interaction and sentiment shifts."
+                >
+                  {isLoadingStat ? (
+                    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', minHeight: '150px' }}>
+                      <img src="/loading.svg" alt="Loading stats" style={{ width: '30px', height: '30px', marginBottom: '8px' }} />
+                      <CustomText>Loading stats data...</CustomText>
+                    </div>
+                  ) : statData && (Array.isArray(statData) ? statData.length > 0 : Object.keys(statData).length > 0) ? (
+                    <AnalysisComponent data={statData} />
+                  ) : (
+                    <div style={{ padding: '20px', textAlign: 'center' }}><CustomText>No stats data available.</CustomText></div>
+                  )}
                 </CustomContentBox>
               </div>
-              <div className="summary-content-flex-vertical">
-                <div>
-                  <CustomContentBox
-                    title="Summary"
-                    tooltip="Get a snapshot of your topic's overall performance. Track mentions, reach, interactions, and sentiment shifts over time to understand the big picture."
-                  >
-                    <SummaryComponent data={summaryData} />
-                  </CustomContentBox>
-                </div>
-                <div>
-                  <CustomContentBox
-                    title="Keyword"
-                    tooltip="Analyze keyword trends over time. Track mentions and reach to understand how topics are gaining traction and influencing online conversations."
-                  >
-                    <KeywordComponent
-                      data={keywordData}
-                      type="Mentions & Reach"
-                    />
-                  </CustomContentBox>
-                </div>
-              </div>
-            </div>
-            <div className="summary-content-flex-two">
-              <CustomContentBox
-                title="Influencer"
-                seeAll="See all mentions"
-                activeTab={activeTabKol}
-                tabList={tabListKol}
-                handleSeeAll={handleRedirectKOL}
-                handleChange={handleChangeKOL}
-                tooltip="Identify influential voices driving the conversation. See who's talking about your topic, their sentiment, and how much reach they generate."
-              >
-                {filterKolData?.map((value, index) => (
-                  <KolComponent
-                    key={`kol-${index}`}
-                    data={value}
-                    borderBottom={index + 1 !== filterKolData.length}
-                  />
-                ))}
-              </CustomContentBox>
-              <CustomContentBox
-                title="Stats"
-                seeAll="See analysis"
-                handleSeeAll={handleRedirectAnalysis}
-                tooltip="Analyze detailed engagement metrics. Track mentions, shares, likes, and video activity across platforms to measure audience interaction and sentiment shifts."
-              >
-                <AnalysisComponent data={statData} />
-              </CustomContentBox>
-            </div>
-          </>
-        )}
-      </div>
+            </>
+          )}
+        </div>
       <DialogDateFilter
         open={isDialogDayOpen}
         onClose={handleCloseDayDialog}

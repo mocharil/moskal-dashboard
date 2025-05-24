@@ -38,7 +38,20 @@ const KeywordComponent = (props) => {
     tooltip: {
       x: {
         show: true,
-        format: "dd",
+        format: "dd MMM", // Changed to 'dd MMM' to match the image '03 May'
+      },
+      y: {
+        formatter: function (value, { seriesIndex, w }) {
+          const seriesName = w.globals.seriesNames[seriesIndex];
+          if (seriesName === "Mentions" || seriesName === "Positive" || seriesName === "Negative") {
+            return parseInt(value).toLocaleString();
+          }
+          if (seriesName === "Reach") {
+            // Ensure 'Reach' is formatted to show decimals as in the image
+            return parseFloat(value).toLocaleString(undefined, { minimumFractionDigits: 3, maximumFractionDigits: 3 });
+          }
+          return value;
+        },
       },
     },
   };
