@@ -231,6 +231,9 @@ const MoskalAI = () => {
   const [hasInteracted, setHasInteracted] = useState(false);
   const [projectKeywords, setProjectKeywords] = useState([]); // State for project keywords
   const [feedback, setFeedback] = useState({}); // { messageId: 'up' | 'down' | null }
+  const [showFeedbackFormForId, setShowFeedbackFormForId] = useState(null); // ID of message with open feedback form
+  const [currentFeedbackText, setCurrentFeedbackText] = useState('');
+  const [feedbackSuccessfullySubmittedId, setFeedbackSuccessfullySubmittedId] = useState(null); // ID of message with successful feedback
   const chatAreaRef = useRef(null);
   const textareaRef = useRef(null);
 
@@ -482,12 +485,106 @@ const MoskalAI = () => {
   };
 
   const handleFeedback = (messageId, feedbackType) => {
-    setFeedback(prevFeedback => ({
-      ...prevFeedback,
-      [messageId]: prevFeedback[messageId] === feedbackType ? null : feedbackType,
-    }));
-    // Here you would typically send this feedback to your backend
-    console.log(`Feedback for message ${messageId}: ${feedbackType}`);
+    const isCurrentlyDisliked = feedback[messageId] === 'down';
+    const isFormOpenForThisMessage = showFeedbackFormForId === messageId;
+
+    // If feedback was successfully submitted for this message, clear that status
+    if (feedbackSuccessfullySubmittedId === messageId) {
+      setFeedbackSuccessfullySubmittedId(null);
+    }
+
+    setFeedback(prevFeedback => {
+      const newFeedbackState = { ...prevFeedback };
+      if (newFeedbackState[messageId] === feedbackType) { // Clicking the same button again
+        newFeedbackState[messageId] = null; // Deselect
+        if (feedbackType === 'down' && isFormOpenForThisMessage) {
+          setShowFeedbackFormForId(null); // Close form if deselecting dislike
+          setCurrentFeedbackText('');
+        }
+      } else { // Clicking a new button or switching
+        newFeedbackState[messageId] = feedbackType;
+        if (feedbackType === 'up' && isFormOpenForThisMessage) {
+          setShowFeedbackFormForId(null); // Close form if switching to like
+          setCurrentFeedbackText('');
+        }
+      }
+      return newFeedbackState;
+    });
+
+    if (feedbackType === 'down') {
+      if (!isCurrentlyDisliked || !isFormOpenForThisMessage) {
+        setShowFeedbackFormForId(messageId); // Open or keep form open if dislike is selected
+        // Don't clear currentFeedbackText here, user might be editing
+      } else if (isCurrentlyDisliked && isFormOpenForThisMessage) {
+        // If dislike is clicked again while form is open, do nothing to the form (it stays open)
+      }
+    } else if (feedbackType === 'up') {
+      setShowFeedbackFormForId(null); // Close form if 'like' is clicked
+      setCurrentFeedbackText('');
+    }
+    // console.log(`Feedback for message ${messageId}: ${feedbackType}`);
+  };
+
+  const handleFeedbackTextChange = (e) => {
+    setCurrentFeedbackText(e.target.value);
+  };
+
+  const submitMoskalFeedback = async (messageId) => {
+    const VITE_DATA_API_BASE = import.meta.env.VITE_DATA_API_BASE;
+    const aiResponseMsg = messages.find(m => m.id === messageId);
+    
+    // Attempt to find the user query that prompted this AI response
+    // This assumes user messages and AI responses alternate or are in sequence.
+    let userQueryMsg = null;
+    const aiResponseIndex = messages.findIndex(m => m.id === messageId);
+    if (aiResponseIndex > 0) {
+      for (let i = aiResponseIndex - 1; i >= 0; i--) {
+        if (messages[i].sender === 'user') {
+          userQueryMsg = messages[i];
+          break;
+        }
+      }
+    }
+
+    const payload = {
+      query_user: userQueryMsg ? userQueryMsg.text : "User query not found",
+      response_ai: aiResponseMsg || {}, // The full AI message object
+      feedback_user: currentFeedbackText,
+      user_name: userData?.email || userName, // Prioritize Redux userData.name
+      project_name: encodedProjectName ? decodeURIComponent(encodedProjectName) : "Unknown Project",
+      additional_info: {
+        projectKeywords: projectKeywords,
+        // You could add more browser/session info here if needed
+      },
+      timestamp: new Date().toISOString(),
+    };
+
+    try {
+      // console.log("Submitting feedback with payload:", JSON.stringify(payload, null, 2));
+      const response = await axios.post(`${VITE_DATA_API_BASE}/ai-feedback`, payload, {
+        headers: {
+          'Content-Type': 'application/json',
+          'accept': 'application/json'
+          // Add any auth headers if required by this endpoint
+        }
+      });
+      // console.log(`Feedback for message ${messageId} submitted successfully. Response:`, response.data);
+      if (response.data && response.data.message === "Feedback stored successfully") {
+        setFeedbackSuccessfullySubmittedId(messageId);
+      }
+      // Optionally, show a success toast/notification to the user based on response.data.message
+    } catch (error) {
+      console.error("Error submitting AI feedback:", error.response ? error.response.data : error.message);
+      // Optionally, show an error toast/notification to the user
+    } finally {
+      setShowFeedbackFormForId(null);
+      setCurrentFeedbackText('');
+    }
+  };
+
+  const cancelMoskalFeedback = () => {
+    setShowFeedbackFormForId(null);
+    setCurrentFeedbackText('');
   };
 
   return (
@@ -562,17 +659,17 @@ const MoskalAI = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {component.rows.map((row, rIndex) => {
-                                    if (!Array.isArray(row)) {
-                                      console.warn(`Table row at index ${rIndex} is not an array for table "${component.title}". Skipping row. Row data:`, row);
-                                      return null; // Skip rendering this row
+                                  {component.rows.map((rowObject, rIndex) => {
+                                    // Ensure rowObject is an object and headers exist
+                                    if (typeof rowObject !== 'object' || rowObject === null || !component.headers) {
+                                      console.warn(`Table row at index ${rIndex} is not a valid object or headers are missing for table "${component.title}". Skipping row. Row data:`, rowObject);
+                                      return null;
                                     }
                                     return (
-                                      // bg-white and conditional border-b are handled by CSS (tbody tr and tbody tr:nth-child(even))
-                                      <tr key={`tr-${rIndex}`}> 
-                                        {row.map((cell, cIndex) => (
-                                          <td key={`td-${cIndex}`}> {/* All padding, text-align, borders are in CSS */}
-                                            {String(cell)}
+                                      <tr key={`tr-${rIndex}`}>
+                                        {component.headers.map((headerKey, cIndex) => (
+                                          <td key={`td-${rIndex}-${cIndex}`}>
+                                            {String(rowObject[headerKey] !== undefined ? rowObject[headerKey] : '')}
                                           </td>
                                         ))}
                                       </tr>
@@ -731,22 +828,56 @@ const MoskalAI = () => {
                      msg.sender === 'ai' && <div className="ai-text-content">{renderFormattedText(msg.text) || "Response from AI."}</div>
                   )}
                   {msg.sender === 'ai' && msg.response_type !== 'error' && !msg.type && (
-                    <div className="ai-feedback-buttons">
-                      <button
-                        onClick={() => handleFeedback(msg.id, 'up')}
-                        className={`feedback-button ${feedback[msg.id] === 'up' ? 'active' : ''}`}
-                        aria-label="Good response"
-                      >
-                        <img src={thumbsUpIcon} alt="Thumbs Up" />
-                      </button>
-                      <button
-                        onClick={() => handleFeedback(msg.id, 'down')}
-                        className={`feedback-button ${feedback[msg.id] === 'down' ? 'active' : ''}`}
-                        aria-label="Bad response"
-                      >
-                        <img src={thumbsDownIcon} alt="Thumbs Down" />
-                      </button>
-                    </div>
+                    feedbackSuccessfullySubmittedId === msg.id ? (
+                      <div className="ai-feedback-success-message">
+                        Feedback recorded. Thank you!
+                      </div>
+                    ) : (
+                      <>
+                        <div className="ai-feedback-buttons">
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'up')}
+                            className={`feedback-button ${feedback[msg.id] === 'up' ? 'active' : ''}`}
+                            aria-label="Good response"
+                          >
+                            <img src={thumbsUpIcon} alt="Thumbs Up" />
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'down')}
+                            className={`feedback-button ${feedback[msg.id] === 'down' ? 'active' : ''}`}
+                            aria-label="Bad response"
+                          >
+                            <img src={thumbsDownIcon} alt="Thumbs Down" />
+                          </button>
+                        </div>
+                        {showFeedbackFormForId === msg.id && feedback[msg.id] === 'down' && (
+                          <div className="ai-feedback-form-container">
+                            <p className="ai-feedback-prompt">
+                              Your feedback helps us improve Moskal AI.
+                            </p>
+                            <textarea
+                              className="ai-feedback-textarea"
+                              placeholder="What could be better?"
+                              value={currentFeedbackText}
+                              onChange={handleFeedbackTextChange}
+                              rows="3"
+                            />
+                            <div className="ai-feedback-form-actions">
+                              <button
+                                onClick={() => submitMoskalFeedback(msg.id)}
+                                className="ai-feedback-submit-button"
+                                disabled={currentFeedbackText.trim() === ''}
+                              >
+                                Send Feedback
+                              </button>
+                              <button onClick={cancelMoskalFeedback} className="ai-feedback-cancel-button">
+                                Cancel
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </>
+                    )
                   )}
                 </div>
               </div>

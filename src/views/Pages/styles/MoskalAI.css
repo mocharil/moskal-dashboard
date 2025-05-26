@@ -1,250 +1,305 @@
 /* MoskalAI.css */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+body {
+  font-family: 'Inter', sans-serif;
+}
+
+/* Keyframe Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromRight {
+  from {
+    opacity: 0;
+    transform: translateX(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideInFromLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes sparklePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
 .moskal-ai-page-container {
   display: flex;
   flex-direction: column;
   height: calc(100vh - 60px); /* Adjust based on your header/navbar height */
-  background-color: #ffffff; /* White background for the page */
-  overflow: hidden; /* Prevent scrolling on the page container itself */
+  background: linear-gradient(180deg, #f7f8fc 0%, #ffffff 30%); /* Subtle gradient background */
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
 }
 
 .moskal-ai-content {
   flex-grow: 1;
-  overflow-y: auto; /* Enable scrolling for chat content */
-  padding: 20px 20px 0px 20px; /* Add some padding */
+  overflow-y: auto;
+  padding: 20px 20px 0px 20px;
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Space between chat bubbles */
-  transition: padding-bottom 0.3s ease; /* Smooth transition for padding */
+  gap: 18px; /* Increased gap slightly */
+  transition: padding-bottom 0.3s ease;
 }
 
 .moskal-ai-content.has-interacted {
-  padding-bottom: 20px; /* Add padding at the bottom once interacted */
+  padding-bottom: 20px;
 }
 
 .moskal-ai-header {
   text-align: center;
-  margin-top: 10vh; /* Push down from the top */
-  margin-bottom: 20px;
-  opacity: 1;
-  transition: opacity 0.5s ease-out, transform 0.5s ease-out;
-  transform: translateY(0);
+  margin-top: 8vh; /* Adjusted margin */
+  margin-bottom: 25px;
+  animation: fadeInUp 0.6s ease-out forwards;
 }
 
 .moskal-ai-page-container.has-interacted .moskal-ai-header {
-  display: none;
+  display: none; /* Keeps the hide logic */
 }
 
 .moskal-ai-header h1 {
-  font-size: 2.5rem; /* Larger font size */
-  font-weight: 600;
-  color: #3B82F6; /* Vibrant blue color */
-  margin-bottom: 8px;
+  font-size: 2.8rem; /* Slightly larger */
+  font-weight: 700; /* Bolder */
+  color: #3B82F6; 
+  margin-bottom: 10px;
+  letter-spacing: -0.5px;
 }
 
 .moskal-ai-header .sparkle {
-  color: #7f56d9; /* Moskal purple for sparkle */
+  color: #7f56d9;
+  display: inline-block; /* Allows transform */
+  animation: sparklePulse 1.5s infinite ease-in-out;
 }
 
 .moskal-ai-header p {
-  font-size: 1rem;
-  color: #555; /* Slightly lighter text color */
-  max-width: 400px;
+  font-size: 1.05rem; /* Slightly larger */
+  color: #4B5563; /* Darker gray for better contrast */
+  max-width: 450px;
   margin: 0 auto;
+  line-height: 1.6;
 }
 
 .template-questions-container {
   text-align: center;
   margin-bottom: 30px;
-  opacity: 1;
-  transition: opacity 0.5s ease-out 0.2s, transform 0.5s ease-out 0.2s; /* Delayed transition */
-  transform: translateY(0);
+  animation: fadeInUp 0.6s ease-out 0.2s forwards; /* Delayed animation */
 }
 
 .moskal-ai-page-container.has-interacted .template-questions-container {
-  display: none;
+  display: none; /* Keeps the hide logic */
 }
 
-
 .template-questions-container h2 {
-  font-size: 1.2rem;
-  font-weight: 500;
-  color: #444;
-  margin-bottom: 16px;
+  font-size: 1.25rem; /* Slightly larger */
+  font-weight: 600; /* Bolder */
+  color: #374151; /* Darker gray */
+  margin-bottom: 20px;
 }
 
 .template-questions-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(280px, 1fr)); /* Aim for 2 columns */
-  gap: 12px;
-  max-width: 900px; /* Limit width of the grid */
-  margin: 0 auto; /* Center the grid */
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* More responsive */
+  gap: 16px; /* Increased gap */
+  max-width: 900px;
+  margin: 0 auto;
 }
 
 .template-question-button {
-  background-color: #fff; /* White background */
-  color: #333;
-  border: 1px solid #e0e0e0; /* Light border */
-  border-radius: 8px;
-  padding: 12px 16px;
-  font-size: 0.9rem;
+  background-color: #fff;
+  color: #374151;
+  border: 1px solid #D1D5DB; /* Slightly darker border */
+  border-radius: 10px; /* More rounded */
+  padding: 14px 18px; /* Increased padding */
+  font-size: 0.95rem; /* Slightly larger font */
+  font-weight: 500;
   text-align: left;
   cursor: pointer;
-  transition: background-color 0.2s ease, box-shadow 0.2s ease;
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+  transition: all 0.25s ease; /* Smooth all transitions */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 
 .template-question-button:hover {
-  background-color: #f9f9f9; /* Slightly off-white on hover */
-  border-color: #d0d0d0;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.07);
+  background-color: #f9fafb;
+  border-color: #9CA3AF;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+  transform: translateY(-2px) scale(1.01); /* Subtle lift and scale */
 }
-
 
 .moskal-ai-chat-area {
   display: flex;
   flex-direction: column;
-  gap: 16px; /* Space between chat bubbles */
+  gap: 18px;
   width: 100%;
-  max-width: 900px; /* Max width for chat content */
-  margin: 0 auto; /* Center chat content */
-  flex-grow: 1; /* Allow chat area to take available space */
+  max-width: 900px;
+  margin: 0 auto;
+  flex-grow: 1;
 }
 
 .chat-bubble {
-  padding: 12px 16px;
-  border-radius: 12px;
-  max-width: 85%; /* Max width of a bubble */
-  word-wrap: break-word; /* Break long words */
-  display: flex; /* For icon alignment */
-  align-items: flex-start; /* Align icon to the top of the text */
-  gap: 10px; /* Space between icon and content */
-  position: relative; /* For potential absolute positioned elements inside */
+  padding: 14px 18px; /* Increased padding */
+  border-radius: 16px; /* More rounded */
+  max-width: 85%;
+  word-wrap: break-word;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px; /* Increased gap */
+  position: relative;
+  line-height: 1.6;
+  font-size: 0.95rem;
 }
 
 .chat-bubble p, .chat-bubble ul, .chat-bubble ol {
-  margin: 0 0 0.5em 0; /* Default bottom margin for paragraphs and lists */
-  line-height: 1.6;
+  margin: 0 0 0.6em 0;
 }
 .chat-bubble p:last-child, 
 .chat-bubble ul:last-child, 
 .chat-bubble ol:last-child {
-  margin-bottom: 0; /* No margin for the last element */
+  margin-bottom: 0;
 }
 
 .ai-list {
-  list-style-type: disc; /* Or 'circle', 'square' */
-  padding-left: 20px; /* Indent list items */
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
+  list-style-type: disc;
+  padding-left: 22px;
+  margin-top: 0.6em;
+  margin-bottom: 0.6em;
 }
 
 .ai-list li {
-  margin-bottom: 0.25em; /* Space between list items */
+  margin-bottom: 0.3em;
 }
 
-
 .user-query-bubble {
-  background-color: #7f56d9; /* Moskal purple */
+  background: linear-gradient(135deg, #7f56d9 0%, #916dec 100%); /* Gradient for user */
   color: white;
-  align-self: flex-end; /* Align user messages to the right */
-  border-bottom-right-radius: 4px; /* Slightly different rounding for user */
+  align-self: flex-end;
+  border-bottom-right-radius: 6px;
+  box-shadow: 0 4px 12px rgba(127, 86, 217, 0.3);
+  animation: slideInFromRight 0.4s ease-out forwards;
 }
 
 .ai-response-bubble {
-  background-color: #ffffff; /* White background for AI */
-  color: #333; /* Dark text for AI */
-  align-self: flex-start; /* Align AI messages to the left */
-  border: 1px solid #e0e0e0; /* Light border for AI bubble */
-  box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-  border-bottom-left-radius: 4px; /* Slightly different rounding for AI */
+  background-color: #ffffff;
+  color: #333;
+  align-self: flex-start;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.06); /* Softer, more diffused shadow */
+  border-bottom-left-radius: 6px;
+  animation: slideInFromLeft 0.4s ease-out forwards;
 }
+
 .ai-response-bubble.typing-indicator-bubble {
-  padding: 12px 16px; /* Consistent padding */
+  padding: 12px 16px; /* Keep consistent for typing */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
 .sparkle-icon {
-  font-size: 1.2rem; /* Adjust size as needed */
-  color: #7f56d9; /* Moskal purple */
-  flex-shrink: 0; /* Prevent icon from shrinking */
-  margin-top: 2px; /* Align with first line of text better */
+  font-size: 1.3rem; /* Slightly larger */
+  color: #7f56d9;
+  flex-shrink: 0;
+  margin-top: 1px; /* Fine-tune alignment */
+  animation: sparklePulse 1.5s infinite 0.5s ease-in-out; /* Delayed pulse */
 }
 
 .chat-bubble-content {
-  flex-grow: 1; /* Allow content to take remaining space */
-}
-.ai-content-padding {
-  /* If specific padding is needed inside the content div, not on the bubble itself */
+  flex-grow: 1;
 }
 
 .ai-text-content strong {
-  font-weight: 600; /* Bolder for emphasis */
-  color: #222;
+  font-weight: 600;
+  color: #111827; /* Darker for strong text */
 }
 
 .ai-table-component {
-  margin-top: 12px; /* Space above table if it's not the first component */
-  margin-bottom: 12px; /* Space below table */
-  overflow-x: auto; /* Allow horizontal scrolling for table if needed */
+  margin-top: 16px;
+  margin-bottom: 16px;
+  overflow-x: auto;
 }
-.ai-table-component.mt-8 { /* Tailwind-like margin top */
-  margin-top: 2rem; /* 32px */
+.ai-table-component.mt-8 {
+  margin-top: 2rem;
 }
 
 .ai-table-component h4 {
-  font-size: 1.1rem; /* Slightly larger title for tables/charts */
+  font-size: 1.15rem; /* Slightly larger */
   font-weight: 600;
-  color: #333;
-  margin-bottom: 8px; /* Space below title */
-  margin-top: 12px; /* Space above title if it's part of a multi-component response */
+  color: #1F2937; /* Darker heading */
+  margin-bottom: 10px;
+  margin-top: 16px;
 }
 .ai-table-component h4:first-child {
-  margin-top: 0; /* No top margin if it's the first element in the component */
+  margin-top: 0;
 }
-
 
 .ai-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 0.875rem; /* text-sm */
-  border: 1px solid #e5e7eb; /* border-gray-300 */
+  font-size: 0.9rem; /* Slightly larger table text */
+  border: 1px solid #dee2e6; /* Updated border color */
+  border-radius: 8px; /* Rounded corners for table */
+  overflow: hidden; /* To make border-radius work on table */
 }
 
 .ai-table th, .ai-table td {
-  padding: 8px 12px; /* py-2 px-3 */
-  border: 1px solid #e5e7eb; /* border-gray-300 */
+  padding: 10px 14px; /* Increased padding */
+  border: 1px solid #e9ecef; /* Lighter internal borders */
   text-align: left;
 }
 
 .ai-table thead th {
-  background-color: #f3f4f6; /* bg-gray-100 or 200 */
-  font-weight: 600; /* font-semibold */
+  background-color: #f8f9fa; /* Lighter head background */
+  font-weight: 600;
   text-transform: uppercase;
-  font-size: 0.75rem; /* text-xs */
-  color: #374151; /* text-gray-700 */
+  font-size: 0.8rem; /* Slightly larger header text */
+  color: #495057; /* Darker text for header */
 }
 
 .ai-table tbody tr:nth-child(even) {
-  background-color: #f9fafb; /* bg-gray-50 */
+  background-color: #fdfdfe; /* Very subtle even row color */
 }
 
 .ai-table tbody tr:hover {
-  background-color: #f0f0f0; /* Slightly darker hover for rows */
+  background-color: #f1f3f5; /* Hover effect */
 }
 
 .ai-chart-component {
-  margin-top: 12px;
-  margin-bottom: 12px;
+  margin-top: 16px;
+  margin-bottom: 16px;
 }
-.ai-chart-component.mt-8 { /* Tailwind-like margin top */
-  margin-top: 2rem; /* 32px */
+.ai-chart-component.mt-8 {
+  margin-top: 2rem;
 }
 
 .ai-chart-component h4 {
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 600;
-  color: #333;
-  margin-bottom: 8px;
-  margin-top: 12px;
+  color: #1F2937;
+  margin-bottom: 10px;
+  margin-top: 16px;
 }
 .ai-chart-component h4:first-child {
   margin-top: 0;
@@ -252,119 +307,131 @@
 
 .chart-container {
   width: 100%;
-  height: 300px; /* Default height, can be overridden by component spec */
+  height: 300px;
   background-color: #fff;
-  border-radius: 8px;
-  padding: 10px;
+  border-radius: 10px; /* More rounded */
+  padding: 12px;
   box-sizing: border-box;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05); /* Subtle shadow for charts */
 }
 
 .ai-footnotes {
-  margin-top: 12px; /* mt-3 */
-  padding-top: 8px; /* pt-2 */
-  border-top: 1px solid #e5e7eb; /* border-gray-200 */
+  margin-top: 16px;
+  padding-top: 10px;
+  border-top: 1px solid #e5e7eb;
 }
 
 .ai-footnotes h5 {
-  font-size: 0.875rem; /* text-sm */
-  font-weight: 600; /* font-semibold */
-  margin-bottom: 4px; /* mb-1 */
-  color: #4b5563; /* text-gray-600 */
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #4b5563;
 }
 
 .ai-footnotes p {
-  font-size: 0.75rem; /* text-xs */
-  color: #6b7280; /* text-gray-500 */
+  font-size: 0.8rem;
+  color: #6b7280;
   font-style: italic;
-  margin-bottom: 2px;
+  margin-bottom: 3px;
 }
 
 .ai-footnotes a {
-  color: #3b82f6; /* text-blue-500 */
+  color: #3b82f6;
   text-decoration: none;
+  transition: color 0.2s ease;
 }
 
 .ai-footnotes a:hover {
+  color: #2563eb; /* Darker blue on hover */
   text-decoration: underline;
 }
 
-
 .moskal-ai-input-container {
   padding: 16px 20px 20px 20px;
-  background-color: #ffffff; /* White background for input area */
-  border-top: 1px solid #e0e0e0; /* Separator line */
-  box-shadow: 0 -2px 5px rgba(0,0,0,0.03); /* Subtle shadow */
+  background-color: #ffffff;
+  border-top: 1px solid #dde1e6; /* Slightly darker border */
+  box-shadow: 0 -3px 8px rgba(0,0,0,0.04); /* Enhanced shadow */
 }
 
 .moskal-ai-input-area {
   display: flex;
-  align-items: flex-end; /* Align items to bottom for multi-line textarea */
-  gap: 10px;
-  max-width: 900px; /* Max width for input area */
-  margin: 0 auto; /* Center input area */
-  background-color: #f7f7f8; /* Light gray for the input field itself */
-  border-radius: 12px; /* Rounded corners for the input field */
-  padding: 8px; /* Padding around textarea and button */
-  border: 1px solid #e0e0e0;
+  align-items: flex-end;
+  gap: 12px; /* Increased gap */
+  max-width: 900px;
+  margin: 0 auto;
+  background-color: #f0f2f5; /* Slightly different background for input field */
+  border-radius: 14px; /* More rounded */
+  padding: 10px; /* Increased padding */
+  border: 1px solid #ced4da;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+.moskal-ai-input-area:focus-within {
+  border-color: #7f56d9;
+  box-shadow: 0 0 0 3px rgba(127, 86, 217, 0.2);
 }
 
 .moskal-ai-input-area textarea {
   flex-grow: 1;
-  padding: 10px 12px; /* Padding inside textarea */
-  border: none; /* Remove default border */
-  border-radius: 8px; /* Rounded corners for textarea */
+  padding: 12px 14px; /* Increased padding */
+  border: none;
+  border-radius: 10px;
   font-size: 1rem;
   line-height: 1.5;
-  resize: none; /* Disable manual resize */
-  background-color: transparent; /* Make textarea background transparent */
-  color: #333;
-  max-height: 150px; /* Max height before scrolling */
-  overflow-y: auto; /* Scroll if content exceeds max height */
-  outline: none; /* Remove focus outline */
+  resize: none;
+  background-color: transparent;
+  color: #212529; /* Darker text */
+  max-height: 150px;
+  overflow-y: auto;
+  outline: none;
+  font-family: 'Inter', sans-serif;
 }
 
 .moskal-ai-input-area textarea::placeholder {
-  color: #888; /* Placeholder text color */
+  color: #6c757d; /* Softer placeholder */
 }
 
 .send-button {
-  background-color: #cccccc; /* Default disabled color */
+  background-color: #adb5bd; /* Softer disabled color */
   border: none;
-  border-radius: 8px; /* Rounded corners for button */
-  padding: 0; /* Remove padding if icon is precisely sized */
-  width: 40px; /* Fixed width */
-  height: 40px; /* Fixed height */
+  border-radius: 10px; /* More rounded */
+  padding: 0;
+  width: 44px; /* Slightly larger */
+  height: 44px; /* Slightly larger */
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: not-allowed;
-  transition: background-color 0.2s ease;
-  flex-shrink: 0; /* Prevent button from shrinking */
+  transition: background-color 0.25s ease, transform 0.15s ease;
+  flex-shrink: 0;
 }
 
 .send-button.active {
-  background-color: #A78BFA; /* Lighter purple for active state */
+  background-color: #7f56d9; /* Moskal purple */
   cursor: pointer;
 }
 
 .send-button.active:hover {
-  background-color: #8B5CF6; /* Corresponding darker hover purple */
+  background-color: #6d44c6; /* Darker purple on hover */
+  transform: scale(1.05); /* Slight scale on hover */
+}
+.send-button.active:active {
+  transform: scale(0.98); /* Press effect */
 }
 
 .send-button .send-icon {
-  width: 20px; /* Icon size */
-  height: 20px;
+  width: 22px; /* Slightly larger icon */
+  height: 22px;
 }
 .send-button .send-icon path {
-  stroke: white; /* Icon color */
+  stroke: white;
 }
 
 .send-button .loader {
-  border: 3px solid #f3f3f3; /* Light grey */
-  border-top: 3px solid #7f56d9; /* Moskal purple */
+  border: 3px solid rgba(255,255,255,0.3); /* Lighter border for loader on purple */
+  border-top: 3px solid #ffffff; /* White top border */
   border-radius: 50%;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   animation: spin 1s linear infinite;
 }
 
@@ -374,10 +441,10 @@
 }
 
 .disclaimer {
-  font-size: 0.75rem; /* Smaller text for disclaimer */
-  color: #777; /* Gray color */
+  font-size: 0.8rem; /* Slightly larger */
+  color: #6c757d;
   text-align: center;
-  margin-top: 12px; /* Space above disclaimer */
+  margin-top: 14px;
   max-width: 900px;
   margin-left: auto;
   margin-right: auto;
@@ -392,16 +459,16 @@
 .typing-indicator {
   display: flex;
   align-items: center;
-  margin-left: 8px; /* Space from sparkle icon */
+  margin-left: 8px;
 }
 
 .typing-indicator span {
-  height: 8px;
-  width: 8px;
-  background-color: #b0b0b0; /* Medium gray for dots */
+  height: 9px; /* Slightly larger dots */
+  width: 9px;
+  background-color: #adb5bd; /* Softer gray */
   border-radius: 50%;
   display: inline-block;
-  margin: 0 2px;
+  margin: 0 3px; /* Increased spacing */
   animation: typing-bounce 1.4s infinite ease-in-out both;
 }
 
@@ -415,103 +482,250 @@
 
 @keyframes typing-bounce {
   0%, 80%, 100% {
-    transform: scale(0);
+    transform: scale(0.5); /* Start smaller */
+    opacity: 0.5;
   }
   40% {
     transform: scale(1.0);
+    opacity: 1;
   }
 }
 
 /* Feedback Buttons */
 .ai-feedback-buttons {
   display: flex;
-  gap: 8px;
-  margin-top: 10px; /* Space above the buttons */
-  padding-left: 26px; /* Align with text content, considering sparkle icon width + gap */
+  gap: 10px; /* Increased gap */
+  margin-top: 12px;
+  padding-left: calc(1.3rem + 12px); /* Align with text, considering sparkle icon + gap */
 }
 
 .feedback-button {
-  background-color: transparent;
-  border: 1px solid #d1d5db; /* gray-300 */
-  border-radius: 50%; /* Circular buttons */
-  padding: 6px;
+  background-color: #f8f9fa; /* Light background */
+  border: 1px solid #dee2e6;
+  border-radius: 50%;
+  padding: 7px; /* Slightly more padding */
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: background-color 0.2s ease, border-color 0.2s ease;
+  transition: all 0.2s ease;
 }
 
 .feedback-button:hover {
-  background-color: #f3f4f6; /* gray-100 */
-  border-color: #9ca3af; /* gray-400 */
+  background-color: #e9ecef;
+  border-color: #ced4da;
+  transform: translateY(-1px); /* Slight lift on hover */
 }
 
 .feedback-button img {
-  width: 16px; /* Adjust icon size as needed */
+  width: 16px;
   height: 16px;
-  opacity: 0.7;
+  opacity: 0.6; /* Slightly less opaque */
+  transition: opacity 0.2s ease;
+}
+.feedback-button:hover img {
+  opacity: 0.8;
 }
 
 .feedback-button.active img {
   opacity: 1;
 }
 .feedback-button.active {
-   border-color: #7f56d9; /* Moskal purple for active thumbs up */
+   border-color: #7f56d9;
 }
 
 .feedback-button.active[aria-label="Good response"] {
-  background-color: #eef2ff; /* Light blue/purple for active thumbs up */
+  background-color: #e6dfff; /* Lighter purple for active good */
 }
 .feedback-button.active[aria-label="Good response"] img {
- filter: invert(38%) sepia(98%) saturate(1351%) hue-rotate(229deg) brightness(97%) contrast(94%); /* Moskal Purple color for icon */
+ filter: invert(38%) sepia(98%) saturate(1351%) hue-rotate(229deg) brightness(97%) contrast(94%);
 }
-
 
 .feedback-button.active[aria-label="Bad response"] {
-  background-color: #fee2e2; /* Light red for active thumbs down */
-  border-color: #ef4444; /* red-500 */
+  background-color: #ffebee; /* Lighter red for active bad */
+  border-color: #ef5350; /* Softer red */
 }
 .feedback-button.active[aria-label="Bad response"] img {
-  filter: invert(39%) sepia(69%) saturate(5250%) hue-rotate(340deg) brightness(97%) contrast(91%); /* Red color for icon */
+  filter: invert(40%) sepia(41%) saturate(3200%) hue-rotate(330deg) brightness(95%) contrast(88%); /* Adjusted red filter */
 }
+
+/* Feedback Form */
+.ai-feedback-form-container {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #e9ecef;
+  animation: fadeInUp 0.3s ease-out;
+  padding-left: calc(1.3rem + 12px); /* Align with text, considering sparkle icon + gap */
+}
+
+.ai-feedback-prompt {
+  font-size: 0.85rem;
+  color: #495057;
+  margin-bottom: 8px;
+  font-style: italic;
+}
+
+.ai-feedback-textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: 10px;
+  border: 1px solid #ced4da;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+  resize: vertical;
+  margin-bottom: 10px;
+  font-family: 'Inter', sans-serif;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.ai-feedback-textarea:focus {
+  outline: none;
+  border-color: #7f56d9;
+  box-shadow: 0 0 0 2px rgba(127, 86, 217, 0.15);
+}
+
+.ai-feedback-form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-start;
+}
+
+.ai-feedback-submit-button,
+.ai-feedback-cancel-button {
+  padding: 8px 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background-color 0.2s ease, opacity 0.2s ease;
+}
+
+.ai-feedback-submit-button {
+  background-color: #7f56d9;
+  color: white;
+}
+
+.ai-feedback-submit-button:hover {
+  background-color: #6d44c6;
+}
+
+.ai-feedback-submit-button:disabled {
+  background-color: #adb5bd;
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ai-feedback-cancel-button {
+  background-color: #f1f3f5;
+  color: #495057;
+  border: 1px solid #dee2e6;
+}
+
+.ai-feedback-cancel-button:hover {
+  background-color: #e9ecef;
+}
+
+.ai-feedback-success-message {
+  margin-top: 12px;
+  padding: 8px 12px;
+  background-color: #e6f7ff; /* Light blue for success */
+  border: 1px solid #91d5ff; /* Blue border */
+  color: #0050b3; /* Dark blue text */
+  border-radius: 6px;
+  font-size: 0.9rem;
+  text-align: center;
+  animation: fadeIn 0.3s ease-out;
+  padding-left: calc(1.3rem + 12px); /* Align with text, considering sparkle icon + gap */
+}
+
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
   .moskal-ai-header h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
   .template-questions-grid {
-    grid-template-columns: 1fr; /* Stack questions on smaller screens */
+    grid-template-columns: 1fr;
   }
   .chat-bubble {
-    max-width: 90%;
+    max-width: 92%; /* Slightly more width */
+    font-size: 0.92rem;
   }
-  .ai-feedback-buttons {
-    padding-left: 22px; /* Adjust if sparkle icon size changes */
+  .ai-feedback-buttons,
+  .ai-feedback-form-container,
+  .ai-feedback-success-message {
+    padding-left: calc(1.3rem + 10px); /* Adjust based on icon size/gap */
+  }
+  .moskal-ai-input-area textarea {
+    font-size: 0.95rem;
   }
 }
 
 @media (max-width: 480px) {
   .moskal-ai-content {
     padding: 15px 15px 0px 15px;
+    gap: 16px;
+  }
+  .moskal-ai-header h1 {
+    font-size: 2rem;
+  }
+  .moskal-ai-header p {
+    font-size: 1rem;
+  }
+  .template-questions-container h2 {
+    font-size: 1.15rem;
+  }
+  .template-question-button {
+    padding: 12px 16px;
+    font-size: 0.9rem;
   }
   .moskal-ai-input-container {
-    padding: 10px 15px 15px 15px;
+    padding: 12px 15px 15px 15px;
+  }
+  .moskal-ai-input-area {
+    padding: 8px;
+    gap: 8px;
   }
   .moskal-ai-input-area textarea {
     font-size: 0.9rem;
+    padding: 10px 12px;
   }
   .send-button {
-    width: 36px;
-    height: 36px;
+    width: 40px;
+    height: 40px;
   }
   .send-button .send-icon {
-    width: 18px;
-    height: 18px;
+    width: 20px;
+    height: 20px;
+  }
+  .feedback-button {
+    padding: 6px;
   }
   .feedback-button img {
     width: 14px;
     height: 14px;
+  }
+  .chat-bubble {
+    font-size: 0.9rem;
+  }
+  .ai-feedback-form-container,
+  .ai-feedback-success-message {
+    padding-left: 0; /* Full width on small screens */
+  }
+  .ai-feedback-prompt {
+    font-size: 0.8rem;
+  }
+  .ai-feedback-textarea {
+    font-size: 0.85rem;
+  }
+  .ai-feedback-form-actions {
+    flex-direction: column; /* Stack buttons on very small screens */
+  }
+  .ai-feedback-submit-button,
+  .ai-feedback-cancel-button {
+    width: 100%;
+    text-align: center;
   }
 }

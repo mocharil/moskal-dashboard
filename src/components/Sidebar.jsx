@@ -220,14 +220,16 @@ const Sidebar = () => {
   return (
     <>
       <div className={`sidebar-container ${isSidebarCollapsed ? 'sidebar-collapsed' : ''}`}>
-        <button className="sidebar-toggle" onClick={toggleSidebar}>
+        {/* <button className="sidebar-toggle" onClick={toggleSidebar}> Removed toggle button
           {isSidebarCollapsed ? <ChevronRight /> : <ChevronLeft />}
-        </button>
+        </button> */}
         <div className="sidebar-main-content"> {/* Added wrapper div */}
           <div>
             <img
               className="sidebar-moskal-icon"
               src={window.location.origin + "/MOSKAL.svg"}
+              onClick={toggleSidebar} // Logo now always toggles sidebar
+              style={{ cursor: 'pointer' }} // Always show pointer cursor on logo
             />
           </div>
           <div className="login-add-new-keyword tooltip" onClick={handleAddNewKeyword}>
@@ -238,7 +240,7 @@ const Sidebar = () => {
             </>
           ) : (
             <>
-              <CustomText size="sss" color="b500">
+              <CustomText size="ss" color="b500"> {/* Reverted font size */}
                 Add new keywords
               </CustomText>
               <AddCircle sx={{ color: "#0047AB", width: "24px" }} />
@@ -255,7 +257,7 @@ const Sidebar = () => {
                 className={`project-avatar tooltip ${activeKeywordSidebar === value.name ? 'active' : ''}`}
                 onClick={() => handleOnSelectAccordion(value.name, "dashboard")}
               >
-                <CustomText color={activeKeywordSidebar === value.name ? 'white' : 'b900'} bold="medium" size="sss">
+                <CustomText color={activeKeywordSidebar === value.name ? 'white' : 'b900'} bold="medium" size="sss"> {/* Reverted font size */}
                   {value.name.charAt(0).toUpperCase()}
                 </CustomText>
                 <span className="tooltiptext">{value.name}</span>
@@ -377,7 +379,7 @@ const Sidebar = () => {
         </div>
 
         {/* Regular accordion for expanded sidebar */}
-        <AccordionGroup sx={{ maxWidth: isSidebarCollapsed ? 60 : 192 }}>
+        <AccordionGroup sx={{ maxWidth: isSidebarCollapsed ? 60 : 240 }}> {/* Increased maxWidth */}
           {listKeywords?.map((value, index) => {
             // Ensure type-consistent comparison for ownership
             const loggedInUserId = userData && userData.id !== undefined && userData.id !== null ? Number(userData.id) : null;
@@ -399,7 +401,7 @@ const Sidebar = () => {
                   class={`login-accordion-title ${activeKeywordSidebar === value.name ? 'active-project' : ''}`}
                   color="b900"
                   bold="medium"
-                  size="sss"
+                  size="ss" /* Reverted font size */
                 >
                   {value.name}
                 </CustomText>
@@ -418,7 +420,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/monitor-04.svg"}
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Dashboard
                   </CustomText>
                 </div>
@@ -433,7 +435,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/message-alert-circle.svg"}
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Topics
                   </CustomText>
                 </div>
@@ -445,7 +447,7 @@ const Sidebar = () => {
                   onClick={() => handleOnSelectAccordion(value.name, "summary")}
                 >
                   <DescriptionOutlined className="sidebar-icon-accordion"></DescriptionOutlined>
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Summary
                   </CustomText>
                 </div>
@@ -462,7 +464,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/pie-chart-01.svg"}
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Analysis
                   </CustomText>
                 </div>
@@ -479,7 +481,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/scales-01.svg"}
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Comparison
                   </CustomText>
                 </div>
@@ -494,7 +496,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/user-01.svg"}
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     KOL
                   </CustomText>
                 </div>
@@ -511,7 +513,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/monitor-04.svg"} /* Placeholder AI icon */
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Moskal AI
                   </CustomText>
                 </div>
@@ -528,7 +530,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/message-circle-02.svg"} /* Using dashboard icon as placeholder */
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Mentions
                   </CustomText>
                 </div>
@@ -545,7 +547,7 @@ const Sidebar = () => {
                     className="sidebar-icon-accordion"
                     src={window.location.origin + "/download-01.svg"} 
                   />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Generate Report
                   </CustomText>
                 </div>
@@ -561,7 +563,7 @@ const Sidebar = () => {
                   }
                 >
                   <SettingsOutlined className="sidebar-icon-accordion" />
-                  <CustomText color="b900" bold="medium" size="sss">
+                  <CustomText color="b900" bold="medium" size="sss"> {/* Reverted font size */}
                     Settings
                   </CustomText>
                 </div>
@@ -576,10 +578,10 @@ const Sidebar = () => {
           <div className="sidebar-profile-left">
             <div className="sidebar-profile-picture"></div>
             <div className="sidebar-profile-text">
-              <CustomText size="xsss" color="b900" inline>
+              <CustomText size="xsss" color="b900" inline> {/* Reverted font size */}
                 {userData.name}
               </CustomText>
-              <CustomText size="xlsss" color="b500" inline>
+              <CustomText size="xsss" color="b500" inline> {/* Reverted font size */}
                 {userData.email}
               </CustomText>
             </div>

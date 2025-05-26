@@ -565,7 +565,7 @@ const Dashboard = () => {
       <>
         <div className="dashboard-container">
           <div>
-            <CustomText color="brand" bold="semibold" size="mds">
+            <CustomText color="brand" bold="semibold" size="md">
               #{keyword}
             </CustomText>
               <div className="dashboard-search-container">

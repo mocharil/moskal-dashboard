@@ -274,11 +274,15 @@ const Summary = () => {
           ]);
           setFilterKolData(getLimitArray(sortedKOL));
         } else { // "Popular sites"
-          const filteredSites = resp.filter(kol => kol.channel === 'news');
+          const filteredSites = resp.filter(kol => {
+            const channel = kol.channel?.toLowerCase();
+            const category = kol.user_category?.toLowerCase();
+            return channel === 'news' || category === 'news account';
+          });
+          
           const sortedSites = sortByFieldsMultiple([...filteredSites], [
-            
-            { key: 'most_viral', order: 'desc' },
-            { key: 'link_post', order: 'desc' }
+            { key: 'link_post', order: 'desc' },
+            { key: 'user_influence_score', order: 'desc' }
           ]);
           setFilterKolData(getLimitArray(sortedSites));
         }
@@ -352,10 +356,16 @@ const Summary = () => {
       ]);
       setFilterKolData(getLimitArray(sortedKOL));
     } else { // "Popular sites"
-      const filteredSites = kolData.filter(kol => kol.channel === 'news');
+      const filteredSites = kolData.filter(kol => {
+        const channel = kol.channel?.toLowerCase();
+        const category = kol.user_category?.toLowerCase();
+        return channel === 'news' || category === 'news account';
+      });
+      
       const sortedSites = sortByFieldsMultiple([...filteredSites], [
-        { key: 'most_viral', order: 'desc' },
-        { key: 'link_post', order: 'desc' }
+        
+        { key: 'link_post', order: 'desc' },
+        { key: 'user_influence_score', order: 'desc' }
         
       ]);
       setFilterKolData(getLimitArray(sortedSites));

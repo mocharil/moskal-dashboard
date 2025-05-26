@@ -1,8 +1,8 @@
 .sidebar-container {
   background-color: #f8fafc;
-  width: 192px;
-  min-width: 192px;
-  max-width: 192px;
+  width: 140px; /* Increased width */
+  min-width: 230px; /* Increased width */
+  max-width: 240px; /* Increased width */
   border-right: 1px solid #d5d7da;
   position: sticky;
   top: 0;
@@ -111,35 +111,17 @@
 }
 
 .sidebar-moskal-icon {
-  width: 76px;
-  margin: 20px 0px 16px 20px;
-  transition: margin 0.3s ease;
+  width: 180px; /* Increased logo size */
+  margin: 20px auto 16px 27px; /* Centered logo in expanded state */
+  transition: margin 0.3s ease, width 0.3s ease; /* Added width transition */
 }
 
 .sidebar-collapsed .sidebar-moskal-icon {
-  width: 40px;
-  margin: 20px 0px 16px 10px;
+  width: 50px; /* Increased logo size for collapsed state */
+  margin: 20px auto 16px 5px; /* Centered logo when collapsed */
 }
 
-.sidebar-toggle {
-  position: absolute;
-  top: 20px;
-  right: 10px;
-  cursor: pointer;
-  z-index: 1000000;
-  background: transparent;
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 5px;
-  border-radius: 50%;
-  transition: background-color 0.2s;
-}
-
-.sidebar-toggle:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
+/* Removed .sidebar-toggle and .sidebar-toggle:hover styles */
 
 .login-add-new-keyword {
   padding: 15px 20px;
@@ -201,7 +183,7 @@
   align-items: center;
   gap: 8px;
   cursor: pointer;
-  width: 160px;
+  width: 208px; /* Increased width (240 - 32) */
   height: 34px;
   border: 1px solid #e9eaeb00;
   padding: 10px;
