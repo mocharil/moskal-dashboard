@@ -85,19 +85,20 @@ const KolComponent = (props) => {
           <CustomText size="sss" color="b500">
             Actively discussing
           </CustomText>
-          <CustomText
-            bold="semibold"
-            size="2xls"
-            color="brand"
-            pointer
-            class="kol-component-hyperlink"
-          >
+          <div className="kol-component-issues-list">
             {data.unified_issue?.map((value, index) => (
-              <span key={`${value}-${index}`}>
-                {index === 0 ? value : `, ${value}`}
-              </span>
+              <CustomText
+                key={`${value}-${index}`}
+                bold="semibold"
+                size="2xls"
+                color="brand"
+                pointer
+                style={{ display: 'block', marginBottom: '4px' }}
+              >
+                {`• ${value}`}
+              </CustomText>
             ))}
-          </CustomText>
+          </div>
         </div>
       </div>
     </>

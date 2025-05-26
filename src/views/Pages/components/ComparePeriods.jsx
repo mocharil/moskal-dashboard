@@ -223,11 +223,12 @@ const ComparePeriods = (props) => {
   const getKolToWatchData = async (projectData) => {
     try {
       const resp = await getKolToWatch(projectData);
+      const sortedResp = resp.sort((a, b) => (b.most_viral || 0) - (a.most_viral || 0));
       setKolData((prev) => [
         ...prev,
         {
           project_name: projectData.project_name,
-          data: resp.slice(0, 3),
+          data: sortedResp.slice(0, 3),
           project_start: projectData.custom_start_date,
           project_end: projectData.custom_end_date,
         },
@@ -544,11 +545,11 @@ const ComparePeriods = (props) => {
                   listProject={getListPeriods()}
                 />
 
-                <MostViralIssuesView
+                {/* <MostViralIssuesView
                   data={issuesData}
                   listProject={getListPeriods()}
                   listKeywords={listKeywords}
-                />
+                /> */}
                 <MostViralTopicsView
                   data={topicsData}
                   listProject={getListPeriods()}

@@ -551,20 +551,19 @@ const Kol = () => {
                                 </CustomText>
                               </td>
                               <td style={{ textAlign: "left" }}>
-                                <CustomText
-                                  color="brand"
-                                  bold="medium"
-                                  size="sss"
-                                  inline
-                                >
+                                <div className="kol-issues-list-in-table"> 
                                   {item.unified_issue?.map((value, index) => (
-                                    <>{`${value} ${
-                                      index === item.unified_issue.length
-                                        ? ","
-                                        : ""
-                                    }`}</>
+                                    <CustomText
+                                      key={`${value}-${index}`}
+                                      color="brand"
+                                      bold="medium"
+                                      size="sss"
+                                      style={{ display: 'block', marginBottom: '4px' }}
+                                    >
+                                      {`• ${value}`}
+                                    </CustomText>
                                   ))}
-                                </CustomText>
+                                </div>
                               </td>
                               <td>
                                 <div>{sentiment(item)}</div>

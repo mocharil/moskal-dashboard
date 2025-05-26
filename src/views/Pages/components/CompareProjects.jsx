@@ -231,15 +231,16 @@ const CompareProjects = (props) => {
     setIsLoadingKolToWatch(true);
     try {
       const resp = await getKolToWatch(projectData);
+      const sortedResp = resp.sort((a, b) => (b.most_viral || 0) - (a.most_viral || 0));
       setKolData((prev) => [
         ...prev,
-        { project_name: projectData.project_name, data: resp.slice(0, 3) },
+        { project_name: projectData.project_name, data: sortedResp.slice(0, 3) },
       ]);
       if (
         filterAndDeduplicate(
           [
             ...kolData,
-            { project_name: projectData.project_name, data: resp.slice(0, 3) },
+            { project_name: projectData.project_name, data: sortedResp.slice(0, 3) },
           ],
           getListProject(),
           "project_name"
@@ -907,12 +908,12 @@ const CompareProjects = (props) => {
                 />
                 {getListProject()?.length <= 2 && (
                   <>
-                    <MostViralIssuesView
+                    {/* <MostViralIssuesView
                       data={issuesData}
                       listProject={getListProject()}
                       selectComponent={getSelectProjectComponent}
                       listKeywords={listKeywords}
-                    />
+                    /> */}
                     <MostViralTopicsView
                       data={topicsData}
                       listProject={getListProject()}
