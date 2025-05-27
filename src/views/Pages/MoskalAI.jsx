@@ -407,9 +407,6 @@ const MoskalAI = () => {
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
     setInputValue('');
     setIsTyping(false);
-
-    // console.log("MoskalAI - projectKeywords state in handleSendMessage:", projectKeywords); // Log 3 // Commented out original log
-
     // Show typing indicator
     const typingIndicator = {
       id: Date.now() + 0.5,
@@ -659,21 +656,33 @@ const MoskalAI = () => {
                                   </tr>
                                 </thead>
                                 <tbody>
-                                  {component.rows.map((rowObject, rIndex) => {
-                                    // Ensure rowObject is an object and headers exist
-                                    if (typeof rowObject !== 'object' || rowObject === null || !component.headers) {
-                                      console.warn(`Table row at index ${rIndex} is not a valid object or headers are missing for table "${component.title}". Skipping row. Row data:`, rowObject);
+                                  {component.rows.map((rowItem, rIndex) => {
+                                    if (Array.isArray(rowItem)) {
+                                      // Handle array-based rows
+                                      return (
+                                        <tr key={`tr-${rIndex}`}>
+                                          {rowItem.map((cellData, cIndex) => (
+                                            <td key={`td-${rIndex}-${cIndex}`}>
+                                              {String(cellData !== undefined ? cellData : '')}
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      );
+                                    } else if (typeof rowItem === 'object' && rowItem !== null && component.headers) {
+                                      // Handle object-based rows (existing logic)
+                                      return (
+                                        <tr key={`tr-${rIndex}`}>
+                                          {component.headers.map((headerKey, cIndex) => (
+                                            <td key={`td-${rIndex}-${cIndex}`}>
+                                              {String(rowItem[headerKey] !== undefined ? rowItem[headerKey] : '')}
+                                            </td>
+                                          ))}
+                                        </tr>
+                                      );
+                                    } else {
+                                      console.warn(`Table row at index ${rIndex} is not a valid array or object, or headers are missing for table "${component.title}". Skipping row. Row data:`, rowItem);
                                       return null;
                                     }
-                                    return (
-                                      <tr key={`tr-${rIndex}`}>
-                                        {component.headers.map((headerKey, cIndex) => (
-                                          <td key={`td-${rIndex}-${cIndex}`}>
-                                            {String(rowObject[headerKey] !== undefined ? rowObject[headerKey] : '')}
-                                          </td>
-                                        ))}
-                                      </tr>
-                                    );
                                   })}
                                 </tbody>
                               </table>
@@ -890,7 +899,7 @@ const MoskalAI = () => {
         <div className="moskal-ai-input-area">
           <textarea
             ref={textareaRef}
-            placeholder="What is the most viral topics in the last 7 days?"
+            placeholder="Ask about anything related to your project"
             value={inputValue}
             onChange={handleInputChange}
             onKeyPress={(e) => {

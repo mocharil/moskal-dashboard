@@ -93,32 +93,58 @@ const TopicItem = ({ topic, index }) => {
     sentimentValues.negative = 0;
     sentimentValues.neutral = 0;
   
-    // Dua regex: format 1 => "55% Positive", format 2 => "Positive: 55%"
+    // Tiga regex: format 1 => "55% Positive", format 2 => "Positive: 55%", format 3 => "Positive: 9.0%, Negative: 1.0%, Neutral: 90.0%"
     const patterns = [
       /(\d+)%\s*(Positive|Negative|Neutral)/gi,
-      /(Positive|Negative|Neutral)\s*:\s*(\d+)%/gi
+      /(Positive|Negative|Neutral)\s*:\s*(\d+)%/gi,
+      /(Positive|Negative|Neutral)\s*:\s*(\d+(?:\.\d+)?)%/gi
     ];
-  
-    for (const pattern of patterns) {
-      let match;
-      while ((match = pattern.exec(sentimentText)) !== null) {
-        let label, value;
-  
-        // Deteksi posisi angka dan label berdasarkan pola
-        if (pattern === patterns[0]) {
-          value = parseInt(match[1]);
-          label = match[2].toLowerCase();
-        } else {
-          value = parseInt(match[2]);
-          label = match[1].toLowerCase();
-        }
-  
-        if (label === 'positive') {
-          sentimentValues.positive = value;
-        } else if (label === 'negative') {
-          sentimentValues.negative = value;
-        } else if (label === 'neutral') {
-          sentimentValues.neutral = value;
+    
+    // Check for comma-separated format first (Positive: 9.0%, Negative: 1.0%, Neutral: 90.0%)
+    const commaPattern = /(Positive|Negative|Neutral)\s*:\s*(\d+(?:\.\d+)?)%,?\s*/gi;
+    let commaMatch;
+    let hasCommaFormat = false;
+    
+    // Create a copy of the text to work with
+    let textCopy = sentimentText;
+    
+    while ((commaMatch = commaPattern.exec(textCopy)) !== null) {
+      hasCommaFormat = true;
+      const label = commaMatch[1].toLowerCase();
+      const value = parseFloat(commaMatch[2]);
+      
+      if (label === 'positive') {
+        sentimentValues.positive = value;
+      } else if (label === 'negative') {
+        sentimentValues.negative = value;
+      } else if (label === 'neutral') {
+        sentimentValues.neutral = value;
+      }
+    }
+    
+    // If comma format wasn't detected, try the other patterns
+    if (!hasCommaFormat) {
+      for (const pattern of patterns) {
+        let match;
+        while ((match = pattern.exec(sentimentText)) !== null) {
+          let label, value;
+    
+          // Deteksi posisi angka dan label berdasarkan pola
+          if (pattern === patterns[0]) {
+            value = parseInt(match[1]);
+            label = match[2].toLowerCase();
+          } else {
+            value = parseFloat(match[2]);
+            label = match[1].toLowerCase();
+          }
+    
+          if (label === 'positive') {
+            sentimentValues.positive = value;
+          } else if (label === 'negative') {
+            sentimentValues.negative = value;
+          } else if (label === 'neutral') {
+            sentimentValues.neutral = value;
+          }
         }
       }
     }

@@ -15,7 +15,7 @@ body {
   font-family: "Inter", sans-serif;
   /* min-width: 1920px; */
   /* overflow: hidden; */
-  overflow-x: scroll;
+  overflow-x: visible; /* Allow content to overflow horizontally without clipping */
   margin: 0;
 }
 
@@ -27,8 +27,9 @@ body::-webkit-scrollbar {
 .router-flex {
   display: flex;
   min-height: 100vh;
-  min-width: 100vw;
-  width: 100vw;
+  /* width: 100vw; Remove fixed width to allow content (like tooltips) to overflow */
+  /* min-width: 100vw; Remove fixed min-width */
+  overflow-x: visible; /* Ensure horizontal overflow is not clipped */
 }
 
 .router-main-container {
