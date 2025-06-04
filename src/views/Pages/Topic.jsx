@@ -182,7 +182,7 @@ const Topics = () => {
 
   const isNoDataUIShow = () => {
     if (!isLoading) {
-      return topicsData.length === 0;
+      return !Array.isArray(topicsData) || topicsData.length === 0;
     } else {
       return false;
     }
@@ -191,8 +191,8 @@ const Topics = () => {
   // Pagination logic
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
-  const currentTopics = topicsData.slice(indexOfFirstItem, indexOfLastItem);
-  const totalPages = Math.ceil(topicsData.length / itemsPerPage);
+  const currentTopics = Array.isArray(topicsData) ? topicsData.slice(indexOfFirstItem, indexOfLastItem) : [];
+  const totalPages = Array.isArray(topicsData) ? Math.ceil(topicsData.length / itemsPerPage) : 0;
 
   return (
     <>

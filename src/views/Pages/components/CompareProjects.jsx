@@ -936,7 +936,10 @@ const CompareProjects = (props) => {
                 )}
 
                 <div className="comparison-compare-projects-box">
-                  <div>Mentions</div>
+              <CustomText bold="semibold" size="mds" inLine>
+                Mentions
+                <br></br>
+              </CustomText>  
                   <GraphChart
                     data={mentionData}
                     listProject={getListProject()}
@@ -944,12 +947,19 @@ const CompareProjects = (props) => {
                 </div>
 
                 <div className="comparison-compare-projects-box">
-                  <div>Reach</div>
+              <CustomText bold="semibold" size="mds" inLine>
+                Reach
+                <br></br>
+              </CustomText>  
                   <GraphChart data={reachData} listProject={getListProject()} />
                 </div>
 
                 <div className="comparison-compare-projects-box">
-                  <div>Positive Sentiment :)</div>
+                 
+                              <CustomText bold="semibold" size="mds" inLine>
+                Positive Sentiment :)
+                <br></br>
+              </CustomText>  
                   <GraphChart
                     data={positiveSentimentData}
                     listProject={getListProject()}
@@ -957,7 +967,10 @@ const CompareProjects = (props) => {
                 </div>
 
                 <div className="comparison-compare-projects-box">
-                  <div>Negative Sentiment :(</div>
+              <CustomText bold="semibold" size="mds" inLine>
+                Negative Sentiment :(
+                <br></br>
+              </CustomText>  
                   <GraphChart
                     data={negativeSentimentData}
                     listProject={getListProject()}
@@ -975,7 +988,10 @@ const CompareProjects = (props) => {
                         className="comparison-compare-projects-box"
                         style={{ flex: 1 }}
                       >
-                        Sentiment breakdown
+                                     <CustomText bold="semibold" size="mds" inLine>
+                Sentiment breakdown
+                <br></br>
+              </CustomText>  
                         <div>
                           <SentimentStackedChart
                             data={sentimentBreakdownData}
@@ -987,7 +1003,10 @@ const CompareProjects = (props) => {
                         className="comparison-compare-projects-box"
                         style={{ flex: 1 }}
                       >
-                        Channels share
+                                      <CustomText bold="semibold" size="mds" inLine>
+                Channels share
+                <br></br>
+              </CustomText>  
                         <div>
                           <PlatformBreakdownChart
                             data={channelsShareData}
@@ -1374,7 +1393,10 @@ const KolToWatchView = (props) => {
   };
   return (
     <div className="comparison-compare-projects-box">
-      <div>KOL to watch</div>
+              <CustomText bold="semibold" size="mds" inLine>
+                KOL to watch
+                <br></br>
+              </CustomText>    
       <div className="comparison-compare-projects-box-kol">
         {filterData?.map((value, index) => (
           <div style={{ flex: 1 }}>
@@ -1447,7 +1469,11 @@ const MostViralTopicsView = (props) => {
   };
   return (
     <div className="comparison-compare-projects-box">
-      Most viral topics 🔥
+      
+              <CustomText bold="semibold" size="mds" inLine>
+                Most viral topics 🔥
+                <br></br>
+              </CustomText>
       <div className="comparison-compare-projects-box-issues">
         {filterData?.map((value, index) => (
           <div style={{ flex: 1 }}>
@@ -1520,7 +1546,11 @@ const ContextOfDiscussionView = (props) => {
   };
   return (
     <div className="comparison-compare-projects-box">
-      <div>Context of a discussion</div>
+  
+              <CustomText bold="semibold" size="mds" inLine>
+                Context of a discussion
+                <br></br>
+              </CustomText>
       <div className="comparison-compare-projects-box-kol">
         {filterData?.map((value, index) => (
           <div style={{ flex: 1 }}>
@@ -1722,7 +1752,11 @@ const ShareOfVoiceView = (props) => {
 
   return (
     <div className="comparison-compare-projects-box">
-      <div>Share of voice</div>
+   
+                  <CustomText bold="semibold" size="mds" inLine>
+                Share of voice
+                <br></br>
+              </CustomText>  
       <div className="comparison-compare-projects-box-kol">
         <div style={{ flex: 1 }}>
           <div>

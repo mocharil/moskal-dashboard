@@ -463,18 +463,32 @@ const Dashboard = () => {
   };
 
   const filterKOLMostNegative = (array) => {
-    const isNegativeArray = array.filter((value) => value.is_negative_driver === true);
-    // Custom sort for influence_score numerically in descending order
-    const sortedKOL = [...isNegativeArray].sort((a, b) => {
-      const scoreA = parseFloat(a.user_influence_score);
-      const scoreB = parseFloat(b.user_influence_score);
-      // Handle cases where parsing might result in NaN, though ideally data is clean
-      if (isNaN(scoreA) && isNaN(scoreB)) return 0;
-      if (isNaN(scoreA)) return 1; // Put NaNs at the end for descending
-      if (isNaN(scoreB)) return -1; // Put NaNs at the end for descending
-      return scoreB - scoreA; // For descending order
-    });
-    return sortedKOL;
+    let filteredArray = array.filter((value) => value.is_negative_driver === true);
+
+    if (filteredArray.length === 0) {
+      // If no items have is_negative_driver === true, sort the original array by sentiment_negative
+      const sortedBySentimentNegative = [...array].sort((a, b) => {
+        const sentimentA = parseFloat(a.sentiment_negative);
+        const sentimentB = parseFloat(b.sentiment_negative);
+        if (isNaN(sentimentA) && isNaN(sentimentB)) return 0;
+        if (isNaN(sentimentA)) return 1; // NaNs at the end
+        if (isNaN(sentimentB)) return -1; // NaNs at the end
+        return sentimentB - sentimentA; // Descending order
+      });
+      return sortedBySentimentNegative;
+    } else {
+      // If there are items with is_negative_driver === true, sort them by user_influence_score
+      const sortedKOL = [...filteredArray].sort((a, b) => {
+        const scoreA = parseFloat(a.user_influence_score);
+        const scoreB = parseFloat(b.user_influence_score);
+        // Handle cases where parsing might result in NaN
+        if (isNaN(scoreA) && isNaN(scoreB)) return 0;
+        if (isNaN(scoreA)) return 1; // Put NaNs at the end for descending
+        if (isNaN(scoreB)) return -1; // Put NaNs at the end for descending
+        return scoreB - scoreA; // For descending order
+      });
+      return sortedKOL;
+    }
   };
 
   const handleChangeMentionPage = (event, value) => {

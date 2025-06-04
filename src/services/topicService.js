@@ -7,7 +7,7 @@ export const getTopicToWatch = async (topicToWatchData) => {
     const authData = JSON.parse(localStorage.getItem("user"));
     const token = authData?.value?.token;
     const response = await axios.post(
-      `${API_BASE}/topics-overview`,
+      `${API_BASE}/topics-cluster`,
       topicToWatchData,
       {
         headers: {
