@@ -40,8 +40,6 @@ const topicSlice = createSlice({
       state.neutral = topics.neutral;
       state.share_of_voice = topics.share_of_voice;
 
-      console.log("redux", topics);
-
       // Save updated state to localStorage
       saveToLocalStorage("topics", state, expiresInDays);
     },

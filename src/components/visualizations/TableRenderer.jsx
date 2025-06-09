@@ -1,74 +1,80 @@
 import React, { useState, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { 
-  ChevronUpIcon, 
-  ChevronDownIcon,
-  MagnifyingGlassIcon,
-  ArrowDownTrayIcon
-} from '@heroicons/react/24/outline';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const TableRenderer = ({ visualization, className = '' }) => {
   const [sortConfig, setSortConfig] = useState({ key: null, direction: 'asc' });
   const [searchTerm, setSearchTerm] = useState('');
+  const [showSearch, setShowSearch] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [itemsPerPage, setItemsPerPage] = useState(10);
 
-  if (!visualization || !visualization.data) {
-    return null;
-  }
+  const componentTitle = visualization?.title || 'Table';
+  const tableHeaders = visualization?.data?.headers || [];
+  const rawRowsData = visualization?.data?.rows || [];
 
-  const { title, data, options = {} } = visualization;
-  const { headers, rows } = data;
+  const tableRows = useMemo(() => {
+    if (!rawRowsData || rawRowsData.length === 0) {
+      return [];
+    }
+    if (typeof rawRowsData[0] === 'object' && !Array.isArray(rawRowsData[0]) && rawRowsData[0] !== null) {
+      return rawRowsData.map(rowObject => {
+        if (typeof rowObject !== 'object' || rowObject === null) return [];
+        return tableHeaders.map(headerKey => rowObject[headerKey] !== undefined ? rowObject[headerKey] : '');
+      });
+    }
+    return rawRowsData.filter(r => Array.isArray(r));
+  }, [rawRowsData, tableHeaders]);
 
-  // Filter data based on search term
   const filteredRows = useMemo(() => {
-    if (!searchTerm) return rows;
-    
-    return rows.filter(row =>
+    if (!searchTerm) return tableRows;
+    return tableRows.filter(row =>
       row.some(cell => 
-        cell.toString().toLowerCase().includes(searchTerm.toLowerCase())
+        cell !== undefined && cell !== null && cell.toString().toLowerCase().includes(searchTerm.toLowerCase())
       )
     );
-  }, [rows, searchTerm]);
+  }, [tableRows, searchTerm]);
 
-  // Sort data
   const sortedRows = useMemo(() => {
     if (!sortConfig.key) return filteredRows;
-    
-    const columnIndex = headers.indexOf(sortConfig.key);
+    const columnIndex = tableHeaders.indexOf(sortConfig.key);
     if (columnIndex === -1) return filteredRows;
 
     return [...filteredRows].sort((a, b) => {
       const aValue = a[columnIndex];
       const bValue = b[columnIndex];
-      
-      // Try to parse as numbers
       const aNum = parseFloat(aValue);
       const bNum = parseFloat(bValue);
       
       if (!isNaN(aNum) && !isNaN(bNum)) {
         return sortConfig.direction === 'asc' ? aNum - bNum : bNum - aNum;
       }
-      
-      // String comparison
-      const aStr = aValue.toString().toLowerCase();
-      const bStr = bValue.toString().toLowerCase();
-      
+      const aStr = aValue !== undefined && aValue !== null ? aValue.toString().toLowerCase() : '';
+      const bStr = bValue !== undefined && bValue !== null ? bValue.toString().toLowerCase() : '';
       if (sortConfig.direction === 'asc') {
         return aStr < bStr ? -1 : aStr > bStr ? 1 : 0;
       } else {
         return aStr > bStr ? -1 : aStr < bStr ? 1 : 0;
       }
     });
-  }, [filteredRows, sortConfig, headers]);
+  }, [filteredRows, sortConfig, tableHeaders]);
 
-  // Paginate data
   const paginatedRows = useMemo(() => {
     const startIndex = (currentPage - 1) * itemsPerPage;
     return sortedRows.slice(startIndex, startIndex + itemsPerPage);
   }, [sortedRows, currentPage, itemsPerPage]);
 
   const totalPages = Math.ceil(sortedRows.length / itemsPerPage);
+
+  if (!visualization || !visualization.data || !visualization.data.headers || !visualization.data.rows) {
+    return (
+      <div className="flex items-center justify-center p-8 bg-white rounded-lg shadow border border-gray-200">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-400 mx-auto mb-3"></div>
+          <p className="text-gray-600 text-sm">Loading table data...</p>
+        </div>
+      </div>
+    ); 
+  }
 
   const handleSort = (header) => {
     setSortConfig(prevConfig => ({
@@ -79,124 +85,180 @@ const TableRenderer = ({ visualization, className = '' }) => {
 
   const exportToCSV = () => {
     const csvContent = [
-      headers.join(','),
-      ...sortedRows.map(row => row.map(cell => `"${cell}"`).join(','))
+      tableHeaders.join(','),
+      ...sortedRows.map(row => row.map(cell => {
+        const cellString = (typeof cell === 'object' && cell !== null) 
+          ? Object.entries(cell).map(([key, value]) => `${key.charAt(0).toUpperCase() + key.slice(1)}: ${value}`).join('; ')
+          : (cell !== undefined && cell !== null ? cell.toString() : '');
+        return `"${cellString.replace(/"/g, '""')}"`;
+      }).join(','))
     ].join('\n');
     
     const blob = new Blob([csvContent], { type: 'text/csv' });
     const url = window.URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `${title || 'table'}.csv`;
+    a.download = `${componentTitle || 'table'}.csv`;
     a.click();
     window.URL.revokeObjectURL(url);
   };
 
-  const getSortIcon = (header) => {
-    if (sortConfig.key !== header) {
-      return <ChevronUpIcon className="w-4 h-4 text-gray-400" />;
-    }
-    return sortConfig.direction === 'asc' 
-      ? <ChevronUpIcon className="w-4 h-4 text-blue-600" />
-      : <ChevronDownIcon className="w-4 h-4 text-blue-600" />;
-  };
-
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-      className={`bg-white rounded-lg border border-gray-200 shadow-sm ${className}`}
-    >
-      {/* Header */}
-      <div className="p-6 border-b border-gray-200">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-          <div>
-            {title && (
-              <h3 className="text-lg font-semibold text-gray-900">
-                {title}
+    <div className={`bg-white rounded-lg shadow border border-gray-200 overflow-hidden ${className}`}>
+      {/* Simple Header */}
+      <div className="px-6 py-4 border-b border-gray-200 bg-blue-50">
+        <div className="flex flex-col gap-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-gray-800">
+                {componentTitle}
               </h3>
-            )}
-            <p className="text-sm text-gray-600 mt-1">
-              {sortedRows.length} {sortedRows.length === 1 ? 'row' : 'rows'}
-            </p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-3">
-            {/* Search */}
-            <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-              <input
-                type="text"
-                placeholder="Search..."
-                value={searchTerm}
-                onChange={(e) => {
-                  setSearchTerm(e.target.value);
-                  setCurrentPage(1);
-                }}
-                className="pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              />
+              <p className="text-sm text-gray-600 mt-1">
+                {sortedRows.length} rows {searchTerm && (
+                  <span className="text-blue-600">
+                    ({filteredRows.length} filtered)
+                  </span>
+                )}
+              </p>
             </div>
             
-            {/* Export */}
-            <button
-              onClick={exportToCSV}
-              className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm"
-            >
-              <ArrowDownTrayIcon className="w-4 h-4" />
-              Export CSV
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setShowSearch(!showSearch)}
+                className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+                  showSearch || searchTerm
+                    ? 'bg-blue-500 text-white'
+                    : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                }`}
+              >
+                {showSearch ? 'Hide Search' : 'Search'}
+              </button>
+              
+              <button
+                onClick={exportToCSV}
+                className="px-4 py-2 rounded-md text-sm font-medium bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 transition-colors"
+              >
+                Export CSV
+              </button>
+            </div>
           </div>
+
+          {/* Large Search Input */}
+          <AnimatePresence>
+            {showSearch && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                transition={{ duration: 0.3 }}
+                className="w-full"
+              >
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Search table data..."
+                    value={searchTerm}
+                    onChange={(e) => {
+                      setSearchTerm(e.target.value);
+                      setCurrentPage(1);
+                    }}
+                    className="w-full px-4 py-3 text-base bg-white border-2 border-blue-300 rounded-lg text-gray-900 placeholder-gray-500 focus:ring-2 focus:ring-blue-400 focus:border-blue-400 transition-all duration-200"
+                    autoFocus
+                  />
+                  {searchTerm && (
+                    <button
+                      onClick={() => {
+                        setSearchTerm('');
+                        setCurrentPage(1);
+                      }}
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 px-2 py-1 text-gray-500 hover:text-gray-700 text-sm"
+                    >
+                      Clear
+                    </button>
+                  )}
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
         </div>
       </div>
 
-      {/* Table */}
+      {/* Clean Table */}
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className="bg-gray-100">
             <tr>
-              {headers.map((header, index) => (
+              {tableHeaders.map((header, index) => (
                 <th
                   key={index}
                   onClick={() => handleSort(header)}
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider cursor-pointer hover:bg-gray-100 transition-colors"
+                  className="px-4 py-3 text-left text-sm font-medium text-gray-700 cursor-pointer hover:bg-gray-200 transition-colors"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center justify-between">
                     <span>{header}</span>
-                    {getSortIcon(header)}
+                    {sortConfig.key === header && (
+                      <span className="text-blue-500 text-xs ml-2">
+                        {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                      </span>
+                    )}
                   </div>
                 </th>
               ))}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {paginatedRows.map((row, rowIndex) => (
-              <motion.tr
-                key={rowIndex}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: rowIndex * 0.05 }}
-                className="hover:bg-gray-50 transition-colors"
-              >
-                {row.map((cell, cellIndex) => (
-                  <td
-                    key={cellIndex}
-                    className="px-6 py-4 whitespace-nowrap text-sm text-gray-900"
-                  >
-                    {cell}
-                  </td>
-                ))}
-              </motion.tr>
-            ))}
+            {paginatedRows.length > 0 ? (
+              paginatedRows.map((row, rowIndex) => (
+                <tr
+                  key={rowIndex}
+                  className={`transition-colors ${
+                    rowIndex % 2 === 0 
+                      ? 'bg-white hover:bg-blue-50' 
+                      : 'bg-gray-50 hover:bg-blue-50'
+                  }`}
+                >
+                  {row.map((cell, cellIndex) => (
+                    <td
+                      key={cellIndex}
+                      className="px-4 py-3 text-sm text-gray-800"
+                    >
+                      <div className="max-w-xs">
+                        {typeof cell === 'object' && cell !== null ? (
+                          <div className="space-y-1">
+                            {Object.entries(cell).map(([key, value]) => (
+                              <div key={key} className="text-xs text-gray-600">
+                                <span className="font-medium text-blue-600">{key}:</span> {value}
+                              </div>
+                            ))}
+                          </div>
+                        ) : cell === undefined || cell === null || cell === '' ? (
+                          <span className="text-gray-400">—</span>
+                        ) : (
+                          <span className="break-words">{cell}</span>
+                        )}
+                      </div>
+                    </td>
+                  ))}
+                </tr>
+              ))
+            ) : (
+              <tr>
+                <td colSpan={tableHeaders.length} className="px-4 py-8 text-center text-sm text-gray-500">
+                  <div className="flex flex-col items-center space-y-2">
+                    <span>{searchTerm ? 'No matching results found' : 'No data available'}</span>
+                  </div>
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Pagination */}
+      {/* Simple Pagination */}
       {totalPages > 1 && (
-        <div className="px-6 py-4 border-t border-gray-200">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-            <div className="flex items-center gap-2">
+        <div className="px-6 py-4 border-t border-gray-200 bg-gray-50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-700">Show</span>
               <select
                 value={itemsPerPage}
@@ -204,7 +266,7 @@ const TableRenderer = ({ visualization, className = '' }) => {
                   setItemsPerPage(Number(e.target.value));
                   setCurrentPage(1);
                 }}
-                className="border border-gray-300 rounded px-2 py-1 text-sm"
+                className="text-sm border border-gray-300 rounded px-2 py-1 bg-white text-gray-700"
               >
                 <option value={5}>5</option>
                 <option value={10}>10</option>
@@ -214,52 +276,24 @@ const TableRenderer = ({ visualization, className = '' }) => {
               <span className="text-sm text-gray-700">per page</span>
             </div>
             
-            <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-2">
               <span className="text-sm text-gray-700">
                 Page {currentPage} of {totalPages}
               </span>
               
-              <div className="flex gap-1">
+              <div className="flex space-x-1">
                 <button
                   onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                   disabled={currentPage === 1}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 text-gray-700"
                 >
                   Previous
                 </button>
                 
-                {/* Page numbers */}
-                {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                  let pageNum;
-                  if (totalPages <= 5) {
-                    pageNum = i + 1;
-                  } else if (currentPage <= 3) {
-                    pageNum = i + 1;
-                  } else if (currentPage >= totalPages - 2) {
-                    pageNum = totalPages - 4 + i;
-                  } else {
-                    pageNum = currentPage - 2 + i;
-                  }
-                  
-                  return (
-                    <button
-                      key={pageNum}
-                      onClick={() => setCurrentPage(pageNum)}
-                      className={`px-3 py-1 border text-sm rounded ${
-                        currentPage === pageNum
-                          ? 'bg-blue-600 text-white border-blue-600'
-                          : 'border-gray-300 hover:bg-gray-50'
-                      }`}
-                    >
-                      {pageNum}
-                    </button>
-                  );
-                })}
-                
                 <button
                   onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-1 border border-gray-300 rounded text-sm disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50"
+                  className="px-3 py-1 text-sm border border-gray-300 rounded disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 text-gray-700"
                 >
                   Next
                 </button>
@@ -268,7 +302,7 @@ const TableRenderer = ({ visualization, className = '' }) => {
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

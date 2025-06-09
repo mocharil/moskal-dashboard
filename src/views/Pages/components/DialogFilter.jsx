@@ -185,7 +185,7 @@ const DialogFilter = (props) => {
   };
 
   const handleClickApply = () => {
-    console.log("data", getTransformData());
+
     props.handleChangeFilter(getTransformData());
     props.onClose();
   };

@@ -79,6 +79,90 @@ body {
   animation: fadeInUp 0.6s ease-out forwards;
 }
 
+/* Project selector styles */
+.project-selector-container {
+  text-align: center;
+  margin-bottom: 25px;
+  animation: fadeInUp 0.6s ease-out 0.1s forwards;
+}
+
+.project-selector-container h2 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 15px;
+}
+
+.project-selector {
+  width: 100%;
+  max-width: 400px;
+  padding: 12px 16px;
+  border: 1px solid #D1D5DB;
+  border-radius: 10px;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+}
+
+.project-selector:hover {
+  border-color: #9CA3AF;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.06);
+}
+
+.project-selector:focus {
+  outline: none;
+  border-color: #7f56d9;
+  box-shadow: 0 0 0 3px rgba(127, 86, 217, 0.2);
+}
+
+/* Project selector in chat mode */
+.project-selector-mini {
+  display: flex;
+  align-items: center;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  color: #4B5563;
+}
+
+.project-selector-mini label {
+  margin-right: 8px;
+  font-weight: 500;
+}
+
+.project-selector-dropdown {
+  padding: 6px 28px 6px 10px;
+  border: 1px solid #D1D5DB;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  appearance: none;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%236b7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+  background-size: 12px;
+}
+
+.project-selector-dropdown:hover {
+  border-color: #9CA3AF;
+}
+
+.project-selector-dropdown:focus {
+  outline: none;
+  border-color: #7f56d9;
+  box-shadow: 0 0 0 2px rgba(127, 86, 217, 0.2);
+}
+
 .moskal-ai-page-container.has-interacted .moskal-ai-header {
   display: none; /* Keeps the hide logic */
 }
@@ -728,4 +812,204 @@ body {
     width: 100%;
     text-align: center;
   }
+}
+
+/* Add to MoskalAI.css or a global stylesheet */
+.streaming-cursor {
+  display: inline-block;
+  width: 1px;
+  height: 1.2em; /* Adjust to match your text line-height */
+  background-color: white; /* Or a specific color like #333 */
+  animation: blink 1s step-end infinite;
+  margin-left: 2px;
+  vertical-align: text-bottom; /* Aligns cursor better with text */
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0; }
+}
+
+/* Optional: Style for chat bubble when streaming */
+.chat-bubble.streaming .ai-text-content {
+  /* You might not need specific styles here if the cursor is enough */
+}
+
+/* TableRenderer Component Overrides - Higher specificity to override existing table styles */
+.ai-response-bubble .bg-white {
+  background-color: white !important;
+}
+
+.ai-response-bubble .dark\:bg-gray-800 {
+  background-color: #1f2937 !important;
+}
+
+.ai-response-bubble .rounded-lg {
+  border-radius: 0.5rem !important;
+}
+
+.ai-response-bubble .shadow-md {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06) !important;
+}
+
+.ai-response-bubble .border-blue-100 {
+  border-color: #dbeafe !important;
+}
+
+.ai-response-bubble .dark\:border-blue-800 {
+  border-color: #1e40af !important;
+}
+
+.ai-response-bubble .bg-gradient-to-r {
+  background-image: linear-gradient(to right, var(--tw-gradient-stops)) !important;
+}
+
+.ai-response-bubble .from-blue-50 {
+  --tw-gradient-from: #eff6ff !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to, rgba(239, 246, 255, 0)) !important;
+}
+
+.ai-response-bubble .to-indigo-50 {
+  --tw-gradient-to: #eef2ff !important;
+}
+
+.ai-response-bubble .text-blue-900 {
+  color: #1e3a8a !important;
+}
+
+.ai-response-bubble .text-blue-100 {
+  color: #dbeafe !important;
+}
+
+.ai-response-bubble .text-blue-600 {
+  color: #2563eb !important;
+}
+
+.ai-response-bubble .text-blue-300 {
+  color: #93c5fd !important;
+}
+
+.ai-response-bubble .text-emerald-600 {
+  color: #059669 !important;
+}
+
+.ai-response-bubble .text-emerald-400 {
+  color: #34d399 !important;
+}
+
+.ai-response-bubble .bg-blue-500 {
+  background-color: #3b82f6 !important;
+}
+
+.ai-response-bubble .text-white {
+  color: white !important;
+}
+
+.ai-response-bubble .hover\:text-blue-700:hover {
+  color: #1d4ed8 !important;
+}
+
+.ai-response-bubble .hover\:bg-blue-100:hover {
+  background-color: #dbeafe !important;
+}
+
+.ai-response-bubble .text-emerald-500 {
+  color: #10b981 !important;
+}
+
+.ai-response-bubble .hover\:text-emerald-700:hover {
+  color: #047857 !important;
+}
+
+.ai-response-bubble .hover\:bg-emerald-100:hover {
+  background-color: #d1fae5 !important;
+}
+
+/* Table specific overrides */
+.ai-response-bubble table {
+  width: 100% !important;
+  border-collapse: separate !important;
+  border-spacing: 0 !important;
+  font-size: 0.875rem !important;
+  border: 1px solid #dbeafe !important;
+  border-radius: 0.5rem !important;
+  overflow: hidden !important;
+}
+
+.ai-response-bubble thead {
+  background: linear-gradient(to right, #f8fafc, #f1f5f9) !important;
+}
+
+.ai-response-bubble th {
+  padding: 0.75rem 1rem !important;
+  text-align: left !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+  color: #475569 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.05em !important;
+  cursor: pointer !important;
+  transition: background-color 0.15s ease !important;
+  border: none !important;
+}
+
+.ai-response-bubble th:hover {
+  background-color: #e2e8f0 !important;
+}
+
+.ai-response-bubble tbody {
+  background-color: white !important;
+}
+
+.ai-response-bubble td {
+  padding: 0.75rem 1rem !important;
+  font-size: 0.875rem !important;
+  color: #111827 !important;
+  border: none !important;
+}
+
+.ai-response-bubble tr:nth-child(even) {
+  background-color: #f8fafc !important;
+}
+
+.ai-response-bubble tr:hover {
+  background-color: #eff6ff !important;
+}
+
+/* Button and input overrides */
+.ai-response-bubble button {
+  padding: 0.5rem !important;
+  border-radius: 0.375rem !important;
+  transition: all 0.2s ease !important;
+}
+
+.ai-response-bubble input {
+  width: 100% !important;
+  padding: 0.5rem 2rem 0.5rem 2rem !important;
+  font-size: 0.875rem !important;
+  background-color: white !important;
+  border: 1px solid #93c5fd !important;
+  border-radius: 0.375rem !important;
+  color: #111827 !important;
+}
+
+.ai-response-bubble input:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+}
+
+.ai-response-bubble select {
+  font-size: 0.875rem !important;
+  border: 1px solid #93c5fd !important;
+  border-radius: 0.25rem !important;
+  padding: 0.25rem 0.5rem !important;
+  background-color: white !important;
+  color: #374151 !important;
+}
+
+.ai-response-bubble select:focus {
+  outline: none !important;
+  border-color: #3b82f6 !important;
+  box-shadow: 0 0 0 2px rgba(214, 140, 75, 0.5) !important;
 }

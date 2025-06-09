@@ -32,7 +32,43 @@ const ChartRenderer = ({ visualization, className = '' }) => {
 
   const { type, title, data, options = {} } = visualization;
 
+  // Helper function to detect data structure and extract keys
+  const analyzeDataStructure = (data) => {
+    if (!Array.isArray(data) || data.length === 0) {
+      return { labelKey: 'label', valueKeys: ['value'] };
+    }
+
+    const sampleDataPoint = data[0];
+    const dataKeys = Object.keys(sampleDataPoint);
+    
+    // Find the key that represents the category/label
+    const labelKey = dataKeys.find(key => {
+      const value = sampleDataPoint[key];
+      return (
+        typeof value === 'string' || 
+        key.toLowerCase().includes('topic') || 
+        key.toLowerCase().includes('name') || 
+        key.toLowerCase().includes('label') ||
+        key.toLowerCase().includes('category') ||
+        key.toLowerCase().includes('x')
+      );
+    }) || dataKeys[0];
+    
+    // Find all numeric keys that should be rendered as data series
+    const valueKeys = dataKeys.filter(key => {
+      const value = sampleDataPoint[key];
+      return key !== labelKey && typeof value === 'number';
+    });
+    
+    // If no numeric keys found, fall back to common value keys
+    const finalValueKeys = valueKeys.length > 0 ? valueKeys : ['value', 'y'];
+    
+    return { labelKey, valueKeys: finalValueKeys };
+  };
+
   const renderChart = () => {
+    const { labelKey, valueKeys } = analyzeDataStructure(data);
+
     switch (type) {
       case 'line':
         return (
@@ -40,7 +76,7 @@ const ChartRenderer = ({ visualization, className = '' }) => {
             <LineChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
-                dataKey="name" 
+                dataKey={labelKey}
                 stroke="#64748b"
                 fontSize={12}
               />
@@ -57,14 +93,18 @@ const ChartRenderer = ({ visualization, className = '' }) => {
                 }}
               />
               <Legend />
-              <Line 
-                type="monotone" 
-                dataKey="value" 
-                stroke={COLORS[0]}
-                strokeWidth={2}
-                dot={{ fill: COLORS[0], strokeWidth: 2, r: 4 }}
-                activeDot={{ r: 6, stroke: COLORS[0], strokeWidth: 2 }}
-              />
+              {valueKeys.map((key, index) => (
+                <Line 
+                  key={key}
+                  type="monotone" 
+                  dataKey={key} 
+                  stroke={COLORS[index % COLORS.length]}
+                  strokeWidth={2}
+                  dot={{ fill: COLORS[index % COLORS.length], strokeWidth: 2, r: 4 }}
+                  activeDot={{ r: 6, stroke: COLORS[index % COLORS.length], strokeWidth: 2 }}
+                  name={key.charAt(0).toUpperCase() + key.slice(1)}
+                />
+              ))}
             </LineChart>
           </ResponsiveContainer>
         );
@@ -75,7 +115,7 @@ const ChartRenderer = ({ visualization, className = '' }) => {
             <BarChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
-                dataKey="name" 
+                dataKey={labelKey}
                 stroke="#64748b"
                 fontSize={12}
                 angle={-45}
@@ -95,30 +135,46 @@ const ChartRenderer = ({ visualization, className = '' }) => {
                 }}
               />
               <Legend />
-              <Bar 
-                dataKey="value" 
-                fill={COLORS[0]}
-                radius={[4, 4, 0, 0]}
-              />
+              {valueKeys.map((key, index) => (
+                <Bar 
+                  key={key}
+                  dataKey={key} 
+                  fill={COLORS[index % COLORS.length]}
+                  radius={[4, 4, 0, 0]}
+                  name={key.charAt(0).toUpperCase() + key.slice(1)}
+                />
+              ))}
             </BarChart>
           </ResponsiveContainer>
         );
 
       case 'pie':
+        // For pie charts, we need to transform the data if it's not in the right format
+        const pieData = data.map((item, index) => {
+          const value = valueKeys.length > 0 ? item[valueKeys[0]] : item.value;
+          const label = item[labelKey] || item.label || `Item ${index + 1}`;
+          return {
+            name: label,
+            value: value,
+            label: label
+          };
+        });
+
         return (
           <ResponsiveContainer width="100%" height={400}>
             <PieChart>
               <Pie
-                data={data}
+                data={pieData}
                 cx="50%"
                 cy="50%"
                 labelLine={false}
-                label={({ name, percentage }) => `${name}: ${percentage}%`}
+                label={({ name, percent }) => `${name}: ${(percent * 100).toFixed(0)}%`}
                 outerRadius={120}
                 fill="#8884d8"
                 dataKey="value"
+                nameKey="name"
               >
-                {data.map((entry, index) => (
+                {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
@@ -141,7 +197,7 @@ const ChartRenderer = ({ visualization, className = '' }) => {
             <AreaChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
-                dataKey="name" 
+                dataKey={labelKey}
                 stroke="#64748b"
                 fontSize={12}
               />
@@ -158,29 +214,37 @@ const ChartRenderer = ({ visualization, className = '' }) => {
                 }}
               />
               <Legend />
-              <Area 
-                type="monotone" 
-                dataKey="value" 
-                stroke={COLORS[0]}
-                fill={COLORS[0]}
-                fillOpacity={0.3}
-              />
+              {valueKeys.map((key, index) => (
+                <Area 
+                  key={key}
+                  type="monotone" 
+                  dataKey={key} 
+                  stroke={COLORS[index % COLORS.length]}
+                  fill={COLORS[index % COLORS.length]}
+                  fillOpacity={0.3}
+                  name={key.charAt(0).toUpperCase() + key.slice(1)}
+                />
+              ))}
             </AreaChart>
           </ResponsiveContainer>
         );
 
       case 'scatter':
+        // For scatter plots, we need x and y coordinates
+        const xKey = labelKey.toLowerCase().includes('x') ? labelKey : (valueKeys[0] || 'x');
+        const yKey = valueKeys.find(key => key.toLowerCase().includes('y')) || valueKeys[1] || valueKeys[0] || 'y';
+        
         return (
           <ResponsiveContainer width="100%" height={400}>
             <ScatterChart data={data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
               <XAxis 
-                dataKey="x" 
+                dataKey={xKey}
                 stroke="#64748b"
                 fontSize={12}
               />
               <YAxis 
-                dataKey="y" 
+                dataKey={yKey}
                 stroke="#64748b"
                 fontSize={12}
               />
@@ -194,8 +258,9 @@ const ChartRenderer = ({ visualization, className = '' }) => {
               />
               <Legend />
               <Scatter 
-                dataKey="y" 
+                dataKey={yKey}
                 fill={COLORS[0]}
+                name={`${xKey} vs ${yKey}`}
               />
             </ScatterChart>
           </ResponsiveContainer>

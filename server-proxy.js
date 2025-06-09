@@ -158,10 +158,10 @@ app.post('/api/es/reports', async (req, res) => { // Changed path to /api/es/rep
   }
 });
 
-app.listen(PORT, () => {
-  console.log(`API proxy server running on http://localhost:${PORT}`);
-  if (AUTH_API_BASE) console.log(`Proxying /auth-api to ${AUTH_API_BASE}`);
-  if (DATA_API_BASE) console.log(`Proxying /data-api to ${DATA_API_BASE}`);
-  if (REPORT_API_BASE) console.log(`Proxying /report-api to ${REPORT_API_BASE}`);
-  console.log(`Proxying Elasticsearch requests from /api/es/reports to ${ES_HOST}`);
-});
+// app.listen(PORT, () => {
+//   console.log(`API proxy server running on http://localhost:${PORT}`);
+//   if (AUTH_API_BASE) console.log(`Proxying /auth-api to ${AUTH_API_BASE}`);
+//   if (DATA_API_BASE) console.log(`Proxying /data-api to ${DATA_API_BASE}`);
+//   if (REPORT_API_BASE) console.log(`Proxying /report-api to ${REPORT_API_BASE}`);
+//   console.log(`Proxying Elasticsearch requests from /api/es/reports to ${ES_HOST}`);
+// });

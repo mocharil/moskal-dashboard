@@ -1,265 +1,101 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router-dom'; // Import useParams
-import thumbsUpIcon from '/thumbs-up.svg';
-import thumbsDownIcon from '/face-frown.svg';
-import { BarChart, Bar, LineChart, Line, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
-import axios from 'axios';
-import { getProjects } from '../../services/projectService'; // Import getProjects
+import { useParams } from 'react-router-dom';
+import ChartRenderer from '../../components/visualizations/ChartRenderer'; // Corrected path
+import TableRenderer from '../../components/visualizations/TableRenderer'; // Corrected path
+import { getProjects } from '../../services/projectService';
 import './styles/MoskalAI.css';
 
-// Helper functions for dynamic chart keys
-const cleanKey = (key) => {
-  if (typeof key !== 'string') return 'Value';
-  return key.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
-};
-
-const findKeyInData = (keysInSample, hint) => {
-  if (!hint || !keysInSample) return null;
-  if (keysInSample.includes(hint)) return hint;
-  const lowerHint = hint.toLowerCase();
-  return keysInSample.find(k => k.toLowerCase() === lowerHint) || null;
-};
-
-const isValueSuitableForAxis = (value) => {
-  return typeof value === 'number' || (typeof value === 'string' && String(value).trim() !== '');
-};
-
-const identifyChartKeys = (data, apiXHint, apiYHintsInput, chartTitle = "") => {
-  if (!data || data.length === 0) {
-    const yHints = apiYHintsInput ? (Array.isArray(apiYHintsInput) ? apiYHintsInput : [apiYHintsInput]) : ['value'];
-    return {
-      xAxisKey: apiXHint || 'date',
-      yAxisSeries: yHints.map(hint => ({ dataKey: hint, name: cleanKey(hint) }))
-    };
-  }
-
-  const sample = data[0];
-  const keysInSample = Object.keys(sample);
-  let determinedXAxisKey = null;
-
-  // 1. Determine X-Axis Key
-  // Try API hint (case-insensitive), but only if its values are suitable
-  if (apiXHint) {
-      const keyFromHint = findKeyInData(keysInSample, apiXHint);
-      if (keyFromHint && sample.hasOwnProperty(keyFromHint) && isValueSuitableForAxis(sample[keyFromHint])) {
-          determinedXAxisKey = keyFromHint;
-      }
-  }
-  
-  // If API hint didn't match or wasn't suitable, try common categorical keys
-  if (!determinedXAxisKey) {
-    const commonCatKeys = ['name', 'label', 'category', 'kategori']; // Add 'kategori' for case-insensitivity with findKeyInData
-    for (const commonName of commonCatKeys) {
-        const potentialKey = findKeyInData(keysInSample, commonName);
-        if (potentialKey && sample.hasOwnProperty(potentialKey) && isValueSuitableForAxis(sample[potentialKey])) {
-            determinedXAxisKey = potentialKey;
-            break;
-        }
-    }
-  }
-
-  // If not found, try to find a date-like key with suitable values
-  if (!determinedXAxisKey) {
-      const dateKeywords = ['date', 'time', 'period', 'day', 'month', 'year', 'timestamp', 'tanggal', 'waktu', 'post_date'];
-      const potentialDateKey = keysInSample.find(key => {
-          if (sample.hasOwnProperty(key) && isValueSuitableForAxis(sample[key])) {
-              const lowerKey = key.toLowerCase();
-              if (dateKeywords.some(dk => lowerKey.includes(dk))) {
-                  return (typeof sample[key] === 'number' ||
-                         (typeof sample[key] === 'string' && (String(sample[key]).match(/^\d{4}-\d{2}-\d{2}/) || !isNaN(Date.parse(String(sample[key]))))));
-              }
-          }
-          return false;
-      });
-      if (potentialDateKey) {
-          determinedXAxisKey = potentialDateKey;
-      }
-  }
-
-  // If still no key, fallback to the first key with a suitable string value
-  if (!determinedXAxisKey) {
-      const firstSuitableStringKey = keysInSample.find(k => sample.hasOwnProperty(k) && typeof sample[k] === 'string' && isValueSuitableForAxis(sample[k]));
-      if (firstSuitableStringKey) {
-          determinedXAxisKey = firstSuitableStringKey;
-      }
-  }
-  
-  // If still no key, fallback to the first key with any suitable value
-  if (!determinedXAxisKey) {
-      const firstSuitableKey = keysInSample.find(k => sample.hasOwnProperty(k) && isValueSuitableForAxis(sample[k]));
-      if (firstSuitableKey) {
-          determinedXAxisKey = firstSuitableKey;
-      }
-  }
-
-  // Absolute fallbacks if no suitable key is found
-  if (!determinedXAxisKey || !keysInSample.includes(determinedXAxisKey)) {
-       if (keysInSample.length > 0) {
-          // If all else fails, use the first key from the data, hoping for the best.
-          // Or, if apiXHint was provided but not found/suitable, it might be an intended non-data key (less likely for X-axis).
-          console.warn(`X-axis key determination failed to find a suitable key for chart "${chartTitle}". Hint: "${apiXHint}". Defaulting to first data key: "${keysInSample[0]}".`);
-          determinedXAxisKey = keysInSample[0];
-       } else {
-          // Data is empty or has no keys, this case should ideally be caught earlier.
-          determinedXAxisKey = apiXHint || 'x'; 
-       }
-  }
-  
-  // Final check: ensure determinedXAxisKey is an actual key if data exists.
-  // This might be slightly redundant given the above, but acts as a safeguard.
-  if (data.length > 0 && keysInSample.length > 0 && !keysInSample.includes(determinedXAxisKey)) {
-      console.warn(`Final X-axis key "${determinedXAxisKey}" is not in data keys [${keysInSample.join(', ')}] for chart "${chartTitle}". Defaulting to "${keysInSample[0]}".`);
-      determinedXAxisKey = keysInSample[0];
-  }
-  
-  // 2. Determine Y-Axis Series
-  const yAxisSeries = [];
-  const apiYHints = apiYHintsInput ? (Array.isArray(apiYHintsInput) ? apiYHintsInput : [apiYHintsInput]) : [];
-
-  if (chartTitle === "Tren Sentimen Harian" &&
-      keysInSample.includes('positive') && typeof sample['positive'] === 'number' &&
-      keysInSample.includes('negative') && typeof sample['negative'] === 'number' &&
-      keysInSample.includes('neutral') && typeof sample['neutral'] === 'number') {
-    if (keysInSample.includes('post_date')) determinedXAxisKey = 'post_date';
-    yAxisSeries.push({ dataKey: 'positive', name: 'Positive' });
-    yAxisSeries.push({ dataKey: 'negative', name: 'Negative' });
-    yAxisSeries.push({ dataKey: 'neutral', name: 'Neutral' });
-  } else {
-    if (apiYHints.length > 0) {
-      apiYHints.forEach(hint => {
-        const foundYKey = findKeyInData(keysInSample, hint);
-        if (foundYKey && typeof sample[foundYKey] === 'number') {
-          yAxisSeries.push({ dataKey: foundYKey, name: cleanKey(hint) });
-        }
-      });
-    }
-    if (yAxisSeries.length === 0) {
-      keysInSample.forEach(key => {
-        if (key !== determinedXAxisKey && typeof sample[key] === 'number') {
-          yAxisSeries.push({ dataKey: key, name: cleanKey(key) });
-        }
-      });
-    }
-  }
-
-  if (yAxisSeries.length === 0) {
-    const fallbackYKey = keysInSample.find(k => k !== determinedXAxisKey && typeof sample[k] === 'number') ||
-                         keysInSample.find(k => k !== determinedXAxisKey) ||
-                         (keysInSample.length > 1 ? keysInSample[1] : null);
-    if (fallbackYKey) {
-        yAxisSeries.push({ dataKey: fallbackYKey, name: cleanKey(fallbackYKey) });
-    } else if (apiYHints.length > 0 && apiYHints[0]) {
-        yAxisSeries.push({ dataKey: apiYHints[0], name: cleanKey(apiYHints[0]) });
-    } else {
-        yAxisSeries.push({ dataKey: 'value', name: 'Value' });
-    }
-  }
-  return { xAxisKey: determinedXAxisKey, yAxisSeries };
-};
-
-const identifyPieChartKeys = (data, apiNameKeyHint, apiDataKeyHint) => {
-  if (!data || data.length === 0) {
-    return { nameKey: apiNameKeyHint || 'name', dataKey: apiDataKeyHint || 'value' };
-  }
-  const sample = data[0];
-  const keysInSample = Object.keys(sample);
-  let determinedNameKey = apiNameKeyHint;
-  let determinedDataKey = apiDataKeyHint;
-
-  let foundNameKey = findKeyInData(keysInSample, apiNameKeyHint);
-  if (foundNameKey && (typeof sample[foundNameKey] === 'string' || typeof sample[foundNameKey] === 'number')) { // Name key can be number sometimes
-      determinedNameKey = foundNameKey;
-  } else {
-      const commonNameKeys = ['name', 'label', 'sentiment', 'category', 'group'];
-      determinedNameKey = keysInSample.find(k => commonNameKeys.includes(k.toLowerCase()) && (typeof sample[k] === 'string' || typeof sample[k] === 'number')) ||
-                          keysInSample.find(k => (typeof sample[k] === 'string' || typeof sample[k] === 'number'));
-      if (!determinedNameKey && apiNameKeyHint) determinedNameKey = apiNameKeyHint;
-      else if (!determinedNameKey) determinedNameKey = keysInSample[0];
-  }
-  determinedNameKey = determinedNameKey || keysInSample[0] || 'name';
-
-  let foundDataKey = findKeyInData(keysInSample, apiDataKeyHint);
-   if (foundDataKey && typeof sample[foundDataKey] === 'number') {
-      determinedDataKey = foundDataKey;
-  } else {
-      const commonDataKeys = ['value', 'count', 'mentions', 'total', 'amount', 'percentage'];
-      determinedDataKey = keysInSample.find(k => commonDataKeys.includes(k.toLowerCase()) && typeof sample[k] === 'number' && k !== determinedNameKey) ||
-                          keysInSample.find(k => typeof sample[k] === 'number' && k !== determinedNameKey);
-      if (!determinedDataKey) {
-          determinedDataKey = keysInSample.find(k => typeof sample[k] === 'number');
-      }
-      if (!determinedDataKey && apiDataKeyHint) determinedDataKey = apiDataKeyHint;
-      else if (!determinedDataKey) {
-          const otherKeys = keysInSample.filter(k => k !== determinedNameKey);
-          determinedDataKey = otherKeys.length > 0 ? otherKeys[0] : (keysInSample.length > 1 ? keysInSample[1] : keysInSample[0]);
-      }
-  }
-  determinedDataKey = determinedDataKey || (keysInSample.length > 1 ? keysInSample.find(k => k !== determinedNameKey) || keysInSample[1] : 'value');
-
-  if (determinedDataKey === determinedNameKey || typeof sample[determinedDataKey] !== 'number') {
-      const alternativeDataKey = keysInSample.find(k => k !== determinedNameKey && typeof sample[k] === 'number');
-      if (alternativeDataKey) {
-          determinedDataKey = alternativeDataKey;
-      } else if (typeof sample[determinedDataKey] !== 'number') {
-          const anyNumeric = keysInSample.find(k => typeof sample[k] === 'number');
-          if (anyNumeric) determinedDataKey = anyNumeric;
-          else determinedDataKey = apiDataKeyHint || 'value';
-      }
-  }
-  return { nameKey: determinedNameKey, dataKey: determinedDataKey };
-};
-
-const extractCleanUrl = (text) => {
-  if (typeof text !== 'string') return null;
-  const match = text.match(/https?:\/\/[^\s]+/);
-  return match ? match[0] : null;
-};
-
-const BAR_COLORS = ['#4A6CF7', '#82ca9d', '#ff7300', '#8884d8', '#FFBB28', '#FF8042', '#AF19FF'];
-const LINE_COLORS = ['#8884d8', '#82ca9d', '#ff7300', '#4A6CF7', '#FFBB28', '#FF8042', '#AF19FF'];
-const PIE_COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#AF19FF', '#FF1919', '#8884d8'];
-
 const MoskalAI = () => {
-  const { keyword: encodedProjectName } = useParams(); // Changed projectName to keyword
+  const { keyword: encodedProjectNameFromURL } = useParams();
   const userData = useSelector((state) => state.user);
-  const [userName, setUserName] = useState('Guest');
+  const keywordsFromStore = useSelector((state) => state.keywords.keywords);
+
+  const [userName, setUserName] = useState('Julian');
   const [inputValue, setInputValue] = useState('');
   const [messages, setMessages] = useState([]);
   const [isSending, setIsSending] = useState(false);
-  const [isTyping, setIsTyping] = useState(false);
   const [hasInteracted, setHasInteracted] = useState(false);
-  const [projectKeywords, setProjectKeywords] = useState([]); // State for project keywords
-  const [feedback, setFeedback] = useState({}); // { messageId: 'up' | 'down' | null }
-  const [showFeedbackFormForId, setShowFeedbackFormForId] = useState(null); // ID of message with open feedback form
-  const [currentFeedbackText, setCurrentFeedbackText] = useState('');
-  const [feedbackSuccessfullySubmittedId, setFeedbackSuccessfullySubmittedId] = useState(null); // ID of message with successful feedback
+  const [currentProject, setCurrentProject] = useState('');
+  const [projectData, setProjectData] = useState(null);
+  const [currentProjectKeywords, setCurrentProjectKeywords] = useState([]);
+  const [feedbackStates, setFeedbackStates] = useState({}); // Track feedback for each message
+  const [showFeedbackForm, setShowFeedbackForm] = useState(null); // Track which message shows feedback form
+  const currentAiMessageIdRef = useRef(null); // To track the current AI message being streamed
+  
   const chatAreaRef = useRef(null);
   const textareaRef = useRef(null);
 
-  // Template questions
-  const templateQuestions = [
-    "Who are the top influencers?",
-    "How can we achieve the best short-term results in our brand's communication and marketing?",
-    "What is the most viral topic in the last 7 days?",
-    "What is the sentiment breakdown for our brand?"
-  ];
-
+  // Set user name from Redux store
   useEffect(() => {
     if (userData && userData.name) {
       const firstName = userData.name.split(' ')[0];
       setUserName(firstName);
     }
-  }, [userData]);
-  
+    // Add initial greeting message if no interaction yet
+    if (messages.length === 0 && !hasInteracted) {
+      setMessages([
+        // Optional: Add an initial AI greeting if desired, or keep it clean
+        // {
+        //   id: `ai-initial-${Date.now()}`,
+        //   text: `Hello, ${userData?.name?.split(' ')[0] || 'Julian'}! How can I help you with the project "${currentProject || 'selected project'}" today?`,
+        //   sender: 'ai',
+        // }
+      ]);
+    }
+  }, [userData, messages.length, hasInteracted, currentProject]);
+
+  // Initialize project context from URL
   useEffect(() => {
-    // Scroll to bottom when messages change
+    if (encodedProjectNameFromURL) {
+      const projectNameFromURL = decodeURIComponent(encodedProjectNameFromURL);
+      setCurrentProject(projectNameFromURL);
+      // Update initial greeting if project name becomes available
+      // This might be redundant if the above useEffect handles it well
+    }
+  }, [encodedProjectNameFromURL]);
+
+  // Fetch projects and find current project keywords
+  useEffect(() => {
+    const fetchProjectsAndKeywords = async () => {
+      try {
+        const projects = await getProjects();
+        setProjectData(projects);
+        
+        if (currentProject && projects) {
+          // Combine owned and accessible projects
+          const allProjects = [
+            ...(projects.owned_projects || []),
+            ...(projects.accessible_projects || [])
+          ];
+          
+          // Find the current project by name
+          const foundProject = allProjects.find(project => 
+            project.name === currentProject
+          );
+          
+          if (foundProject && foundProject.keywords) {
+            setCurrentProjectKeywords(foundProject.keywords);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+      }
+    };
+
+    if (currentProject) {
+      fetchProjectsAndKeywords();
+    }
+  }, [currentProject]);
+
+  // Auto-scroll chat area
+  useEffect(() => {
     if (chatAreaRef.current && messages.length > 0) {
       chatAreaRef.current.scrollTop = chatAreaRef.current.scrollHeight;
     }
   }, [messages]);
-  
-  // Auto-resize textarea based on content
+
+  // Auto-resize textarea
   useEffect(() => {
     if (textareaRef.current) {
       textareaRef.current.style.height = 'auto';
@@ -267,686 +103,635 @@ const MoskalAI = () => {
     }
   }, [inputValue]);
 
-  useEffect(() => {
-    const fetchProjectKeywords = async () => {
-      if (!encodedProjectName) {
-        console.warn("MoskalAI - Project name not found in URL params. Cannot fetch keywords.");
-        setProjectKeywords([]);
-        return;
-      }
-      const currentProjectName = decodeURIComponent(encodedProjectName);
-      console.log("MoskalAI - Current project name from URL:", currentProjectName);
-
-      try {
-        const projectsData = await getProjects();
-        console.log("MoskalAI - projectsData from getProjects():", projectsData); // Log 1
-        let activeProjectKeywords = [];
-        let projectFound = false;
-
-        if (projectsData && typeof projectsData === 'object') {
-          const findAndSetKeywords = (projectsArray, type) => {
-            if (projectFound || !Array.isArray(projectsArray)) return;
-            
-            const foundProject = projectsArray.find(p => p.name === currentProjectName);
-            if (foundProject) {
-              if (foundProject.keywords && Array.isArray(foundProject.keywords)) {
-                activeProjectKeywords = [...foundProject.keywords];
-                console.log(`MoskalAI - Keywords found for active project "${currentProjectName}" in ${type}:`, activeProjectKeywords);
-              } else {
-                console.warn(`MoskalAI - Active project "${currentProjectName}" in ${type} found, but has no .keywords array or it's not an array.`);
-              }
-              projectFound = true;
-            }
-          };
-
-          findAndSetKeywords(projectsData.owned_projects, 'owned_projects');
-          if (!projectFound) { // Only search accessible if not found in owned
-            findAndSetKeywords(projectsData.accessible_projects, 'accessible_projects');
-          }
-          
-          if (projectFound) {
-            setProjectKeywords(activeProjectKeywords);
-          } else {
-            console.warn(`MoskalAI - Active project "${currentProjectName}" not found in owned or accessible projects. Setting projectKeywords to empty.`);
-            setProjectKeywords([]);
-          }
-          console.log("MoskalAI - Final projectKeywords for API call:", activeProjectKeywords); // Log 2 (renamed from allKeywords)
-        } else {
-          console.warn("MoskalAI - getProjects did not return an object or returned null/undefined. Setting projectKeywords to empty.");
-          setProjectKeywords([]);
-        }
-      } catch (error) {
-        console.error("MoskalAI - Error fetching project keywords:", error);
-        setProjectKeywords([]);
-      }
-    };
-
-    fetchProjectKeywords();
-  }, [encodedProjectName]); // Re-run if project name in URL changes
-
-  // Helper function to render formatted text (bold and lists)
-  const renderFormattedText = (text) => {
-    if (typeof text !== 'string') {
-      return text; // Return as is if not a string
-    }
-
-    const lines = text.split('\n');
-    const elements = [];
-    let currentListItems = [];
-
-    const processLineContent = (lineContent, keyPrefix) => {
-      const parts = lineContent.split(/(\*\*.*?\*\*)/g);
-      return parts.map((part, index) => {
-        if (part.startsWith('**') && part.endsWith('**')) {
-          return <strong key={`${keyPrefix}-strong-${index}`}>{part.slice(2, -2)}</strong>;
-        }
-        return part;
-      });
-    };
-
-    lines.forEach((line, lineIndex) => {
-      if (line.trim().startsWith('- ')) {
-        currentListItems.push(
-          <li key={`li-${lineIndex}`}>
-            {processLineContent(line.trim().substring(2), `li-content-${lineIndex}`)}
-          </li>
-        );
-      } else {
-        if (currentListItems.length > 0) {
-          elements.push(<ul key={`ul-${elements.length}`} className="ai-list">{currentListItems}</ul>);
-          currentListItems = [];
-        }
-        if (line.trim() !== '') {
-          elements.push(
-            <p key={`p-${lineIndex}`}>
-              {processLineContent(line, `p-content-${lineIndex}`)}
-            </p>
-          );
-        }
-      }
-    });
-
-    if (currentListItems.length > 0) {
-      elements.push(<ul key={`ul-${elements.length}`} className="ai-list">{currentListItems}</ul>);
-    }
-
-    return elements.length > 0 ? <>{elements}</> : <p>{processLineContent(text, 'single-p')}</p>;
-  };
-
   const handleInputChange = (e) => {
     setInputValue(e.target.value);
-    if (!isTyping && e.target.value.trim() !== '') {
-      setIsTyping(true);
-    } else if (isTyping && e.target.value.trim() === '') {
-      setIsTyping(false);
-    }
-    
     if (!hasInteracted && e.target.value.trim() !== '') {
       setHasInteracted(true);
     }
   };
 
-  const handleTemplateClick = (question) => {
-    setInputValue(question);
-    setIsTyping(true);
-    setHasInteracted(true);
-    textareaRef.current.focus();
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSendMessage();
+    }
   };
 
-  const handleSendMessage = () => {
+  const handleSendMessage = useCallback(async () => {
     if (inputValue.trim() === '' || isSending) return;
 
     setIsSending(true);
     setHasInteracted(true);
-    
-    const newUserMessage = {
-      id: Date.now(),
+
+    const userMessage = {
+      id: `user-${Date.now()}`,
       text: inputValue,
       sender: 'user',
     };
-    setMessages((prevMessages) => [...prevMessages, newUserMessage]);
-    setInputValue('');
-    setIsTyping(false);
-    // Show typing indicator
-    const typingIndicator = {
-      id: Date.now() + 0.5,
-      type: 'typing',
+
+    // Add user message and an initial AI streaming message
+    const newAiMessageId = `ai-${Date.now()}`;
+    currentAiMessageIdRef.current = newAiMessageId;
+    const initialAiMessage = {
+      id: newAiMessageId,
+      text: '', // Start with empty text for streaming
       sender: 'ai',
+      isStreaming: true,
+      status: 'Initializing...', // Initial status
+      previewComponents: null, // Added
+      finalComponents: null,   // Added
+      finalInsights: null,     // New
+      finalFootnotes: null   // New
     };
-    setMessages((prevMessages) => [...prevMessages, typingIndicator]);
-
-    const VITE_DATA_API_BASE = import.meta.env.VITE_DATA_API_BASE;
-
-    axios.post(`${VITE_DATA_API_BASE}/moskal-ai-pipeline`, {
-      user_query: newUserMessage.text,
-      extracted_keywords: projectKeywords,
-    }, {
-      headers: {
-        'Content-Type': 'application/json',
-        'accept': 'application/json'
-      }
-    })
-    .then(response => {
-      setMessages((prevMessages) =>
-        prevMessages.filter(msg => msg.id !== typingIndicator.id)
-      );
-      const apiJsonResponse = response.data; // API returns the JSON directly
-      let aiResponseMessage;
-
-      if (apiJsonResponse && apiJsonResponse.components && Array.isArray(apiJsonResponse.components)) {
-        // Successfully received the new JSON format
-        aiResponseMessage = {
-          id: Date.now() + 1,
-          sender: 'ai',
-          response_type: apiJsonResponse.response_type, // e.g., "mixed"
-          components: apiJsonResponse.components,     // array of {type, content/title/headers/rows/etc.}
-          footnotes: apiJsonResponse.footnotes || [], // array of {content}
-        };
-      } else {
-        // Fallback if the response is not the expected JSON structure or an error occurred
-        let errorMessage = "Sorry, I received an unexpected response from the AI.";
-        if (typeof apiJsonResponse === 'string') { // If API returned a plain string error
-            errorMessage = apiJsonResponse;
-        } else if (apiJsonResponse && (apiJsonResponse.error || apiJsonResponse.message)) { // If API returned a JSON error object
-            errorMessage = apiJsonResponse.error || apiJsonResponse.message;
-        } else if (response.status !== 200) {
-            errorMessage = `Error: Received status code ${response.status}`;
-        }
-        
-        aiResponseMessage = {
-          id: Date.now() + 1,
-          sender: 'ai',
-          response_type: 'error', // Custom type to indicate an error
-          components: [{ type: 'text', content: errorMessage }], // Wrap error in component structure
-          footnotes: [],
-        };
-      }
-      setMessages((prevMessages) => [...prevMessages, aiResponseMessage]);
-    })
-    .catch(error => {
-      console.error("Error calling Moskal AI API:", error);
-      setMessages((prevMessages) =>
-        prevMessages.filter(msg => msg.id !== typingIndicator.id)
-      );
-      const errorResponse = {
-        id: Date.now() + 1,
-        type: 'text',
-        text: 'Sorry, I encountered an error. Please try again.',
-        sender: 'ai',
-      };
-      setMessages((prevMessages) => [...prevMessages, errorResponse]);
-    })
-    .finally(() => {
-      setIsSending(false);
-    });
-  };
-
-  const handleFeedback = (messageId, feedbackType) => {
-    const isCurrentlyDisliked = feedback[messageId] === 'down';
-    const isFormOpenForThisMessage = showFeedbackFormForId === messageId;
-
-    // If feedback was successfully submitted for this message, clear that status
-    if (feedbackSuccessfullySubmittedId === messageId) {
-      setFeedbackSuccessfullySubmittedId(null);
-    }
-
-    setFeedback(prevFeedback => {
-      const newFeedbackState = { ...prevFeedback };
-      if (newFeedbackState[messageId] === feedbackType) { // Clicking the same button again
-        newFeedbackState[messageId] = null; // Deselect
-        if (feedbackType === 'down' && isFormOpenForThisMessage) {
-          setShowFeedbackFormForId(null); // Close form if deselecting dislike
-          setCurrentFeedbackText('');
-        }
-      } else { // Clicking a new button or switching
-        newFeedbackState[messageId] = feedbackType;
-        if (feedbackType === 'up' && isFormOpenForThisMessage) {
-          setShowFeedbackFormForId(null); // Close form if switching to like
-          setCurrentFeedbackText('');
-        }
-      }
-      return newFeedbackState;
-    });
-
-    if (feedbackType === 'down') {
-      if (!isCurrentlyDisliked || !isFormOpenForThisMessage) {
-        setShowFeedbackFormForId(messageId); // Open or keep form open if dislike is selected
-        // Don't clear currentFeedbackText here, user might be editing
-      } else if (isCurrentlyDisliked && isFormOpenForThisMessage) {
-        // If dislike is clicked again while form is open, do nothing to the form (it stays open)
-      }
-    } else if (feedbackType === 'up') {
-      setShowFeedbackFormForId(null); // Close form if 'like' is clicked
-      setCurrentFeedbackText('');
-    }
-    // console.log(`Feedback for message ${messageId}: ${feedbackType}`);
-  };
-
-  const handleFeedbackTextChange = (e) => {
-    setCurrentFeedbackText(e.target.value);
-  };
-
-  const submitMoskalFeedback = async (messageId) => {
-    const VITE_DATA_API_BASE = import.meta.env.VITE_DATA_API_BASE;
-    const aiResponseMsg = messages.find(m => m.id === messageId);
-    
-    // Attempt to find the user query that prompted this AI response
-    // This assumes user messages and AI responses alternate or are in sequence.
-    let userQueryMsg = null;
-    const aiResponseIndex = messages.findIndex(m => m.id === messageId);
-    if (aiResponseIndex > 0) {
-      for (let i = aiResponseIndex - 1; i >= 0; i--) {
-        if (messages[i].sender === 'user') {
-          userQueryMsg = messages[i];
-          break;
-        }
-      }
-    }
-
-    const payload = {
-      query_user: userQueryMsg ? userQueryMsg.text : "User query not found",
-      response_ai: aiResponseMsg || {}, // The full AI message object
-      feedback_user: currentFeedbackText,
-      user_name: userData?.email || userName, // Prioritize Redux userData.name
-      project_name: encodedProjectName ? decodeURIComponent(encodedProjectName) : "Unknown Project",
-      additional_info: {
-        projectKeywords: projectKeywords,
-        // You could add more browser/session info here if needed
-      },
-      timestamp: new Date().toISOString(),
-    };
+    setMessages(prev => [...prev, userMessage, initialAiMessage]);
+    const currentInput = inputValue;
+    setInputValue('');
 
     try {
-      // console.log("Submitting feedback with payload:", JSON.stringify(payload, null, 2));
-      const response = await axios.post(`${VITE_DATA_API_BASE}/ai-feedback`, payload, {
-        headers: {
-          'Content-Type': 'application/json',
-          'accept': 'application/json'
-          // Add any auth headers if required by this endpoint
-        }
-      });
-      // console.log(`Feedback for message ${messageId} submitted successfully. Response:`, response.data);
-      if (response.data && response.data.message === "Feedback stored successfully") {
-        setFeedbackSuccessfullySubmittedId(messageId);
+      // Construct URL with query parameters
+      const queryParams = new URLSearchParams();
+      queryParams.append('query', currentInput);
+      // Add keywords from Redux store as comma-separated values
+      if (currentProjectKeywords && currentProjectKeywords.length > 0) {
+        const keywordsString = currentProjectKeywords.join(',');
+        queryParams.append('keywords', keywordsString);
+      } else if (currentProject) { // Fallback to project name if no keywords in store
+        queryParams.append('keywords', currentProject);
       }
-      // Optionally, show a success toast/notification to the user based on response.data.message
+      const url = `/data-api/moskal-ai?${queryParams.toString()}`;
+
+      const response = await fetch(url, {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          // No Content-Type or body for GET request
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        throw new Error(`API error ${response.status}: ${errorText}`);
+      }
+
+      const reader = response.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+        const lines = buffer.split('\n');
+        buffer = lines.pop(); // Keep the last partial line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonString = line.substring(6);
+            console.log('Received raw jsonString:', jsonString); // Log raw string
+            try {
+              const data = JSON.parse(jsonString);
+              console.log('Parsed data object:', data); // Log parsed object
+              const messageIdToUpdate = currentAiMessageIdRef.current; // Capture for this specific update
+              setMessages(prevMsgs =>
+                prevMsgs.map(msg => {
+                  if (msg.id === messageIdToUpdate) { // Use captured ID for this update
+                    // Log details if progress is high or type is final
+                    if (data.progress >= 80 || data.type === 'final') {
+                      console.log(`Updating message for progress ${data.progress}, type ${data.type}:`, { currentMsg: msg, incomingData: data, targetId: messageIdToUpdate });
+                    }
+                    let newText = msg.text;
+                    let newStatus = msg.status;
+                    let streamingDone = msg.isStreaming;
+                    let updatedPreviewComponents = msg.previewComponents;
+                    let updatedFinalComponents = msg.finalComponents;
+                    let updatedFinalInsights = msg.finalInsights; // Initialize from current msg state
+                    let updatedFinalFootnotes = msg.finalFootnotes; // Initialize from current msg state
+
+                    // Update status from stream
+                    if (data.message && data.progress !== undefined) {
+                      newStatus = `${data.message} (${data.progress}%)`;
+                    } else if (data.message) {
+                      newStatus = data.message;
+                    } else if (data.step && data.progress !== undefined) {
+                      newStatus = `Step: ${data.step} (${data.progress}%)`;
+                    } else if (data.step) {
+                      newStatus = `Step: ${data.step}`;
+                    }
+
+                    if (data.type === "stream") {
+                      if (data.step === "response_generation" && data.data && data.data.response_preview) {
+                        const previewComps = data.data.response_preview;
+                        if (Array.isArray(previewComps)) {
+                          updatedPreviewComponents = previewComps; // Store all preview components
+                          const textContent = previewComps
+                            .filter(comp => comp.type === 'text')
+                            .map(comp => comp.content)
+                            .join('\n');
+                          if (textContent) newText = textContent;
+                        }
+                      }
+                    } else if (data.type === "final") {
+                      streamingDone = false;
+                      if (data.message && data.progress !== undefined) {
+                        newStatus = `${data.message} (${data.progress}%)`;
+                      } else if (data.message) {
+                        newStatus = data.message;
+                      }
+
+                      if (data.data && data.data.final_response && data.data.final_response.components) {
+                        const finalComps = data.data.final_response.components;
+                        if (Array.isArray(finalComps)) {
+                          updatedFinalComponents = finalComps; // Store all final components
+                          updatedPreviewComponents = null; // Clear preview components once final is received
+                          const textContent = finalComps
+                            .filter(comp => comp.type === 'text')
+                            .map(comp => comp.content)
+                            .join('\n');
+                          newText = textContent; // This will be the main text part of the message
+                        }
+                        // Extract insights and footnotes
+                        if (data.data.final_response.insights) {
+                          updatedFinalInsights = data.data.final_response.insights;
+                        }
+                        if (data.data.final_response.footnotes) {
+                          updatedFinalFootnotes = data.data.final_response.footnotes;
+                        }
+                      }
+                    }
+                    
+                    return { 
+                      ...msg, 
+                      text: newText, 
+                      status: newStatus, 
+                      isStreaming: streamingDone,
+                      previewComponents: updatedPreviewComponents,
+                      finalComponents: updatedFinalComponents,
+                      finalInsights: updatedFinalInsights,
+                      finalFootnotes: updatedFinalFootnotes
+                    };
+                  }
+                  return msg;
+                })
+              );
+            } catch (e) {
+              console.error('Error parsing stream JSON:', e, jsonString);
+            }
+          }
+        }
+      }
+
+      // Process any remaining data in the buffer after the stream is done
+      if (buffer.startsWith('data: ')) {
+        const jsonString = buffer.substring(6);
+        console.log('Received raw jsonString from buffer:', jsonString); // Log raw string from buffer
+        try {
+          const data = JSON.parse(jsonString);
+          console.log('Parsed data object from buffer:', data); // Log parsed object from buffer
+          const messageIdToUpdateFromBuffer = currentAiMessageIdRef.current; // Capture ID for this specific update
+          setMessages(prevMsgs =>
+            prevMsgs.map(msg => {
+              if (msg.id === messageIdToUpdateFromBuffer) { // Use captured ID for this update
+                 if (data.progress >= 80 || data.type === 'final') {
+                    console.log(`Updating message from buffer for progress ${data.progress}, type ${data.type}:`, { currentMsg: msg, incomingData: data, targetId: messageIdToUpdateFromBuffer });
+                  }
+                let newText = msg.text;
+                let newStatus = msg.status;
+                let streamingDone = msg.isStreaming;
+                let updatedPreviewComponents = msg.previewComponents;
+                let updatedFinalComponents = msg.finalComponents;
+                let updatedFinalInsights = msg.finalInsights; // Initialize from current msg state
+                let updatedFinalFootnotes = msg.finalFootnotes; // Initialize from current msg state
+
+                if (data.message && data.progress !== undefined) {
+                  newStatus = `${data.message} (${data.progress}%)`;
+                } else if (data.message) {
+                  newStatus = data.message;
+                } else if (data.step && data.progress !== undefined) {
+                  newStatus = `Step: ${data.step} (${data.progress}%)`;
+                } else if (data.step) {
+                  newStatus = `Step: ${data.step}`;
+                }
+
+                if (data.type === "stream") {
+                  if (data.step === "response_generation" && data.data && data.data.response_preview) {
+                    const previewComps = data.data.response_preview;
+                    if (Array.isArray(previewComps)) {
+                      updatedPreviewComponents = previewComps;
+                      const textContent = previewComps.filter(comp => comp.type === 'text').map(comp => comp.content).join('\n');
+                      if (textContent) newText = textContent;
+                    }
+                  }
+                } else if (data.type === "final") {
+                  streamingDone = false;
+                  if (data.message && data.progress !== undefined) {
+                    newStatus = `${data.message} (${data.progress}%)`;
+                  } else if (data.message) {
+                    newStatus = data.message;
+                  }
+                  if (data.data && data.data.final_response && data.data.final_response.components) {
+                    const finalComps = data.data.final_response.components;
+                    if (Array.isArray(finalComps)) {
+                      updatedFinalComponents = finalComps;
+                      updatedPreviewComponents = null;
+                      const textContent = finalComps.filter(comp => comp.type === 'text').map(comp => comp.content).join('\n');
+                      newText = textContent;
+                    }
+                     // Extract insights and footnotes from buffer
+                    if (data.data.final_response.insights) {
+                      updatedFinalInsights = data.data.final_response.insights;
+                    }
+                    if (data.data.final_response.footnotes) {
+                      updatedFinalFootnotes = data.data.final_response.footnotes;
+                    }
+                  }
+                }
+                return { 
+                  ...msg, 
+                  text: newText, 
+                  status: newStatus, 
+                  isStreaming: streamingDone, 
+                  previewComponents: updatedPreviewComponents, 
+                  finalComponents: updatedFinalComponents,
+                  finalInsights: updatedFinalInsights,   // New
+                  finalFootnotes: updatedFinalFootnotes  // New
+                };
+              }
+              return msg;
+            })
+          );
+        } catch (e) {
+          console.error('Error parsing final stream JSON from buffer:', e, jsonString);
+        }
+      }
     } catch (error) {
-      console.error("Error submitting AI feedback:", error.response ? error.response.data : error.message);
-      // Optionally, show an error toast/notification to the user
+      console.error('Error sending message or processing stream:', error);
+      setMessages(prevMsgs =>
+        prevMsgs.map(msg =>
+          msg.id === currentAiMessageIdRef.current
+            ? { ...msg, text: `Error: ${error.message}`, isStreaming: false, status: 'Error' }
+            : msg
+        )
+      );
     } finally {
-      setShowFeedbackFormForId(null);
-      setCurrentFeedbackText('');
+      console.log('Executing finally block. Current AI message ID before null:', currentAiMessageIdRef.current);
+      setIsSending(false);
+      // The 'type: "final"' event handler is now solely responsible for setting isStreaming to false.
+      // We only nullify the ref here.
+      currentAiMessageIdRef.current = null;
+      console.log('Executing finally block. Current AI message ID after null:', currentAiMessageIdRef.current);
+    }
+  }, [inputValue, isSending, userData, currentProject, messages, keywordsFromStore]);
+
+  // Handle AI feedback submission
+  const handleFeedback = async (messageId, feedbackType, feedbackText = '') => {
+    try {
+      // Find the user query and AI response for this message
+      const messageIndex = messages.findIndex(msg => msg.id === messageId);
+      const aiMessage = messages[messageIndex];
+      const userMessage = messageIndex > 0 ? messages[messageIndex - 1] : null;
+      
+      if (!aiMessage || !userMessage || aiMessage.sender !== 'ai' || userMessage.sender !== 'user') {
+        console.error('Could not find corresponding user query for AI response');
+        return;
+      }
+
+      // Prepare AI response data
+      let responseAi = {};
+      if (aiMessage.finalComponents) {
+        responseAi.components = aiMessage.finalComponents;
+      }
+      if (aiMessage.finalInsights) {
+        responseAi.insights = aiMessage.finalInsights;
+      }
+      if (aiMessage.finalFootnotes) {
+        responseAi.footnotes = aiMessage.finalFootnotes;
+      }
+      if (aiMessage.text) {
+        responseAi.text = aiMessage.text;
+      }
+
+      const feedbackData = {
+        query_user: userMessage.text,
+        response_ai: responseAi,
+        feedback_user: feedbackText || feedbackType,
+        user_name: userData?.name || userName,
+        project_name: currentProject || 'Unknown Project',
+        additional_info: {
+          feedback_type: feedbackType,
+          message_id: messageId,
+          timestamp_interaction: new Date().toISOString()
+        },
+        timestamp: new Date().toISOString()
+      };
+
+      const response = await fetch('/data-api/ai-feedback', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(feedbackData)
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        console.log('Feedback submitted successfully:', result);
+        
+        // Update feedback state
+        setFeedbackStates(prev => ({
+          ...prev,
+          [messageId]: { type: feedbackType, submitted: true }
+        }));
+        
+        // Hide feedback form
+        setShowFeedbackForm(null);
+      } else {
+        console.error('Failed to submit feedback:', response.status);
+      }
+    } catch (error) {
+      console.error('Error submitting feedback:', error);
     }
   };
 
-  const cancelMoskalFeedback = () => {
-    setShowFeedbackFormForId(null);
-    setCurrentFeedbackText('');
+  const renderFormattedText = (text) => {
+    if (typeof text !== 'string') return text;
+    
+    return text.split('\n').map((line, index) => (
+      <p key={index} style={{ margin: index === 0 ? '0' : '0.5em 0 0 0' }}>
+        {(() => {
+          // Parse bold text (**text**)
+          const parts = line.split(/\*\*(.*?)\*\*/g);
+          return parts.map((part, partIndex) => {
+            // Every odd index is bold text (between **)
+            if (partIndex % 2 === 1) {
+              return <strong key={partIndex}>{part}</strong>;
+            }
+            return part;
+          });
+        })()}
+      </p>
+    ));
   };
 
   return (
-    <div className={`moskal-ai-page-container ${hasInteracted ? 'has-interacted' : ''}`}>
-      <div className={`moskal-ai-content ${hasInteracted ? 'has-interacted' : ''}`} ref={chatAreaRef}>
-        {messages.length === 0 && (
-          <>
-            <div className="moskal-ai-header">
-              <h1>
-                Hello, {userName} <span className="sparkle">✨</span>
-              </h1>
-              <p>Ask me anything and discover key insights you might have missed.</p>
-            </div>
-            
-            <div className="template-questions-container">
-              <h2>Examples</h2>
-              <div className="template-questions-grid">
-                {templateQuestions.map((question, index) => (
-                  <button 
-                    key={index} 
-                    className="template-question-button"
-                    onClick={() => handleTemplateClick(question)}
-                  >
-                    {question}
-                  </button>
-                ))}
-              </div>
-            </div>
-          </>
+    <div className={`moskal-ai-page-container ${hasInteracted || messages.length > 0 ? 'has-interacted' : ''}`}>
+      <div className={`moskal-ai-content ${hasInteracted || messages.length > 0 ? 'has-interacted' : ''}`} ref={chatAreaRef}>
+        
+        {/* Welcome Header - Only show when no interaction */}
+        {(!hasInteracted && messages.length === 0) && (
+          <div className="moskal-ai-header">
+            <h1>
+              Hello, {userName} <span className="sparkle">✨</span>
+            </h1>
+            <p>Ask me anything and discover key insights you might have missed.</p>
+          </div>
         )}
 
+        {/* Chat Messages */}
         <div className="moskal-ai-chat-area">
           {messages.map((msg) => (
-            msg.type === 'typing' ? (
-              <div key={msg.id} className="chat-bubble ai-response-bubble typing-indicator-bubble">
-                <span className="sparkle-icon">✨</span>
-                <div className="typing-indicator">
-                  <span></span>
-                  <span></span>
-                  <span></span>
-                </div>
-              </div>
-            ) : (
-              <div
-                key={msg.id}
-                className={`chat-bubble ${
-                  msg.sender === 'user' ? 'user-query-bubble' : 'ai-response-bubble'
-                }`}
-              >
-                {msg.sender === 'ai' && <span className="sparkle-icon">✨</span>}
-                <div className="chat-bubble-content ai-content-padding">
-                  {msg.sender === 'user' ? (
-                    <p>{msg.text}</p> // User messages are simple text
-                  ) : msg.sender === 'ai' && msg.components ? ( // AI messages with new JSON structure
-                    <>
-                      {msg.components.map((component, compIndex) => {
-                        const componentClasses = compIndex > 0 ? "mt-8" : ""; // Add top margin if not the first component
-                        if (component.type === 'text') {
-                          return <div key={`comp-text-${compIndex}`} className={`ai-text-content ${componentClasses}`}>{renderFormattedText(component.content)}</div>;
-                        } else if (component.type === 'table' && component.headers && component.rows) {
-                          return (
-                            <div key={`comp-${compIndex}`} className={`ai-table-component w-full ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
-                              {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
-                              <table className="ai-table w-full"> {/* text-sm, border-collapse, border, border-gray-300 are now in CSS */}
-                                <thead className="text-xs uppercase"> {/* bg-gray-200 is now in CSS for th */}
-                                  <tr>
-                                    {component.headers.map((header, hIndex) => (
-                                      <th key={`th-${hIndex}`} scope="col" className="font-semibold"> {/* All padding, text-align, borders are in CSS */}
-                                        {header}
-                                      </th>
-                                    ))}
-                                  </tr>
-                                </thead>
-                                <tbody>
-                                  {component.rows.map((rowItem, rIndex) => {
-                                    if (Array.isArray(rowItem)) {
-                                      // Handle array-based rows
-                                      return (
-                                        <tr key={`tr-${rIndex}`}>
-                                          {rowItem.map((cellData, cIndex) => (
-                                            <td key={`td-${rIndex}-${cIndex}`}>
-                                              {String(cellData !== undefined ? cellData : '')}
-                                            </td>
-                                          ))}
-                                        </tr>
-                                      );
-                                    } else if (typeof rowItem === 'object' && rowItem !== null && component.headers) {
-                                      // Handle object-based rows (existing logic)
-                                      return (
-                                        <tr key={`tr-${rIndex}`}>
-                                          {component.headers.map((headerKey, cIndex) => (
-                                            <td key={`td-${rIndex}-${cIndex}`}>
-                                              {String(rowItem[headerKey] !== undefined ? rowItem[headerKey] : '')}
-                                            </td>
-                                          ))}
-                                        </tr>
-                                      );
-                                    } else {
-                                      console.warn(`Table row at index ${rIndex} is not a valid array or object, or headers are missing for table "${component.title}". Skipping row. Row data:`, rowItem);
-                                      return null;
-                                    }
-                                  })}
-                                </tbody>
-                              </table>
-                            </div>
-                          );
-                        } else if (component.type === 'chart' && component.data && component.data.length > 0) {
-                          if (component.chart_type === 'bar') {
-                            const { xAxisKey, yAxisSeries } = identifyChartKeys(component.data, component.x_axis, component.y_axis, component.title);
-                            if (!xAxisKey || yAxisSeries.length === 0 || !yAxisSeries[0].dataKey) {
-                                console.warn(`Bar Chart: Could not determine valid keys for chart titled '${component.title}'. X-Key: ${xAxisKey}, Y-Series: ${JSON.stringify(yAxisSeries)}`);
-                                return <div key={`comp-${compIndex}-error`} className={`ai-chart-component text-red-500 ${componentClasses}`}>Chart data incomplete for "{component.title}"</div>;
-                            }
-                            return (
-                              <div key={`comp-${compIndex}`} className={`ai-chart-component ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
-                                {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
-                                <div className="chart-container" style={{ width: '100%', height: 300 }}>
-                                  <ResponsiveContainer>
-                                    <BarChart data={component.data}>
-                                      <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis dataKey={xAxisKey} />
-                                      <YAxis />
-                                      <Tooltip />
-                                      <Legend />
-                                      {yAxisSeries.map((series, idx) => (
-                                        <Bar key={idx} dataKey={series.dataKey} fill={BAR_COLORS[idx % BAR_COLORS.length]} name={series.name} />
-                                      ))}
-                                    </BarChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </div>
-                            );
-                          } else if (component.chart_type === 'line') {
-                            const { xAxisKey, yAxisSeries } = identifyChartKeys(component.data, component.x_axis, component.y_axis, component.title);
-                             if (!xAxisKey || yAxisSeries.length === 0 || !yAxisSeries[0].dataKey) {
-                                console.warn(`Line Chart: Could not determine valid keys for chart titled '${component.title}'. X-Key: ${xAxisKey}, Y-Series: ${JSON.stringify(yAxisSeries)}`);
-                                return <div key={`comp-${compIndex}-error`} className={`ai-chart-component text-red-500 ${componentClasses}`}>Chart data incomplete for "{component.title}"</div>;
-                            }
-                            return (
-                              <div key={`comp-${compIndex}`} className={`ai-chart-component ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
-                                {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
-                                <div className="chart-container" style={{ width: '100%', height: 300 }}>
-                                  <ResponsiveContainer>
-                                    <LineChart data={component.data}>
-                                      <CartesianGrid strokeDasharray="3 3" />
-                                      <XAxis dataKey={xAxisKey} />
-                                      <YAxis domain={['auto', 'auto']} />
-                                      <Tooltip />
-                                      <Legend />
-                                      {yAxisSeries.map((series, idx) => (
-                                        <Line key={idx} type="monotone" dataKey={series.dataKey} stroke={LINE_COLORS[idx % LINE_COLORS.length]} name={series.name} />
-                                      ))}
-                                    </LineChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </div>
-                            );
-                          } else if (component.chart_type === 'pie' && component.data) {
-                            const { nameKey, dataKey } = identifyPieChartKeys(component.data, component.name_key, component.value_key); // API might provide these hints
-                            if (!nameKey || !dataKey || !component.data[0].hasOwnProperty(nameKey) || !component.data[0].hasOwnProperty(dataKey)) {
-                                console.warn(`Pie Chart: Could not determine valid keys for chart titled '${component.title}'. Name Key: ${nameKey}, Data Key: ${dataKey}`);
-                                return <div key={`comp-${compIndex}-error`} className={`ai-chart-component text-red-500 ${componentClasses}`}>Chart data incomplete for "{component.title}"</div>;
-                            }
-                            return (
-                              <div key={`comp-${compIndex}`} className={`ai-chart-component ${componentClasses}`}> {/* Removed my-2, added dynamic margin */}
-                                {component.title && <h4 className="text-md font-semibold mb-1 mt-6">{component.title}</h4>}
-                                <div className="chart-container" style={{ width: '100%', height: 300 }}>
-                                  <ResponsiveContainer>
-                                    <PieChart>
-                                      <Pie
-                                        data={component.data}
-                                        cx="50%"
-                                        cy="50%"
-                                        labelLine={false}
-                                        label={({ cx, cy, midAngle, innerRadius, outerRadius, percent }) => {
-                                          const RADIAN = Math.PI / 180;
-                                          const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
-                                          const x = cx + radius * Math.cos(-midAngle * RADIAN);
-                                          const y = cy + radius * Math.sin(-midAngle * RADIAN);
-                                          return (
-                                            <text x={x} y={y} fill="white" textAnchor={x > cx ? 'start' : 'end'} dominantBaseline="central">
-                                              {`${(percent * 100).toFixed(0)}%`}
-                                            </text>
-                                          );
-                                        }}
-                                        outerRadius={80}
-                                        fill="#8884d8" // Default fill, overridden by Cell
-                                        dataKey={dataKey}
-                                        nameKey={nameKey}
-                                      >
-                                        {component.data.map((entry, cIndex) => (
-                                          <Cell key={`cell-${cIndex}`} fill={PIE_COLORS[cIndex % PIE_COLORS.length]} />
-                                        ))}
-                                      </Pie>
-                                      <Tooltip />
-                                      <Legend />
-                                    </PieChart>
-                                  </ResponsiveContainer>
-                                </div>
-                              </div>
-                            );
-                          }
+            <div
+              key={msg.id}
+              className={`chat-bubble ${
+                msg.sender === 'user' ? 'user-query-bubble' : 'ai-response-bubble'
+              } ${msg.isStreaming ? 'streaming' : ''}`}
+            >
+              {msg.sender === 'ai' && (
+                <div className="sparkle-icon">✨</div>
+              )}
+              <div className="chat-bubble-content">
+                <div className="ai-text-content">
+                  {msg.finalComponents ? 
+                    (() => {
+                      console.log('Rendering with msg.finalComponents:', msg.finalComponents, 'for message ID:', msg.id);
+                      return msg.finalComponents.map((component, index) => {
+                        const componentType = component.type ? component.type.trim().toLowerCase() : '';
+                        const componentStyle = { marginBottom: '15px' }; // Add margin to each component
+
+                        if (componentType === 'text') {
+                          return <div key={`final-text-${index}`} style={componentStyle}>{renderFormattedText(component.content)}</div>;
+                        } else if (componentType === 'chart') {
+                          const chartType = component.chart_type ? component.chart_type.trim().toLowerCase() : '';
+                          const visualizationProp = {
+                            type: chartType, // Map chart_type to type
+                            title: component.title,
+                            data: component.data,
+                            options: component.options || {} // Pass options if available
+                          };
+                          console.log('Rendering Chart with visualization prop:', visualizationProp);
+                          return <div key={`final-chart-${index}`} style={componentStyle}><ChartRenderer visualization={visualizationProp} /></div>;
+                        } else if (componentType === 'table') {
+                          const tableVisualizationProp = {
+                            title: component.title,
+                            data: { // Nest headers and rows under data
+                              headers: component.headers,
+                              rows: component.rows
+                            },
+                            options: component.options || {} // Pass options if available
+                          };
+                          console.log('Rendering Table with visualization prop:', tableVisualizationProp);
+                          return <div key={`final-table-${index}`} style={componentStyle}><TableRenderer visualization={tableVisualizationProp} /></div>;
                         }
-                        return null; // Fallback for unknown component types or missing data
-                      })}
-                      {/* Render footnotes */}
-                      {msg.footnotes && msg.footnotes.length > 0 && (
-                        <div className="ai-footnotes mt-3 pt-2 border-t border-gray-200">
-                          <h5 className="text-sm font-semibold mb-1">References:</h5>
-                          {msg.footnotes.map((footnote, fIndex) => {
-                            const rawLinkSource = footnote.url || footnote.content;
-                            const cleanedHref = extractCleanUrl(rawLinkSource);
-
-                            if (!cleanedHref) {
-                              return (
-                                <p key={`fn-${fIndex}-nourl`} className="text-xs text-gray-500 italic">
-                                  {footnote.content || footnote.url || "Reference (invalid URL)"}
-                                </p>
-                              );
-                            }
-
-                            let linkDisplayText = cleanedHref; // Default display text
-                            if (footnote.content && footnote.content.trim() !== "" && footnote.content !== rawLinkSource && footnote.content !== cleanedHref) {
-                                // Case 1: footnote.content is meaningful and different from the link source or cleaned link
-                                linkDisplayText = footnote.content;
-                            } else if (footnote.content && footnote.content.trim() !== "" && footnote.content === rawLinkSource && rawLinkSource !== cleanedHref) {
-                                // Case 2: footnote.content was the source of the link and it got cleaned (e.g., "Referensi: http://...")
-                                linkDisplayText = cleanedHref;
-                            } else if (footnote.content && footnote.content.trim() !== "") {
-                                // Case 3: footnote.content is present (e.g., it was already a clean URL or same as rawLinkSource which was clean)
-                                linkDisplayText = footnote.content;
-                            }
-                            // If linkDisplayText is still just cleanedHref and footnote.content is empty but footnote.url was the source, it's fine.
-
-                            return (
-                              <p key={`fn-${fIndex}`} className="text-xs text-gray-500 italic">
-                                <a
-                                  href={cleanedHref}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-500 hover:underline"
-                                >
-                                  {linkDisplayText}
-                                </a>
-                              </p>
-                            );
-                          })}
-                        </div>
-                      )}
-                    </>
+                        return null;
+                      });
+                    })()
+                  : msg.previewComponents && msg.isStreaming ? (
+                    msg.previewComponents.map((component, index) => {
+                      if (component.type === 'text') {
+                        return <div key={`preview-text-${index}`}>{renderFormattedText(component.content)}</div>;
+                      }
+                      // Optionally render placeholders or simplified previews for charts/tables during streaming
+                      else if (component.type === 'chart') {
+                        return <div key={`preview-chart-${index}`} style={{opacity: 0.7, fontStyle: 'italic'}}>{`Chart: ${component.title || 'Loading chart...'}`}</div>;
+                      } else if (component.type === 'table') {
+                        return <div key={`preview-table-${index}`} style={{opacity: 0.7, fontStyle: 'italic'}}>{`Table: ${component.title || 'Loading table...'}`}</div>;
+                      }
+                      return null;
+                    })
                   ) : (
-                     // Fallback for AI messages that don't fit the new structure
-                     msg.sender === 'ai' && <div className="ai-text-content">{renderFormattedText(msg.text) || "Response from AI."}</div>
+                    renderFormattedText(msg.text) // Fallback to plain text
                   )}
-                  {msg.sender === 'ai' && msg.response_type !== 'error' && !msg.type && (
-                    feedbackSuccessfullySubmittedId === msg.id ? (
-                      <div className="ai-feedback-success-message">
-                        Feedback recorded. Thank you!
+
+                  {/* Render Insights */}
+                  {msg.finalInsights && msg.finalInsights.length > 0 && (
+                    <div className="moskal-ai-insights-container" style={{ marginTop: '15px', marginBottom: '15px' }}>
+                      <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Insights:</h4>
+                      <ul style={{ listStyleType: 'disc', paddingLeft: '20px', margin: 0 }}>
+                        {msg.finalInsights.map((insight, index) => (
+                          <li key={`insight-${index}`} style={{ marginBottom: '3px' }}>{insight}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {/* Render Footnotes */}
+                  {msg.finalFootnotes && msg.finalFootnotes.length > 0 && (
+                    <div className="moskal-ai-footnotes-container" style={{ marginTop: '15px', marginBottom: '15px' }}>
+                      <h4 style={{ fontWeight: 'bold', marginBottom: '5px' }}>Footnotes:</h4>
+                      <ul style={{ listStyleType: 'decimal', paddingLeft: '20px', margin: 0 }}>
+                        {msg.finalFootnotes.map((footnote, index) => (
+                          <li key={`footnote-${index}`} style={{ marginBottom: '3px', wordBreak: 'break-all' }}>
+                            {typeof footnote.content === 'string' && (footnote.content.startsWith('http://') || footnote.content.startsWith('https://')) ? (
+                              <a href={footnote.content} target="_blank" rel="noopener noreferrer" style={{ color: '#3b82f6', textDecoration: 'underline' }}>
+                                {footnote.content}
+                              </a>
+                            ) : (
+                              footnote.content
+                            )}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+
+                  {msg.isStreaming && !msg.finalComponents && <span className="streaming-cursor"></span>}
+                  {msg.isStreaming && !msg.text && !msg.previewComponents && !msg.finalComponents && msg.status && <span style={{ fontStyle: 'italic', opacity: 0.7 }}>{msg.status}</span>}
+                  {msg.isStreaming && !msg.text && !msg.previewComponents && !msg.finalComponents && !msg.status && <span style={{ fontStyle: 'italic', opacity: 0.7 }}>Thinking...</span>}
+                </div>
+
+                {/* AI Feedback Section */}
+                {msg.sender === 'ai' && !msg.isStreaming && (
+                  <div className="ai-feedback-section" style={{ marginTop: '10px', paddingTop: '10px', borderTop: '1px solid #e5e7eb' }}>
+                    {feedbackStates[msg.id]?.submitted ? (
+                      <div style={{ fontSize: '0.8em', color: '#10b981', fontStyle: 'italic' }}>
+                        ✓ Feedback submitted. Thank you!
+                      </div>
+                    ) : showFeedbackForm === msg.id ? (
+                      <div className="feedback-form" style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                        <div style={{ fontSize: '0.8em', color: '#6b7280', marginBottom: '5px' }}>
+                          How was this response?
+                        </div>
+                        <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'helpful')}
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '0.75em',
+                              backgroundColor: '#10b981',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            👍 Helpful
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'not_helpful')}
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '0.75em',
+                              backgroundColor: '#ef4444',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            👎 Not Helpful
+                          </button>
+                          <button
+                            onClick={() => handleFeedback(msg.id, 'inaccurate')}
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '0.75em',
+                              backgroundColor: '#f59e0b',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            ⚠️ Inaccurate
+                          </button>
+                          <button
+                            onClick={() => setShowFeedbackForm(null)}
+                            style={{
+                              padding: '4px 8px',
+                              fontSize: '0.75em',
+                              backgroundColor: '#6b7280',
+                              color: 'white',
+                              border: 'none',
+                              borderRadius: '4px',
+                              cursor: 'pointer'
+                            }}
+                          >
+                            Cancel
+                          </button>
+                        </div>
                       </div>
                     ) : (
-                      <>
-                        <div className="ai-feedback-buttons">
-                          <button
-                            onClick={() => handleFeedback(msg.id, 'up')}
-                            className={`feedback-button ${feedback[msg.id] === 'up' ? 'active' : ''}`}
-                            aria-label="Good response"
-                          >
-                            <img src={thumbsUpIcon} alt="Thumbs Up" />
-                          </button>
-                          <button
-                            onClick={() => handleFeedback(msg.id, 'down')}
-                            className={`feedback-button ${feedback[msg.id] === 'down' ? 'active' : ''}`}
-                            aria-label="Bad response"
-                          >
-                            <img src={thumbsDownIcon} alt="Thumbs Down" />
-                          </button>
-                        </div>
-                        {showFeedbackFormForId === msg.id && feedback[msg.id] === 'down' && (
-                          <div className="ai-feedback-form-container">
-                            <p className="ai-feedback-prompt">
-                              Your feedback helps us improve Moskal AI.
-                            </p>
-                            <textarea
-                              className="ai-feedback-textarea"
-                              placeholder="What could be better?"
-                              value={currentFeedbackText}
-                              onChange={handleFeedbackTextChange}
-                              rows="3"
-                            />
-                            <div className="ai-feedback-form-actions">
-                              <button
-                                onClick={() => submitMoskalFeedback(msg.id)}
-                                className="ai-feedback-submit-button"
-                                disabled={currentFeedbackText.trim() === ''}
-                              >
-                                Send Feedback
-                              </button>
-                              <button onClick={cancelMoskalFeedback} className="ai-feedback-cancel-button">
-                                Cancel
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    )
-                  )}
-                </div>
+                      <button
+                        onClick={() => setShowFeedbackForm(msg.id)}
+                        style={{
+                          padding: '4px 8px',
+                          fontSize: '0.75em',
+                          backgroundColor: 'transparent',
+                          color: '#6b7280',
+                          border: '1px solid #d1d5db',
+                          borderRadius: '4px',
+                          cursor: 'pointer',
+                          display: 'flex',
+                          alignItems: 'center',
+                          gap: '4px'
+                        }}
+                        onMouseOver={(e) => {
+                          e.target.style.backgroundColor = '#f3f4f6';
+                        }}
+                        onMouseOut={(e) => {
+                          e.target.style.backgroundColor = 'transparent';
+                        }}
+                      >
+                        💬 Feedback
+                      </button>
+                    )}
+                  </div>
+                )}
+
+                {msg.sender === 'ai' && msg.status && (
+                  <div style={{ fontSize: '0.75em', opacity: 0.6, marginTop: '5px' }}>
+                    {/* {msg.status} */}
+                  </div>
+                )}
               </div>
-            )
+            </div>
           ))}
         </div>
       </div>
 
+      {/* Input Area */}
       <div className="moskal-ai-input-container">
         <div className="moskal-ai-input-area">
           <textarea
             ref={textareaRef}
-            placeholder="Ask about anything related to your project"
             value={inputValue}
             onChange={handleInputChange}
-            onKeyPress={(e) => {
-              if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                handleSendMessage();
-              }
-            }}
+            onKeyPress={handleKeyPress}
+            placeholder="Ask Moskal AI here..."
             disabled={isSending}
+            rows={1}
           />
-          <button 
-            className={`send-button ${inputValue.trim() !== '' ? 'active' : ''}`} 
-            onClick={handleSendMessage} 
-            disabled={isSending || inputValue.trim() === ''}
+          <button
+            className={`send-button ${inputValue.trim() !== '' && !isSending ? 'active' : ''}`}
+            onClick={handleSendMessage}
+            disabled={inputValue.trim() === '' || isSending}
           >
             {isSending ? (
               <div className="loader"></div>
             ) : (
-              <svg
-                width="24"
-                height="24"
-                viewBox="0 0 24 24"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="send-icon"
-              >
-                <path
-                  d="M22 2L11 13"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
-                <path
-                  d="M22 2L15 22L11 13L2 9L22 2Z"
-                  stroke="white"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                />
+              <svg className="send-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <line x1="22" y1="2" x2="11" y2="13"></line>
+                <polygon points="22,2 15,22 11,13 2,9 22,2"></polygon>
               </svg>
             )}
           </button>
         </div>
-        <p className="disclaimer">
+        
+        {/* Disclaimer */}
+        <div className="disclaimer">
           Moskal AI is always learning. Double-check for key details for accuracy.
-        </p>
+        </div>
       </div>
     </div>
   );

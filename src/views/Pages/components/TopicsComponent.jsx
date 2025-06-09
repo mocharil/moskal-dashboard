@@ -33,7 +33,7 @@ const TopicsComponent = (props) => {
         expiresInDays: 30,
       })
     );
-    console.log(data);
+
     navigate(`/${keyword}/topics-detail`, { replace: true });
   };
 

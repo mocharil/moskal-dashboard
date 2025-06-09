@@ -16,8 +16,6 @@ import Sidebar from "../../components/Sidebar";
 import TopicsDetail from "../Pages/components/TopicsDetail";
 import MoskalAI from "../Pages/MoskalAI";
 import Mentions from "../Pages/Mentions"; // Import the Mentions page
-// import Reporting from "../Pages/Reporting"; // Import the Reporting page - File doesn't exist
-// import ReportPage from "../Pages/ReportPage"; // Import the new ReportPage - File doesn't exist
 import GenerateReport from "../Pages/GenerateReport"; // Import the new GenerateReport page
 import ReportList from "../Pages/ReportList"; // Import the new ReportList page
 import NotificationTest from "../../components/NotificationTest"; // Import the notification test component
@@ -122,11 +120,7 @@ const router = createBrowserRouter([
     path: "/report-list", // New route for listing reports
     element: <ProtectedRouteSidebar element={<ReportList />} />,
   },
-  // Removed specific report summary route, as it's now a modal
-  // {
-  //   path: "/summary/:reportId", 
-  //   element: <ProtectedRouteSidebar element={<Summary />} />,
-  // },
+
   {
     path: "/account-settings",
     element: <ProtectedRouteSidebar element={<AccountSettings />} />,
@@ -142,7 +136,7 @@ const router = createBrowserRouter([
   {
     path: "/notification-test",
     element: <NotificationTest />, // No protection for easy testing
-  },
+  }
 ]);
 
 function Router() {

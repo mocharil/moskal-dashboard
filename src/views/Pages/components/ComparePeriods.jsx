@@ -171,7 +171,7 @@ const ComparePeriods = (props) => {
           project_end: projectData.custom_end_date,
         },
       ]);
-      console.log(overviewData);
+
     } catch (error) {
       console.log(error);
       enqueueSnackbar("Network Error", {

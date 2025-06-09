@@ -41,11 +41,6 @@ const Sidebar = () => {
     const decodedKeyword = decodeURIComponent(encodedKeyword);
     const menu = url[1] || "";
     
-    console.log("Current URL:", location.pathname);
-    console.log("Parsed keyword (encoded):", encodedKeyword);
-    console.log("Parsed keyword (decoded):", decodedKeyword);
-    console.log("Parsed menu:", menu);
-    
     // Set active menu (normalize topics-detail to topics)
     const normalizedMenu = menu === "topics-detail" ? "topics" : menu;
     setActiveMenu(normalizedMenu);
@@ -62,8 +57,7 @@ const Sidebar = () => {
       
       if (foundKeyword) {
         setActiveKeywordSidebar(foundKeyword.name);
-        console.log("Setting active keyword sidebar to:", foundKeyword.name);
-        
+
         // Update Redux if needed
         if (foundKeyword.name !== activeKeywords.name) {
           dispatch(
@@ -78,12 +72,12 @@ const Sidebar = () => {
         const index = listKeywords?.findIndex(item => item.name === foundKeyword.name);
         if (index !== -1) {
           setActiveIndex(index);
-          console.log("Setting active index to:", index);
+
         }
       } else {
         // Fallback to using the decoded keyword directly
         setActiveKeywordSidebar(decodedKeyword);
-        console.log("No matching project found, using decoded keyword:", decodedKeyword);
+        
       }
     } else {
       setActiveKeywordSidebar(activeKeywords.name);
@@ -165,7 +159,6 @@ const Sidebar = () => {
       })
     );
 
-    console.log("foundKeyword", foundKeyword);
     navigate(`/${keyword}/${menu}`, { replace: true });
   };
 

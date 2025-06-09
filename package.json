@@ -12,6 +12,8 @@
   "dependencies": {
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
+    "@google/generative-ai": "^0.24.1",
+    "@heroicons/react": "^2.2.0",
     "@mui/icons-material": "^6.4.8",
     "@mui/joy": "^5.0.0-beta.52",
     "@mui/material": "^6.4.8",
@@ -27,6 +29,7 @@
     "dayjs": "^1.11.13",
     "dotenv": "^16.5.0",
     "express": "^5.1.0",
+    "framer-motion": "^12.16.0",
     "http-proxy-middleware": "^3.0.5",
     "js-cookie": "^3.0.5",
     "luxon": "^3.5.0",

@@ -16,7 +16,7 @@ const MostFollowersComponent = (props) => {
   const activeKeywords = useSelector((state) => state.keywords.activeKeyword);
 
   const fallbackUrl = (channel) => {
-    console.log("called", channel);
+   
     return `${window.location.origin}/${channel}.png`;
   };
 
