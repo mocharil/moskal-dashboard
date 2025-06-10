@@ -61,7 +61,6 @@ const Mentions = () => {
     const navState = location.state;
     if (navState && (navState.fromTopicDetail || navState.fromSummary || navState.fromAnalysis) && navState.filters) {
       const { filters } = navState;
-      // console.log("Applying filters from navigation state:", JSON.stringify(filters));
 
       const newAdvanceFilterState = {};
       
@@ -164,7 +163,7 @@ const Mentions = () => {
   // Unified data fetching effect
   useEffect(() => {
     if (activeKeywords.name) { // Ensure project context is loaded
-      // console.log("Data fetching effect triggered. Keywords in dataAdvanceFilter:", dataAdvanceFilter.keywords);
+ 
       fetchMentionsData();
     }
     // This effect runs when any of these dependencies change.

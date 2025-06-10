@@ -251,7 +251,7 @@ const TopicsDetail = () => {
     try {
       const resp = await getTextSentimentData(generateReqBody());
       setTextSentimentData(resp);
-      console.log(resp);
+ 
       setIsLoadingTextSentiment(false);
     } catch (error) {
       enqueueSnackbar("Network Error", {

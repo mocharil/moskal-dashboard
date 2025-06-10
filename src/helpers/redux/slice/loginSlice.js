@@ -34,7 +34,6 @@ const userSlice = createSlice({
       const expirationDate =
         new Date().getTime() + expiresInDays * 24 * 60 * 60 * 1000; // Expiration in ms
 
-      console.log();
 
       state.name = name;
       state.email = email;

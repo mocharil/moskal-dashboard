@@ -118,10 +118,7 @@ const Dashboard = () => {
   // Ref to track if initial data has been loaded
   const initialLoadRef = useRef(false);
 
-  // useEffect(() => { // Optional: Keep for debugging if needed, otherwise remove
-  //   console.log("active key", activeKeywords);
-  //   console.log("userdata", userData);
-  // }, []);
+
 
   const fetchAllData = () => {
     setIsLoading(true); // Signal that a batch of fetches has started.

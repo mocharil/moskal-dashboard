@@ -77,7 +77,7 @@ if (AUTH_API_BASE) {
       '^/auth-api': '', // remove /auth-api prefix
     },
     onProxyReq: (proxyReq, req, res) => {
-      console.log(`Proxying request to AUTH API: ${proxyReq.path}`);
+      // console.log(`Proxying request to AUTH API: ${proxyReq.path}`);
     },
     onError: (err, req, res) => {
       console.error('Auth API Proxy Error:', err);

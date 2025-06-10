@@ -332,7 +332,6 @@ const EmailChange = () => {
         });
       }
 
-      console.log("resp", resp);
       handleLogout();
     } catch (error) {
       const errorDetail = error?.detail;
@@ -438,7 +437,6 @@ const PasswordChange = (props) => {
         });
         props.handleToMain();
       }
-      console.log("resp", resp);
     } catch (error) {
       const errorDetail = error?.detail;
       console.log(error);
@@ -558,7 +556,7 @@ const UserManagement = () => {
     try {
       const resp = await authService.getUserListGlobal();
       setListUserGlobal(resp.items);
-      console.log(resp);
+    
     } catch (error) {
       console.log(error);
       enqueueSnackbar("Network Error", {
@@ -571,7 +569,7 @@ const UserManagement = () => {
     try {
       const resp = await authService.getUserListIndividual();
       setListUserIndividual(resp.items);
-      console.log(resp);
+   
     } catch (error) {
       console.log(error);
       enqueueSnackbar("Network Error", {
@@ -632,7 +630,7 @@ const UserManagement = () => {
         };
 
         const resp = await authService.createUserGlobal(reqBody);
-        console.log(resp);
+     
       } else {
         const reqBody = {
           user_email: inputEmail,
@@ -641,7 +639,7 @@ const UserManagement = () => {
         };
 
         const resp = await authService.createUserIndividual(reqBody);
-        console.log(resp);
+    
       }
       enqueueSnackbar("User Created", {
         variant: "success",
@@ -669,7 +667,7 @@ const UserManagement = () => {
         project_id: user.project_id,
       };
       const resp = await authService.deleteUserAccess(reqBody);
-      console.log(resp);
+  
       enqueueSnackbar("User Deleted", {
         variant: "success",
       });

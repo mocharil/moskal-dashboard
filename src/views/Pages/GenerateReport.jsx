@@ -200,7 +200,7 @@ const GenerateReport = () => {
       // setApiResponse(result); // No longer needed
 
       if (result.status === 'success') {
-        // console.log('Report generation started:', result.data.job_id); // Job ID removed from user view
+    
         toast.success(
           <div>
             <CustomText type="bold" style={{ fontSize: '1.1rem', color: '#ffffff' }}>Report Generation Initiated!</CustomText>

@@ -74,7 +74,7 @@ const Login = () => {
     try {
       setIsButtonLoginLoading(true);
       const data = await authService.login(emailLogin, passwordLogin);
-      console.log("Login API response:", data);
+  
       
       // Check if user object exists
       if (!data.user) {
@@ -200,7 +200,7 @@ const Login = () => {
         nameRegister,
         passwordRegister
       );
-      console.log("Register success:", data);
+     
       enqueueSnackbar("Login Success", { variant: "success" });
       setIsButtonRegisterLoading(false);
       handleChangeToLogin();
