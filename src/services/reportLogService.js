@@ -3,7 +3,7 @@ const API_BASE_URL = "/report-api";
 /**
  * Fetches report jobs from the API with pagination.
  */
-export const getReportJobs = async (email = "", page = 1, size = 10) => {
+export const getReportJobs = async (email = "", page = 1, size = 100) => {
   try {
     const response = await fetch(`${API_BASE_URL}/list_jobs?email=${encodeURIComponent(email)}&page=${page}&size=${size}`, {
       method: 'GET',
@@ -30,7 +30,7 @@ export const getReportJobs = async (email = "", page = 1, size = 10) => {
     return {
       reports: data.data || [],
       page: data.page,
-      size: data.size,
+      size: data.size, // Use size from API response
       total: data.total,
       count: data.count,
     };
