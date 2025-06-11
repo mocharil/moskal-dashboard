@@ -43,8 +43,7 @@ const Onboard = () => {
   const getProjectsData = async () => {
     try {
       const project = await getProjects();
-      console.log(project.owned_projects);
-      console.log(project.accessible_projects);
+  
       if (
         project.accessible_projects.length > 0 ||
         project.owned_projects.length > 0
@@ -158,7 +157,7 @@ const Onboard = () => {
       };
 
       const project = await postOnboarding(data);
-      console.log("resp", project);
+    
 
       dispatch(
         addKeywords({
@@ -180,7 +179,11 @@ const Onboard = () => {
 
       const res = error?.response;
 
-      if (res?.status === 422 && Array.isArray(res.data?.detail)) {
+      if (res?.data?.detail && typeof res.data.detail === 'string' && res.data.detail.includes("already exists for this user")) {
+        enqueueSnackbar(res.data.detail, {
+          variant: "error",
+        });
+      } else if (res?.status === 422 && Array.isArray(res.data?.detail)) {
         // Extract validation message(s)
         const firstError = res.data.detail[0];
         const message = firstError?.msg || "Validation failed.";
