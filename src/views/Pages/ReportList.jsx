@@ -424,13 +424,16 @@ const ReportList = () => {
                           <>
                             <span className={`status-badge status-${statusClass}`}>
                               <div className="spinner"></div>
-                              {displayStatus}
+                              {displayStatus} ({report.progress !== undefined ? `${Math.round(report.progress)}%` : '0%'})
                               <div className="processing-dots"><span></span><span></span><span></span></div>
                             </span>
                             {report.progress !== undefined && report.progress < 100 && (
-                               <div className="progress-bar">
-                                <div className="progress-fill" style={{ width: `${report.progress}%` }}></div>
-                               </div>
+                              <div style={{ textAlign: 'center', width: '100%' }}>
+                                <div className="progress-bar">
+                                  <div className="progress-fill" style={{ width: `${report.progress}%` }}></div>
+                                </div>
+                                {/* <span className="progress-percentage-text">{Math.round(report.progress)}%</span> */}
+                              </div>
                             )}
                           </>
                         ) : (
@@ -499,15 +502,15 @@ const ReportList = () => {
                             <>
                               {report.public_url ? (
                                 <a href={report.public_url} target="_blank" rel="noopener noreferrer" className="btn btn-primary">
-                                  📥 Download Report
+                                  Download Report
                                 </a>
                               ) : (
                                 <button className="btn btn-primary" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                                  📥 Download Unavailable
+                                  Download Unavailable
                                 </button>
                               )}
                               <button className="btn btn-secondary" onClick={() => openSummaryModal(report.summary, report.topic)}>
-                                👁 View Summary
+                                View Summary
                               </button>
                             </>
                           ) : ( 
@@ -516,7 +519,7 @@ const ReportList = () => {
                                 ⏳ Processing...
                               </button>
                               <button className="btn btn-secondary" disabled style={{ opacity: 0.5, cursor: 'not-allowed' }}>
-                                👁 View Summary
+                                View Summary
                               </button>
                             </>
                           )}
