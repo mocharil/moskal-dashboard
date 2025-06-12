@@ -9,7 +9,12 @@ const MentionComponent = (props) => {
   const data = props.data;
   const [imgError, setImgError] = useState(false);
 
-  const fallbackUrl = `${window.location.origin}/${data.channel}.png`;
+  let fallbackUrl;
+  if (data.channel && data.channel.toLowerCase() === 'youtube') {
+    fallbackUrl = `${window.location.origin}/youtube.png`;
+  } else {
+    fallbackUrl = `${window.location.origin}/${data.channel}.png`;
+  }
 
   const getSentiment = () => {
     if (data.sentiment === "negative") {
@@ -257,7 +262,7 @@ const MentionComponent = (props) => {
         <div>
           <img
             className="kol-component-icon"
-            src={imgError ? fallbackUrl : data.user_image_url}
+            src={!data.user_image_url || imgError ? fallbackUrl : data.user_image_url}
             onError={() => setImgError(true)}
             alt="User profile"
           />

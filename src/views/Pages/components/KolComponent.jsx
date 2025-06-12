@@ -21,7 +21,12 @@ const KolComponent = (props) => {
   };
   const [imgError, setImgError] = useState(false);
 
-  const fallbackUrl = `${window.location.origin}/${data.channel}.png`;
+  let fallbackUrl;
+  if (data.channel && data.channel.toLowerCase() === 'youtube') {
+    fallbackUrl = `${window.location.origin}/youtube.png`;
+  } else {
+    fallbackUrl = `${window.location.origin}/${data.channel}.png`;
+  }
   return (
     <>
       <div
@@ -32,7 +37,7 @@ const KolComponent = (props) => {
         {/* <div className="kol-component-icon"></div> */}
         <img
           className="kol-component-icon"
-          src={imgError ? fallbackUrl : data.user_image_url}
+          src={!data.user_image_url || imgError ? fallbackUrl : data.user_image_url}
           onError={() => setImgError(true)}
           alt="User profile"
         />
