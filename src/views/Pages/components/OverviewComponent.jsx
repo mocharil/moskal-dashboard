@@ -15,7 +15,7 @@ const OverviewComponent = (props) => {
     {
       title: "Total mentions",
       value: data.total_mentions?.display,
-      change: `${formatNumber(data.total_mentions?.growth_value)}(${
+      change: `${data.total_mentions?.growth_display}(${
         data.total_mentions?.growth_percentage_display
       })`,
       negative: isNegative(data.total_mentions?.growth_value),
@@ -25,7 +25,7 @@ const OverviewComponent = (props) => {
     {
       title: "Total reach",
       value: data.total_reach?.display,
-      change: `${formatNumber(data.total_reach?.growth_value)}(${
+      change: `${data.total_reach?.growth_display}(${
         data.total_reach?.growth_percentage_display
       })`,
       negative: isNegative(data.total_reach?.growth_value),
@@ -35,7 +35,7 @@ const OverviewComponent = (props) => {
     {
       title: "Positive mentions",
       value: data.positive_mentions?.display,
-      change: `${formatNumber(data.positive_mentions?.growth_value)}(${
+      change: `${data.positive_mentions?.growth_display}(${
         data.positive_mentions?.growth_percentage_display
       })`,
       negative: isNegative(data.positive_mentions?.growth_value),
@@ -45,7 +45,7 @@ const OverviewComponent = (props) => {
     {
       title: "Negative mentions",
       value: data.negative_mentions?.display,
-      change: `${formatNumber(data.negative_mentions?.growth_value)}(${
+      change: `${data.negative_mentions?.growth_display}(${
         data.negative_mentions?.growth_percentage_display
       })`,
       negative: true,
@@ -55,7 +55,7 @@ const OverviewComponent = (props) => {
     {
       title: "Presence score",
       value: data.presence_score?.display,
-      change: `${formatNumber(data.presence_score?.growth_value?.toFixed(2))}(${
+      change: `${data.presence_score?.growth_display}(${
         data.presence_score?.growth_percentage_display
       })`,
       negative: isNegative(data.presence_score?.growth_value),
@@ -65,7 +65,7 @@ const OverviewComponent = (props) => {
     {
       title: "Social media reach",
       value: data.social_media_reach?.display,
-      change: `${formatNumber(data.social_media_reach?.growth_value)}(${
+      change: `${data.social_media_reach?.growth_display}(${
         data.social_media_reach?.growth_percentage_display
       })`,
       negative: isNegative(data.social_media_reach?.growth_value),
@@ -75,7 +75,7 @@ const OverviewComponent = (props) => {
     {
       title: "Social media mentions",
       value: data.social_media_mentions?.display,
-      change: `${formatNumber(data.social_media_mentions?.growth_value)}(${
+      change: `${data.social_media_mentions?.growth_display}(${
         data.social_media_mentions?.growth_percentage_display
       })`,
       negative: isNegative(data.social_media_mentions?.growth_value),
@@ -85,7 +85,7 @@ const OverviewComponent = (props) => {
     {
       title: "Social media reactions",
       value: data.social_media_reactions?.display,
-      change: `${formatNumber(data.social_media_reactions?.growth_value)}(${
+      change: `${data.social_media_reactions?.growth_display}(${
         data.social_media_reactions?.growth_percentage_display
       })`,
       negative: isNegative(data.social_media_reactions?.growth_value),
@@ -95,7 +95,7 @@ const OverviewComponent = (props) => {
     {
       title: "Social media comments",
       value: data.social_media_comments?.display,
-      change: `${formatNumber(data.social_media_comments?.growth_value)}(${
+      change: `${data.social_media_comments?.growth_display}(${
         data.social_media_comments?.growth_percentage_display
       })`,
       negative: isNegative(data.social_media_comments?.growth_value),
@@ -105,7 +105,7 @@ const OverviewComponent = (props) => {
     {
       title: "Social media shares",
       value: data.social_media_shares?.display,
-      change: `${formatNumber(data.social_media_shares?.growth_value)}(${
+      change: `${data.social_media_shares?.growth_display}(${
         data.social_media_shares?.growth_percentage_display
       })`,
       negative: isNegative(data.social_media_shares?.growth_value),
@@ -115,7 +115,7 @@ const OverviewComponent = (props) => {
     {
       title: "Non-social media reach",
       value: data.non_social_media_reach?.display,
-      change: `${formatNumber(data.non_social_media_reach?.growth_value)}(${
+      change: `${data.non_social_media_reach?.growth_display}(${
         data.non_social_media_reach?.growth_percentage_display
       })`,
       negative: isNegative(data.non_social_media_reach?.growth_value),
@@ -125,7 +125,7 @@ const OverviewComponent = (props) => {
     {
       title: "Non-social media mentions",
       value: data.non_social_media_mentions?.display,
-      change: `${formatNumber(data.non_social_media_mentions?.growth_value)}(${
+      change: `${data.non_social_media_mentions?.growth_display}(${
         data.non_social_media_mentions?.growth_percentage_display
       })`,
       negative: isNegative(data.non_social_media_mentions?.growth_value),
@@ -135,9 +135,9 @@ const OverviewComponent = (props) => {
     {
       title: "Total social media interactions",
       value: data.total_social_media_interactions?.display,
-      change: `${formatNumber(
-        data.total_social_media_interactions?.growth_value
-      )}(${data.total_social_media_interactions?.growth_percentage_display})`,
+      change: `${data.total_social_media_interactions?.growth_display}(${
+        data.total_social_media_interactions?.growth_percentage_display
+      })`,
       negative: isNegative(data.total_social_media_interactions?.growth_value),
       tooltip:
         "Sum up all forms of engagement - reactions, comments, and shares. A strong interaction count signals high audience involvement.",

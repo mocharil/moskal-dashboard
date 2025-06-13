@@ -57,8 +57,15 @@ const ReportList = () => {
     try {
       // Fetch page 1 with size 1000 from the API
       const response = await getReportJobs(userEmail, 1, reportsData.size); 
-      const updatedReports = response.reports.map(report => {
-        if (report.status !== 'Completed' && report.status !== 'failed') {
+      const updatedReports = response.reports.map(apiReport => {
+        const report = { ...apiReport }; // Work with a copy
+
+        // Priority 1: If summary exists, it's Completed.
+        if (report.summary && Object.keys(report.summary).length > 0) {
+          report.status = 'Completed';
+        } 
+        // Priority 2: If not completed by summary, and not already 'Completed' or 'failed' from API, check for timeout.
+        else if (report.status !== 'Completed' && report.status !== 'failed') {
           const originalCreatedAt = report.created_at;
           const createdAtDate = new Date(originalCreatedAt);
           const now = new Date();
@@ -67,15 +74,13 @@ const ReportList = () => {
           if (createdAtDate instanceof Date && !isNaN(createdAtDate.getTime())) {
             const timeDifference = now.getTime() - createdAtDate.getTime();
             if (timeDifference > oneDayInMilliseconds) {
-              return {
-                ...report,
-                status: 'failed',
-                error_step: report.error_step || 'System Error',
-                error_location: report.error_location || 'System Timeout',
-              };
+              report.status = 'failed';
+              report.error_step = report.error_step || 'System Error';
+              report.error_location = report.error_location || 'System Timeout';
             }
           }
         }
+        // If neither of the above, report.status remains as it came from the API.
         return report;
       });
       setReportsData({
@@ -407,9 +412,7 @@ const ReportList = () => {
               </thead>
               <tbody>
                 {currentDisplayedReports.map((report) => {
-                  const isCompletedBySummary = report.summary && Object.keys(report.summary).length > 0;
-                  let displayStatus = isCompletedBySummary ? 'Completed' : (report.status || 'N/A');
-                  if (report.status === 'failed') displayStatus = 'failed';
+                  let displayStatus = report.status || 'N/A';
                   
                   const statusClass = displayStatus.toLowerCase().replace(/\s+/g, '-');
                   const rawKeywords = report.keywords || (report.sub_keyword ? report.sub_keyword.split(',').map(k => k.trim()) : []);
